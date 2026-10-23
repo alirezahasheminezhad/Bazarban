@@ -1,10 +1,12 @@
 {
-  "usd_per_ton": 0,
-  "usd_toman": 0,
-  "source_price": "TradingView NCDEX:TMCFGRNZM1!",
-  "source_price_value": null,
+  "usd_per_ton": 2808.1105,
+  "usd_toman": 272000,
+  "source_price": "NCDEX Live Quotes",
+  "source_price_value": 26650.0,
   "source_price_unit": "INR per 100 kg",
-  "inr_to_usd": null,
-  "updated": null,
-  "status": "not_configured"
+  "contract": "Turmeric (Farmer Polished)",
+  "contract_expiry": "2026-12-18",
+  "inr_to_usd": 0.010537,
+  "updated": "2026-10-23T19:48:22Z",
+  "status": "ok"
 }
