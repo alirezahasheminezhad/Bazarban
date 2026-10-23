@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#e8e8e8;--shell:#fff;--top:#f7f7f7;--card:#f5f5f5;--line:#e4e4e4;--ink:#111;--mute:#8a8a8a;--acc:#e2654a;--acc-soft:#f6ddd6}
+:root{--bg:#e8e8e8;--shell:#fff;--top:#f7f7f7;--card:#f5f5f5;--line:#e4e4e4;--ink:#111;--mute:#8a8a8a;--acc:#e2654a}
 *{box-sizing:border-box;margin:0}
 body{font-family:Vazirmatn,Tahoma,sans-serif;background:var(--bg);color:var(--ink);padding:clamp(8px,3vw,40px);line-height:1.6;font-size:14px}
 .shell{max-width:1180px;margin:auto;background:var(--shell);border-radius:36px;overflow:hidden}
@@ -26,42 +26,54 @@ body{font-family:Vazirmatn,Tahoma,sans-serif;background:var(--bg);color:var(--in
 .grid{padding:20px 32px 32px;display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
 .card{background:var(--card);border-radius:28px;padding:22px;display:flex;flex-direction:column;gap:12px;min-width:0}
 .card.w{background:#fff;border:1px solid var(--line)}
-.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+.c4{grid-column:span 4}.c5{grid-column:span 5}.c7{grid-column:span 7}.c12{grid-column:span 12}
 .ch{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:13px}
-.ico{width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--acc)}
+.ico{width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--acc);flex:none}
 .ico svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.tag{margin-inline-start:auto;font-size:11px;border:1px solid var(--line);background:#fff;border-radius:99px;padding:2px 10px}
+.tag{margin-inline-start:auto;font-size:11px;border:1px solid var(--line);background:#fff;border-radius:99px;padding:2px 10px;display:flex;align-items:center;gap:6px;white-space:nowrap}
 .fld{display:grid;gap:4px}
 .fld label{font-size:12px;color:var(--mute)}
 input,select{font:inherit;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 14px;width:100%;direction:ltr;text-align:right;transition:border-color .2s}
-select{direction:rtl;padding-inline:10px}
+input.t,select{direction:rtl}
+select{padding-inline:10px}
+input[type=checkbox]{width:18px;height:18px;padding:0;accent-color:var(--acc);cursor:pointer}
 input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-input:hover{border-color:#ccc}
 .big{font-size:28px;font-weight:600;letter-spacing:-.5px}.big small{font-size:12px;color:var(--mute);font-weight:400;margin-inline-start:6px}
-.sub{font-size:12px;color:var(--mute)}
+.sub{font-size:12px;color:var(--mute)}.sub b{color:var(--ink);font-weight:500}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.ring{background:#000;color:#fff;border-radius:50%;aspect-ratio:1;align-self:center;width:100%;max-width:200px;justify-self:center;position:relative;display:grid;place-items:center;text-align:center;padding:0}
+.ring{background:#000;color:#fff;border-radius:50%;aspect-ratio:1;width:100%;max-width:200px;position:relative;display:grid;place-items:center;text-align:center}
 .ring svg{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);transform:rotate(-90deg)}
 .ring div{font-size:26px;font-weight:600;line-height:1.2}.ring small{display:block;font-size:11px;color:#aaa;font-weight:400}
-.rows{display:grid;gap:10px}
-.row{display:grid;grid-template-columns:1.4fr 1fr 1.3fr auto;gap:8px;align-items:center}
+.rows{display:grid;gap:12px}
+.row{display:grid;grid-template-columns:auto 1.3fr 1fr 1.2fr auto;gap:8px;align-items:center;transition:opacity .2s}
+.row.off input:not([type=checkbox]),.row.off select{opacity:.4}
+.rr{grid-column:2/5;font-size:12px;color:var(--mute);margin-top:-2px}.rr b{color:var(--acc);font-weight:500}
 .x{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--mute);font-size:16px;line-height:1}
 .x:hover{color:var(--acc);border-color:var(--acc)}
 .btn{border:0;cursor:pointer;font:inherit;font-weight:500;background:var(--acc);color:#fff;border-radius:99px;padding:10px 22px;align-self:flex-start;transition:transform .15s}
 .btn:hover{transform:translateY(-1px)}
+.btn.g{background:#fff;color:var(--ink);border:1px solid var(--line)}
 .res{background:var(--acc);color:#fff;border-radius:28px}
 .res .ch{color:#fff9}.res .ico{background:#ffffff26;color:#fff}
 .res .big{font-size:38px}.res .sub{color:#fffb}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .stats div{background:#ffffff1f;border-radius:18px;padding:12px 14px}
 .stats b{display:block;font-size:16px;font-weight:600}
 .bk{display:grid;gap:12px}
-.bk .l{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}.bk .l span:last-child{color:var(--mute)}
+.bk .l{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;margin-bottom:4px}.bk .l span:last-child{color:var(--mute)}
 .tr{height:8px;border-radius:99px;background:#fff;overflow:hidden}
 .tr i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
 .tr i.d{background:#111}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs button{font:inherit;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 14px;cursor:pointer}
+.tabs button.on{background:#000;color:#fff;border-color:#000}
+#chart{width:100%;height:auto;max-height:240px;direction:ltr}
+.hl{display:grid;gap:6px;max-height:220px;overflow:auto}
+.hr{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr auto;gap:8px;align-items:center;font-size:12px;background:#fff;border-radius:14px;padding:8px 14px}
+.hr span:nth-child(n+2){color:var(--mute)}
+.hr .x{width:26px;height:26px;font-size:13px}
 .note{font-size:11px;color:var(--mute);padding:0 32px 24px}
-@media(max-width:900px){.c3,.c4,.c5,.c6,.c7,.c8{grid-column:span 12}.top,.grid{padding-inline:16px}.row{grid-template-columns:1fr 1fr}.row .x{justify-self:end}.stats{grid-template-columns:1fr}.shell{border-radius:24px}}
+@media(max-width:900px){.c4,.c5,.c7{grid-column:span 12}.top,.grid{padding-inline:16px}.row{grid-template-columns:auto 1fr 1fr auto}.row>input.t{grid-column:2/4}.rr{grid-column:1/-1}.shell{border-radius:24px}.hr{grid-template-columns:1fr 1fr auto}.hr span:nth-child(n+4):not(.hx){display:none}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -72,24 +84,26 @@ input:hover{border-color:#ccc}
       <div class="logo" aria-hidden="true">ب</div>
       <h1>بازاربان<span>هزینه تمام‌شده بار</span></h1>
       <div class="sp"></div>
-      <div class="pill"><i class="dot" id="dot"></i><span id="upd">ورود دستی</span></div>
+      <div class="pill"><i class="dot" id="dot"></i><span id="upd">در حال دریافت اطلاعات...</span></div>
     </div>
     <div class="hero">
-      <div class="date" aria-label="تاریخ امروز"><div><b id="d1">۱</b><span id="d2"></span></div></div>
+      <div class="date" aria-label="تاریخ امروز"><div><b id="d1"></b><span id="d2"></span></div></div>
       <h2>قیمت تمام‌شده بار را بسنج<span>عددها را عوض کن، نتیجه همان لحظه می‌آید</span></h2>
     </div>
   </header>
 
   <section class="grid">
     <div class="card w c4">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>قیمت مرجع زردچوبه قلم<span class="tag" id="tagP">دستی</span></div>
+      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>قیمت جهانی زردچوبه قلم<span class="tag" id="tagP">در انتظار دریافت</span></div>
       <div class="fld"><label for="price">دلار به ازای هر تن</label><input id="price" inputmode="decimal" value="1800"></div>
-      <div class="sub">نمونه است؛ منبع: NCDEX:TMCFGRNZM1!</div>
+      <div class="sub" id="priceT"></div>
+      <div class="sub">منبع قیمت: NCDEX · قیمت نمونه تا زمان دریافت داده</div>
     </div>
     <div class="card w c4">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></span>نرخ دلار<span class="tag" id="tagR">دستی</span></div>
+      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></span>نرخ ارز<span class="tag" id="tagR">در انتظار دریافت</span></div>
       <div class="fld"><label for="rate">تومان به ازای هر دلار</label><input id="rate" inputmode="decimal" value="120000"></div>
-      <div class="sub">نمونه است؛ منبع: ارزدیجیتال</div>
+      <div class="sub">هزینه تبدیل ارز را در فهرست هزینه‌ها بیاور</div>
+      <div class="sub">منبع نرخ ارز: ارزدیجیتال</div>
     </div>
     <div class="card c4">
       <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10"/></svg></span>بار</div>
@@ -97,131 +111,522 @@ input:hover{border-color:#ccc}
         <div class="fld"><label for="tons">تن در هر کانتینر</label><input id="tons" inputmode="decimal" value="25"></div>
         <div class="fld"><label for="cnt">تعداد کانتینر</label><input id="cnt" inputmode="decimal" value="1"></div>
       </div>
+      <div class="sub">وزن کل: <b id="wt"></b></div>
     </div>
 
     <div class="card c4">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg></span>هزینه‌های مبدأ</div>
+      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg></span>هزینه‌های مبدأ<label class="tag"><input type="checkbox" id="oon" checked aria-label="فعال">فعال</label></div>
       <div class="two">
         <div class="fld"><label for="opct">درصد از قیمت کالا</label><input id="opct" inputmode="decimal" value="10"></div>
         <div class="fld"><label for="ofix">ثابت به دلار، هر کانتینر</label><input id="ofix" inputmode="decimal" value="0"></div>
       </div>
+      <div class="sub" id="ofixT"></div>
       <div class="sub">قیمت مبدأ به دلار</div>
       <div class="big" id="originUsd">—</div>
     </div>
-
     <div class="card c4" style="align-items:center;justify-content:center">
       <div class="ring" role="img" aria-label="افزایش نسبت به قیمت مبدأ">
         <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="#333" stroke-width="5"/><circle id="arc" cx="50" cy="50" r="46" fill="none" stroke="#e2654a" stroke-width="5" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100" style="transition:stroke-dasharray .6s"/></svg>
         <div><span id="up">—</span><small>افزایش نسبت به مبدأ</small></div>
       </div>
     </div>
-
     <div class="card c4">
       <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg></span>مبدأ به تومان</div>
-      <div class="big" id="baseT">—<small>تومان</small></div>
+      <div class="big" id="baseT">—</div>
       <div class="sub">قیمت مبدأ × نرخ دلار</div>
+      <div class="sub">هر کیلو: <b id="baseKg"></b></div>
     </div>
 
     <div class="card w c7">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span>هزینه‌های ورود به ایران</div>
+      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span>هزینه‌های تبدیل و ورود به ایران</div>
       <div class="rows" id="rows"></div>
       <button class="btn" id="add" type="button">+ افزودن هزینه</button>
     </div>
-
     <div class="card res c5">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>قیمت تمام‌شده</div>
+      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>قیمت نهایی به تومان</div>
       <div class="sub">هر کیلو</div>
-      <div class="big" id="perKg">—<small>تومان</small></div>
+      <div class="big" id="perKg">—</div>
       <div class="stats">
         <div><span class="sub">هر تن</span><b id="perTon">—</b></div>
         <div><span class="sub">کل محموله</span><b id="total">—</b></div>
-        <div><span class="sub">وزن کل</span><b id="wt">—</b></div>
       </div>
     </div>
 
     <div class="card c12">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>تفکیک هزینه‌ها (تومان)</div>
+      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>تفکیک قیمت نهایی</div>
       <div class="bk" id="bk"></div>
     </div>
+
+    <div class="card w c12">
+      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 5-6"/></svg></span>تاریخچه قیمت‌ها<span class="tag" id="hcount"></span></div>
+      <div class="tabs" id="tabs">
+        <button type="button" data-m="kg" class="on">قیمت نهایی هر کیلو</button>
+        <button type="button" data-m="p">دلار هر تن</button>
+        <button type="button" data-m="r">نرخ دلار</button>
+      </div>
+      <svg id="chart" viewBox="0 0 640 220" role="img" aria-label="نمودار تاریخچه"></svg>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="save" type="button">ثبت قیمت و نرخ فعلی</button>
+      </div>
+      <div class="hl" id="hl"></div>
+      <div class="sub">قیمت نهایی هر کیلوی تاریخچه با هزینه‌های فعلی محاسبه می‌شود.</div>
+    </div>
   </section>
-  <p class="note">همه‌ی اعداد نمونه‌اند و قیمت واقعی بازار نیستند. قیمت قرارداد آتی NCDEX باید پیش از استفاده با واحد و مشخصات قرارداد بررسی شود.</p>
+  <p class="note">قیمت‌ها از فایل خودکار گیت‌هاب خوانده می‌شوند. محاسبات بر اساس قیمت ثبت‌شده در منبع و هزینه‌های واردشده است؛ پیش از تصمیم تجاری، واحد و مشخصات قرارداد آتی NCDEX را بررسی کنید.</p>
 </main>
 
 <script>
 const $ = id => document.getElementById(id);
-const fa = n => isFinite(n) ? Math.round(n).toLocaleString('fa-IR') : '—';
-const num = v => parseFloat(String(v).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[,٬\s]/g,'').replace('٫','.')) || 0;
+const FAD = '۰۱۲۳۴۵۶۷۸۹', ARD = '٠١٢٣٤٥٦٧٨٩';
+
+const toEn = s => String(s)
+  .replace(/[۰-۹]/g,d=>FAD.indexOf(d))
+  .replace(/[٠-٩]/g,d=>ARD.indexOf(d))
+  .replace(/٫/g,'.');
+
+const num = v => parseFloat(toEn(v).replace(/[^\d.]/g,'')) || 0;
+const fa = (n,d=0) => isFinite(n) ? n.toLocaleString('fa-IR',{maximumFractionDigits:d}) : '—';
+const tm = n => fa(n)+' تومان';
+
+// سه‌رقم سه‌رقم کردن ورودی‌ها
+const group = s => {
+  const [i,...d] = toEn(s).replace(/[^\d.]/g,'').split('.');
+  const g = i.replace(/^0+(?=\d)/,'').replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  return d.length ? g+'.'+d.join('') : g;
+};
+
+function fmtInput(el){
+  const n = toEn(el.value.slice(0,el.selectionStart)).replace(/[^\d.]/g,'').length;
+  el.value = group(el.value);
+  let c=0,k=0;
+  while(c<el.value.length && k<n){
+    if(/[\d.]/.test(el.value[c])) k++;
+    c++;
+  }
+  el.setSelectionRange(c,c);
+}
 
 let costs = [
-  {n:'حمل بین‌المللی', t:'cont', v:150000000},
-  {n:'گمرک', t:'pct', v:5},
-  {n:'ترخیص و انبارداری', t:'ton', v:2000000},
-  {n:'حمل داخلی', t:'cont', v:60000000}
+  {on:1,n:'هزینه تبدیل ارز',t:'pct',v:1},
+  {on:1,n:'حمل بین‌المللی',t:'cont',v:150000000},
+  {on:1,n:'بیمه',t:'pct',v:0.5},
+  {on:1,n:'گمرک',t:'pct',v:5},
+  {on:1,n:'ترخیص',t:'cont',v:20000000},
+  {on:1,n:'انبارداری',t:'ton',v:2000000},
+  {on:1,n:'هزینه بنگاه‌داری',t:'pct',v:2},
+  {on:1,n:'حمل داخلی',t:'cont',v:60000000}
 ];
-const TYPES = {pct:'درصد از مبدأ', cont:'ثابت هر کانتینر', ton:'ثابت هر تن', all:'ثابت کل محموله'};
+
+const TYPES = {
+  pct:'درصد از مبدأ',
+  cont:'ثابت هر کانتینر',
+  ton:'ثابت هر تن',
+  kg:'ثابت هر کیلو',
+  all:'ثابت کل محموله'
+};
 
 function drawRows(){
   $('rows').innerHTML = costs.map((c,i)=>`
-    <div class="row">
-      <input style="direction:rtl" aria-label="عنوان هزینه" data-i="${i}" data-k="n" value="${c.n}">
-      <select aria-label="نوع هزینه" data-i="${i}" data-k="t">${Object.entries(TYPES).map(([k,l])=>`<option value="${k}"${k===c.t?' selected':''}>${l}</option>`).join('')}</select>
-      <input aria-label="مقدار" inputmode="decimal" data-i="${i}" data-k="v" value="${c.v}">
+    <div class="row${c.on?'':' off'}" id="row${i}">
+      <input type="checkbox" data-i="${i}" data-k="on"${c.on?' checked':''} aria-label="فعال">
+      <input class="t" aria-label="عنوان هزینه" data-i="${i}" data-k="n" value="${c.n}">
+      <select aria-label="نوع هزینه" data-i="${i}" data-k="t">
+        ${Object.entries(TYPES).map(([k,l])=>`<option value="${k}"${k===c.t?' selected':''}>${l}</option>`).join('')}
+      </select>
+      <input inputmode="decimal" aria-label="مقدار" data-i="${i}" data-k="v" value="${group(String(c.v))}">
       <button class="x" type="button" data-del="${i}" aria-label="حذف">×</button>
-    </div>`).join('');
+      <div class="rr" id="rr${i}"></div>
+    </div>
+  `).join('');
+}
+
+// محاسبه قیمت و هزینه‌های بار
+function model(price, rate){
+  const tons = num($('tons').value);
+  const cnt = num($('cnt').value);
+  const wt = tons*cnt;
+  const goods = price*wt;
+
+  const originExtra = $('oon').checked
+    ? goods*num($('opct').value)/100 + num($('ofix').value)*cnt
+    : 0;
+
+  const origin = goods+originExtra;
+  const base = origin*rate;
+
+  const parts = [
+    {n:'قیمت جهانی کالا',v:goods*rate,d:1},
+    {n:'هزینه‌های مبدأ',v:originExtra*rate,d:1,off:!$('oon').checked}
+  ];
+
+  costs.forEach((c,i)=>{
+    const v = !c.on ? 0 :
+      c.t==='pct' ? base*c.v/100 :
+      c.t==='cont' ? c.v*cnt :
+      c.t==='ton' ? c.v*wt :
+      c.t==='kg' ? c.v*wt*1000 :
+      c.v;
+
+    parts.push({n:c.n||'—',v,off:!c.on,i});
+  });
+
+  const total = parts.reduce((s,p)=>s+p.v,0);
+
+  return {
+    wt,goods,origin,base,parts,total,
+    perKg:wt ? total/wt/1000 : 0
+  };
 }
 
 function calc(){
-  const price=num($('price').value), rate=num($('rate').value), tons=num($('tons').value), cnt=num($('cnt').value);
-  const wt = tons*cnt, goods = price*wt;
-  const origin = goods + goods*num($('opct').value)/100 + num($('ofix').value)*cnt;
-  const base = origin*rate;
-  const parts = [{n:'قیمت کالا',v:goods*rate,d:1},{n:'هزینه‌های مبدأ',v:(origin-goods)*rate,d:1}];
-  for(const c of costs){
-    const v = c.t==='pct' ? base*c.v/100 : c.t==='cont' ? c.v*cnt : c.t==='ton' ? c.v*wt : c.v;
-    parts.push({n:c.n||'—',v});
-  }
-  const total = parts.reduce((s,p)=>s+p.v,0);
-  const up = base ? (total/base-1)*100 : 0;
+  const price = num($('price').value);
+  const rate = num($('rate').value);
+  const m = model(price,rate);
+  const kgs = m.wt*1000;
 
-  $('originUsd').innerHTML = fa(origin)+'<small>دلار</small>';
-  $('baseT').innerHTML = fa(base)+'<small>تومان</small>';
-  $('up').textContent = fa(up)+'٪';
-  $('arc').setAttribute('stroke-dasharray', Math.min(Math.max(up,0),100)+' 100');
-  $('perKg').innerHTML = fa(wt ? total/wt/1000 : 0)+'<small>تومان</small>';
-  $('perTon').textContent = fa(wt ? total/wt : 0);
-  $('total').textContent = fa(total);
-  $('wt').textContent = fa(wt)+' تن';
-  $('bk').innerHTML = parts.map(p=>{
-    const pc = total ? p.v/total*100 : 0;
-    return `<div><div class="l"><span>${p.n}</span><span>${fa(p.v)} · ${fa(pc)}٪</span></div><div class="tr"><i class="${p.d?'d':''}" style="width:${pc}%"></i></div></div>`;
+  $('wt').textContent = fa(m.wt)+' تن';
+
+  $('priceT').innerHTML =
+    `برابر <b>${tm(price*rate)}</b> هر تن · <b>${tm(price*rate/1000)}</b> هر کیلو`;
+
+  $('ofixT').innerHTML =
+    `برابر <b>${tm(num($('ofix').value)*rate)}</b> هر کانتینر`;
+
+  $('originUsd').innerHTML = fa(m.origin)+'<small>دلار</small>';
+  $('baseT').innerHTML = fa(m.base)+'<small>تومان</small>';
+  $('baseKg').textContent = tm(kgs ? m.base/kgs : 0);
+
+  const up = m.base ? (m.total/m.base-1)*100 : 0;
+  $('up').textContent = fa(up,1)+'٪';
+  $('arc').setAttribute(
+    'stroke-dasharray',
+    Math.min(Math.max(up,0),100)+' 100'
+  );
+
+  $('perKg').innerHTML = fa(m.perKg)+'<small>تومان</small>';
+  $('perTon').textContent = tm(m.wt ? m.total/m.wt : 0);
+  $('total').textContent = tm(m.total);
+
+  m.parts.forEach(p=>{
+    if(p.i!==undefined){
+      const el = $('rr'+p.i);
+      if(el){
+        el.innerHTML = p.off
+          ? 'غیرفعال'
+          : `= <b>${tm(p.v)}</b> · ${tm(kgs?p.v/kgs:0)} هر کیلو`;
+      }
+    }
+  });
+
+  $('bk').innerHTML = m.parts.map(p=>{
+    const pc = m.total ? p.v/m.total*100 : 0;
+    return `
+      <div style="${p.off?'opacity:.4':''}">
+        <div class="l">
+          <span>${p.n}</span>
+          <span>${tm(p.v)} · ${tm(kgs?p.v/kgs:0)} هر کیلو · ${fa(pc,1)}٪</span>
+        </div>
+        <div class="tr"><i class="${p.d?'d':''}" style="width:${pc}%"></i></div>
+      </div>
+    `;
   }).join('');
+
+  drawHist();
 }
 
-document.addEventListener('input', e=>{
-  const t=e.target, i=t.dataset.i;
-  if(i!==undefined){ costs[i][t.dataset.k] = t.dataset.k==='v' ? num(t.value) : t.value; }
+/* تاریخچه: داده فایل data.json و ثبت‌های دستی مرورگر */
+let fileHist = [];
+let metric = 'kg';
+
+const LS = 'bazarban_hist';
+
+const localHist = () => {
+  try {
+    return JSON.parse(localStorage.getItem(LS)) || [];
+  } catch {
+    return [];
+  }
+};
+
+const saveLocal = a => {
+  try {
+    localStorage.setItem(LS,JSON.stringify(a));
+  } catch {}
+};
+
+const allHist = () => [
+  ...fileHist.map(h=>({...h,f:1})),
+  ...localHist()
+].sort((a,b)=>new Date(a.t)-new Date(b.t));
+
+function drawHist(){
+  const h = allHist();
+  $('hcount').textContent = fa(h.length)+' ثبت';
+
+  const val = e =>
+    metric==='p' ? e.p :
+    metric==='r' ? e.r :
+    model(e.p,e.r).perKg;
+
+  const ys = h.map(val);
+  const W=640,H=220,L=60,R=16,T=16,B=34;
+
+  if(h.length<2){
+    $('chart').innerHTML =
+      `<text x="320" y="110" text-anchor="middle" fill="#8a8a8a" font-size="13">برای نمودار حداقل دو ثبت لازم است</text>`;
+  } else {
+    const lo = Math.min(...ys);
+    const hi = Math.max(...ys);
+    const sp = (hi-lo)||1;
+    const X = i => L+(W-L-R)*i/(h.length-1);
+    const Y = v => T+(H-T-B)*(1-(v-lo)/sp);
+    const pts = ys.map((v,i)=>`${X(i)},${Y(v)}`).join(' ');
+    const d0 = n => new Date(n.t).toLocaleDateString('fa-IR');
+
+    $('chart').innerHTML = `
+      <polygon points="${L},${H-B} ${pts} ${X(h.length-1)},${H-B}" fill="#e2654a" opacity=".1"/>
+      <polyline points="${pts}" fill="none" stroke="#e2654a" stroke-width="2.5" stroke-linejoin="round"/>
+      ${ys.map((v,i)=>`<circle cx="${X(i)}" cy="${Y(v)}" r="3.5" fill="#e2654a"><title>${d0(h[i])}: ${fa(v)}</title></circle>`).join('')}
+      <g font-size="11" fill="#8a8a8a" font-family="Vazirmatn,Tahoma">
+        <text x="${L-8}" y="${T+4}" text-anchor="end">${fa(hi)}</text>
+        <text x="${L-8}" y="${H-B+4}" text-anchor="end">${fa(lo)}</text>
+        <text x="${L}" y="${H-10}" text-anchor="start">${d0(h[0])}</text>
+        <text x="${W-R}" y="${H-10}" text-anchor="end">${d0(h[h.length-1])}</text>
+      </g>`;
+  }
+
+  $('hl').innerHTML = [...h].reverse().slice(0,30).map(e=>`
+    <div class="hr">
+      <span>${new Date(e.t).toLocaleString('fa-IR',{dateStyle:'medium',timeStyle:'short'})}</span>
+      <span>${fa(e.p)} دلار/تن</span>
+      <span>${fa(e.r)} تومان/دلار</span>
+      <span>${tm(model(e.p,e.r).perKg)}/کیلو</span>
+      ${e.f?'<span></span>':`<button class="x hx" type="button" data-hdel="${e.t}" aria-label="حذف ثبت">×</button>`}
+    </div>
+  `).join('');
+}
+
+/* کنترل ورود دستی و به‌روزرسانی قیمت‌ها */
+let autoPrice = true;
+let autoRate = true;
+let lastDataSignature = '';
+let lastGoodDataTime = null;
+
+document.addEventListener('input',e=>{
+  const t = e.target;
+  const i = t.dataset.i;
+
+  // اگر کاربر قیمت را دستی تغییر داد، به‌روزرسانی خودکار آن متوقف می‌شود
+  if(t.id==='price'){
+    autoPrice = false;
+    $('tagP').textContent = 'دستی';
+  }
+
+  // اگر کاربر نرخ ارز را دستی تغییر داد، به‌روزرسانی خودکار آن متوقف می‌شود
+  if(t.id==='rate'){
+    autoRate = false;
+    $('tagR').textContent = 'دستی';
+  }
+
+  if(t.inputMode==='decimal') fmtInput(t);
+
+  if(i!==undefined){
+    const k = t.dataset.k;
+    costs[i][k] =
+      k==='v' ? num(t.value) :
+      k==='on' ? (t.checked?1:0) :
+      t.value;
+
+    if(k==='on') $('row'+i).classList.toggle('off',!t.checked);
+  }
+
   calc();
 });
-document.addEventListener('click', e=>{
-  if(e.target.dataset.del!==undefined){ costs.splice(+e.target.dataset.del,1); drawRows(); calc(); }
+
+document.addEventListener('change',e=>{
+  const t = e.target;
+  const i = t.dataset.i;
+
+  if(i!==undefined){
+    const k = t.dataset.k;
+    costs[i][k] =
+      k==='v' ? num(t.value) :
+      k==='on' ? (t.checked?1:0) :
+      t.value;
+
+    if(k==='on') $('row'+i).classList.toggle('off',!t.checked);
+    calc();
+  }
+
+  if(t.id==='oon') calc();
 });
-$('add').onclick = ()=>{ costs.push({n:'',t:'cont',v:0}); drawRows(); calc(); };
 
-// تاریخ امروز
-const now = new Date();
-$('d1').textContent = now.toLocaleDateString('fa-IR',{day:'numeric'});
-$('d2').textContent = now.toLocaleDateString('fa-IR',{month:'long'});
+document.addEventListener('click',e=>{
+  const d = e.target.dataset;
 
-// قیمت‌های خودکار: GitHub Actions فایل data.json را به‌روز می‌کند. اگر نبود، ورود دستی می‌ماند.
-// shortcut: فقط آخرین مقدار خوانده می‌شود، تاریخچه قیمت بعداً.
-fetch('data.json',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{
-  if(d.usd_per_ton){ $('price').value=d.usd_per_ton; $('tagP').textContent='خودکار'; }
-  if(d.usd_toman){ $('rate').value=d.usd_toman; $('tagR').textContent='خودکار'; }
-  if(d.updated){ $('dot').classList.add('on'); $('upd').textContent='آخرین به‌روزرسانی: '+new Date(d.updated).toLocaleString('fa-IR'); }
+  if(d.del!==undefined){
+    costs.splice(+d.del,1);
+    drawRows();
+    calc();
+  }
+
+  if(d.hdel){
+    saveLocal(localHist().filter(x=>x.t!==d.hdel));
+    drawHist();
+  }
+
+  if(d.m){
+    metric = d.m;
+    document.querySelectorAll('#tabs button').forEach(
+      b=>b.classList.toggle('on',b===e.target)
+    );
+    drawHist();
+  }
+});
+
+$('add').onclick = ()=>{
+  costs.push({on:1,n:'',t:'cont',v:0});
+  drawRows();
   calc();
-}).catch(()=>{});
+};
 
-drawRows(); calc();
+$('save').onclick = ()=>{
+  saveLocal([
+    ...localHist(),
+    {
+      t:new Date().toISOString(),
+      p:num($('price').value),
+      r:num($('rate').value)
+    }
+  ]);
+  drawHist();
+};
+
+/* تاریخ روز */
+function updateDate(){
+  const now = new Date();
+  $('d1').textContent = now.toLocaleDateString('fa-IR',{day:'numeric'});
+  $('d2').textContent = now.toLocaleDateString('fa-IR',{month:'long'});
+}
+updateDate();
+
+/* دریافت خودکار data.json از GitHub Pages */
+async function loadMarketData(){
+  try{
+    // اضافه کردن زمان به آدرس برای جلوگیری از کش شدن فایل
+    const url = new URL('data.json',window.location.href);
+    url.searchParams.set('_',Date.now());
+
+    const response = await fetch(url.toString(),{
+      cache:'no-store'
+    });
+
+    if(!response.ok){
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    const price = Number(data.usd_per_ton);
+    const rate = Number(data.usd_toman);
+
+    if(
+      !Number.isFinite(price) || price<=0 ||
+      !Number.isFinite(rate) || rate<=0
+    ){
+      throw new Error('قیمت یا نرخ ارز معتبر نیست');
+    }
+
+    // تاریخچه هم در تشخیص تغییرات لحاظ می‌شود
+    const historySignature = JSON.stringify(
+      Array.isArray(data.history) ? data.history : []
+    );
+
+    const signature = [
+      data.updated || '',
+      price,
+      rate,
+      historySignature
+    ].join('|');
+
+    // اگر اطلاعات عوض شده باشد، رابط کاربری به‌روز می‌شود
+    if(signature!==lastDataSignature){
+      lastDataSignature = signature;
+
+      if(autoPrice){
+        $('price').value = group(String(price));
+        $('tagP').textContent = 'خودکار';
+      }
+
+      if(autoRate){
+        $('rate').value = group(String(rate));
+        $('tagR').textContent = 'خودکار';
+      }
+
+      if(Array.isArray(data.history)){
+        fileHist = data.history.filter(h=>
+          h &&
+          h.t &&
+          Number.isFinite(Number(h.p)) &&
+          Number(h.p)>0 &&
+          Number.isFinite(Number(h.r)) &&
+          Number(h.r)>0
+        ).map(h=>({
+          t:h.t,
+          p:Number(h.p),
+          r:Number(h.r)
+        }));
+      }
+
+      calc();
+    }
+
+    lastGoodDataTime = new Date();
+
+    const sourceTime = data.updated
+      ? new Date(data.updated)
+      : null;
+
+    let message = 'بررسی موفق · هر ۳۰ ثانیه';
+
+    if(sourceTime && !Number.isNaN(sourceTime.getTime())){
+      message =
+        'داده منبع: '+
+        sourceTime.toLocaleString('fa-IR')+
+        ' · بررسی هر ۳۰ ثانیه';
+    }
+
+    $('dot').classList.add('on');
+    $('upd').textContent = message;
+
+  }catch(error){
+    $('dot').classList.remove('on');
+
+    const lastSuccess = lastGoodDataTime
+      ? ' آخرین بررسی موفق: '+
+        lastGoodDataTime.toLocaleTimeString('fa-IR')
+      : '';
+
+    $('upd').textContent =
+      'خطا در دریافت اطلاعات؛ تلاش مجدد تا ۳۰ ثانیه دیگر.'+
+      lastSuccess;
+
+    console.warn('Bazarban data.json refresh failed:',error);
+  }
+}
+
+// مرتب‌سازی اولیه ورودی‌ها
+['price','rate','tons','cnt','opct','ofix'].forEach(id=>{
+  $(id).value = group($(id).value);
+});
+
+// ساخت ردیف‌ها و محاسبه اولیه
+drawRows();
+calc();
+
+// دریافت اولیه و سپس بررسی مجدد هر ۳۰ ثانیه
+loadMarketData();
+setInterval(loadMarketData,30000);
 </script>
 </body>
 </html>
