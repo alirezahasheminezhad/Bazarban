@@ -1,12 +1,16 @@
 {
-  "usd_per_ton": 2804.113,
-  "usd_toman": 272000,
-  "source_price": "NCDEX Live Quotes",
-  "source_price_value": 26650.0,
-  "source_price_unit": "INR per 100 kg",
-  "contract": "Turmeric (Farmer Polished)",
-  "contract_expiry": "2026-12-18",
-  "inr_to_usd": 0.010522,
-  "updated": "2026-10-24T05:39:46Z",
-  "status": "ok"
+  "usd_per_ton": 0,
+  "pepper_usd_per_ton": 0,
+  "usd_toman": 0,
+  "source_price": "NCDEX official live futures quotes",
+  "turmeric_source_price_value": null,
+  "turmeric_source_price_unit": "INR per 100 kg",
+  "turmeric_contract": null,
+  "pepper_source_price_value": null,
+  "pepper_source_price_unit": "INR per 100 kg",
+  "pepper_contract": null,
+  "inr_to_usd": null,
+  "updated": null,
+  "status": "not_configured",
+  "history": []
 }
