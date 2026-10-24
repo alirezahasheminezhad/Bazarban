@@ -206,6 +206,7 @@ def _parse_usd_toman(html: str) -> int | None:
     text = BeautifulSoup(html, "html.parser").get_text(" ", strip=True)
     text = digits_to_ascii(re.sub(r"\s+", " ", text))
     patterns = [
+        r"قیمت هر واحد دلار در حال حاضر\s*([0-9][0-9,٬.]*)\s*(?:تومان|ت)\b",
         r"نرخ تبادل دلار آمریکا و تومان در حال حاضر\s*([0-9][0-9,٬.]*)",
         r"قیمت لحظه(?:‌| )?ای دلار نیز\s*([0-9][0-9,٬.]*)\s*تومان",
         r"نرخ لحظه(?:‌| )?ای دلار[^0-9]{0,80}([0-9][0-9,٬.]*)\s*تومان",
