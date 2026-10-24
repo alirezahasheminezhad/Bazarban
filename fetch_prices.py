@@ -202,10 +202,8 @@ def fetch_usd_per_inr() -> float:
     return float(rate)
 
 
-def fetch_usd_toman() -> int:
-    response = requests.get(ARZDIGITAL_URL, headers=HEADERS, timeout=25)
-    response.raise_for_status()
-    text = BeautifulSoup(response.text, "html.parser").get_text(" ", strip=True)
+def _parse_usd_toman(html: str) -> int | None:
+    text = BeautifulSoup(html, "html.parser").get_text(" ", strip=True)
     text = digits_to_ascii(re.sub(r"\s+", " ", text))
     patterns = [
         r"نرخ تبادل دلار آمریکا و تومان در حال حاضر\s*([0-9][0-9,٬.]*)",
@@ -223,9 +221,28 @@ def fetch_usd_toman() -> int:
             except ValueError:
                 continue
             if 1_000 <= rate <= 100_000_000:
-                print(f"ArzDigital USD/Toman: {rate}")
                 return rate
-    raise RuntimeError("Could not reliably parse USD/Toman from ArzDigital; data.json was not updated")
+    return None
+
+
+def fetch_usd_toman() -> int:
+    response = requests.get(ARZDIGITAL_URL, headers=HEADERS, timeout=25)
+    response.raise_for_status()
+    rate = _parse_usd_toman(response.text)
+    if rate is None:
+        # مثل NCDEX، اگر متن در HTML خام نبود با مرورگر رندرش می‌کنیم
+        html = render_html(ARZDIGITAL_URL)
+        rate = _parse_usd_toman(html)
+        if rate is None:
+            # DEBUG موقت: جمله‌های اطراف «تومان» را چاپ کن تا الگو درست شود
+            text = digits_to_ascii(re.sub(r"\s+", " ", BeautifulSoup(html, "html.parser").get_text(" ", strip=True)))
+            print(f"DEBUG arzdigital: chars={len(text)}")
+            for m in list(re.finditer("تومان", text))[:6]:
+                print("DEBUG ctx:", text[max(0, m.start() - 90):m.end() + 20])
+    if rate is None:
+        raise RuntimeError("Could not reliably parse USD/Toman from ArzDigital; data.json was not updated")
+    print(f"ArzDigital USD/Toman: {rate}")
+    return rate
 
 
 def load_previous_data() -> dict:
@@ -244,7 +261,8 @@ def main() -> None:
 
     # NCDEX quote is INR per 100 kg: x10 gives INR per metric tonne.
     turmeric_usd_ton = turmeric["price"] * 10 * usd_per_inr
-    pepper_usd_ton = pepper["price"] * 10 * usd_per_inr
+    # فلفل در NCDEX به روپیه برای هر کیلو قیمت می‌خورد (۷۶۶ روپیه، نه ۷۶۶ برای ۱۰۰ کیلو): ×۱۰۰۰ برای هر تن
+    pepper_usd_ton = pepper["price"] * 1000 * usd_per_inr
     for name, value in (("turmeric", turmeric_usd_ton), ("pepper", pepper_usd_ton)):
         if not (1 <= value <= 1_000_000):
             raise RuntimeError(f"Converted {name} USD/ton looks implausible: {value}")
@@ -267,7 +285,7 @@ def main() -> None:
         "turmeric_source_price_unit": "INR per 100 kg",
         "turmeric_contract": turmeric["label"],
         "pepper_source_price_value": pepper["price"],
-        "pepper_source_price_unit": "INR per 100 kg",
+        "pepper_source_price_unit": "INR per kg",
         "pepper_contract": pepper["label"],
         "inr_to_usd": round(usd_per_inr, 8),
         "updated": now,
