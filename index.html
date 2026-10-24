@@ -11,7 +11,7 @@
 :root{--bg:#e8e8e8;--shell:#fff;--top:#f7f7f7;--card:#f5f5f5;--line:#e4e4e4;--ink:#111;--mute:#8a8a8a;--acc:#e2654a}
 *{box-sizing:border-box;margin:0}
 body{font-family:Vazirmatn,Tahoma,sans-serif;background:var(--bg);color:var(--ink);padding:clamp(8px,3vw,40px);line-height:1.6;font-size:14px}
-.shell{max-width:1180px;margin:auto;background:var(--shell);border-radius:36px;overflow:hidden}
+.shell{max-width:1280px;margin:auto;background:var(--shell);border-radius:36px;overflow:hidden}
 .top{background:var(--top);padding:28px 32px 32px;display:grid;gap:28px}
 .bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .logo{width:48px;height:48px;border-radius:50%;background:#000;color:#fff;display:grid;place-items:center;font-weight:700;font-size:20px}
@@ -23,10 +23,13 @@ body{font-family:Vazirmatn,Tahoma,sans-serif;background:var(--bg);color:var(--in
 .date{width:88px;height:88px;border-radius:50%;border:1px solid var(--line);background:#fff;display:grid;place-items:center;text-align:center;font-size:11px;color:var(--mute);line-height:1.3}
 .date b{display:block;font-size:26px;color:var(--ink);font-weight:500}
 .hero h2{font-size:clamp(24px,4vw,38px);font-weight:600;line-height:1.35}.hero h2 span{color:#bdbdbd;display:block}
-.grid{padding:20px 32px 32px;display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
+.grid{padding:20px 32px 0;display:grid;gap:16px}
+.cols{padding:16px 32px 32px;display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.panel{display:grid;gap:16px;min-width:0}
+.ph{font-size:20px;font-weight:600;padding:0 6px;display:flex;align-items:center;gap:10px}
+.ph::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--acc)}
 .card{background:var(--card);border-radius:28px;padding:22px;display:flex;flex-direction:column;gap:12px;min-width:0}
 .card.w{background:#fff;border:1px solid var(--line)}
-.c4{grid-column:span 4}.c5{grid-column:span 5}.c7{grid-column:span 7}.c12{grid-column:span 12}
 .ch{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:13px}
 .ico{width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--acc);flex:none}
 .ico svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -41,24 +44,27 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 .big{font-size:28px;font-weight:600;letter-spacing:-.5px}.big small{font-size:12px;color:var(--mute);font-weight:400;margin-inline-start:6px}
 .sub{font-size:12px;color:var(--mute)}.sub b{color:var(--ink);font-weight:500}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.ring{background:#000;color:#fff;border-radius:50%;aspect-ratio:1;width:100%;max-width:200px;position:relative;display:grid;place-items:center;text-align:center}
+.ring{background:#000;color:#fff;border-radius:50%;aspect-ratio:1;width:100%;max-width:170px;position:relative;display:grid;place-items:center;text-align:center;margin:auto}
 .ring svg{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);transform:rotate(-90deg)}
-.ring div{font-size:26px;font-weight:600;line-height:1.2}.ring small{display:block;font-size:11px;color:#aaa;font-weight:400}
-.rows{display:grid;gap:12px}
-.row{display:grid;grid-template-columns:auto 1.3fr 1fr 1.2fr auto;gap:8px;align-items:center;transition:opacity .2s}
+.ring div{font-size:22px;font-weight:600;line-height:1.2}.ring small{display:block;font-size:10px;color:#aaa;font-weight:400}
+.rows{display:grid;gap:14px}
+.row{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center;transition:opacity .2s}
+.row>input.t{grid-column:2/4}
+.row>.x{grid-column:4}
+.row>select{grid-column:2}
+.row>input[data-f=v]{grid-column:3}
 .row.off input:not([type=checkbox]),.row.off select{opacity:.4}
-.rr{grid-column:2/5;font-size:12px;color:var(--mute);margin-top:-2px}.rr b{color:var(--acc);font-weight:500}
+.rr{grid-column:2/4;font-size:12px;color:var(--mute);margin-top:-2px}.rr b{color:var(--acc);font-weight:500}
 .x{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--mute);font-size:16px;line-height:1}
 .x:hover{color:var(--acc);border-color:var(--acc)}
 .btn{border:0;cursor:pointer;font:inherit;font-weight:500;background:var(--acc);color:#fff;border-radius:99px;padding:10px 22px;align-self:flex-start;transition:transform .15s}
 .btn:hover{transform:translateY(-1px)}
-.btn.g{background:#fff;color:var(--ink);border:1px solid var(--line)}
 .res{background:var(--acc);color:#fff;border-radius:28px}
 .res .ch{color:#fff9}.res .ico{background:#ffffff26;color:#fff}
 .res .big{font-size:38px}.res .sub{color:#fffb}
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .stats div{background:#ffffff1f;border-radius:18px;padding:12px 14px}
-.stats b{display:block;font-size:16px;font-weight:600}
+.stats b{display:block;font-size:15px;font-weight:600}
 .bk{display:grid;gap:12px}
 .bk .l{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;margin-bottom:4px}.bk .l span:last-child{color:var(--mute)}
 .tr{height:8px;border-radius:99px;background:#fff;overflow:hidden}
@@ -67,13 +73,13 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 .tabs{display:flex;gap:8px;flex-wrap:wrap}
 .tabs button{font:inherit;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 14px;cursor:pointer}
 .tabs button.on{background:#000;color:#fff;border-color:#000}
-#chart{width:100%;height:auto;max-height:240px;direction:ltr}
+.chart{width:100%;height:auto;max-height:240px;direction:ltr}
 .hl{display:grid;gap:6px;max-height:220px;overflow:auto}
-.hr{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr auto;gap:8px;align-items:center;font-size:12px;background:#fff;border-radius:14px;padding:8px 14px}
+.hr{display:grid;grid-template-columns:1.5fr 1fr 1fr 1.2fr auto;gap:8px;align-items:center;font-size:11px;background:#fff;border-radius:14px;padding:8px 12px}
 .hr span:nth-child(n+2){color:var(--mute)}
 .hr .x{width:26px;height:26px;font-size:13px}
 .note{font-size:11px;color:var(--mute);padding:0 32px 24px}
-@media(max-width:900px){.c4,.c5,.c7{grid-column:span 12}.top,.grid{padding-inline:16px}.row{grid-template-columns:auto 1fr 1fr auto}.row>input.t{grid-column:2/4}.rr{grid-column:1/-1}.shell{border-radius:24px}.hr{grid-template-columns:1fr 1fr auto}.hr span:nth-child(n+4):not(.hx){display:none}}
+@media(max-width:900px){.cols{grid-template-columns:1fr}.top,.grid,.cols{padding-inline:16px}.shell{border-radius:24px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -93,90 +99,21 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
   </header>
 
   <section class="grid">
-    <div class="card w c4">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>قیمت جهانی زردچوبه قلم<span class="tag" id="tagP">در انتظار دریافت</span></div>
-      <div class="fld"><label for="price">دلار به ازای هر تن</label><input id="price" inputmode="decimal" value="1800"></div>
-      <div class="sub" id="priceT"></div>
-      <div class="sub">منبع قیمت: NCDEX · قیمت نمونه تا زمان دریافت داده</div>
-    </div>
-    <div class="card w c4">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></span>نرخ ارز<span class="tag" id="tagR">در انتظار دریافت</span></div>
+    <div class="card w">
+      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></span>نرخ ارز (مشترک بین هر دو محصول)<span class="tag" id="tagR">در انتظار دریافت</span></div>
       <div class="fld"><label for="rate">تومان به ازای هر دلار</label><input id="rate" inputmode="decimal" value="120000"></div>
-      <div class="sub">هزینه تبدیل ارز را در فهرست هزینه‌ها بیاور</div>
-      <div class="sub">منبع نرخ ارز: ارزدیجیتال</div>
-    </div>
-    <div class="card c4">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10"/></svg></span>بار</div>
-      <div class="two">
-        <div class="fld"><label for="tons">تن در هر کانتینر</label><input id="tons" inputmode="decimal" value="25"></div>
-        <div class="fld"><label for="cnt">تعداد کانتینر</label><input id="cnt" inputmode="decimal" value="1"></div>
-      </div>
-      <div class="sub">وزن کل: <b id="wt"></b></div>
-    </div>
-
-    <div class="card c4">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg></span>هزینه‌های مبدأ<label class="tag"><input type="checkbox" id="oon" checked aria-label="فعال">فعال</label></div>
-      <div class="two">
-        <div class="fld"><label for="opct">درصد از قیمت کالا</label><input id="opct" inputmode="decimal" value="10"></div>
-        <div class="fld"><label for="ofix">ثابت به دلار، هر کانتینر</label><input id="ofix" inputmode="decimal" value="0"></div>
-      </div>
-      <div class="sub" id="ofixT"></div>
-      <div class="sub">قیمت مبدأ به دلار</div>
-      <div class="big" id="originUsd">—</div>
-    </div>
-    <div class="card c4" style="align-items:center;justify-content:center">
-      <div class="ring" role="img" aria-label="افزایش نسبت به قیمت مبدأ">
-        <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="#333" stroke-width="5"/><circle id="arc" cx="50" cy="50" r="46" fill="none" stroke="#e2654a" stroke-width="5" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100" style="transition:stroke-dasharray .6s"/></svg>
-        <div><span id="up">—</span><small>افزایش نسبت به مبدأ</small></div>
-      </div>
-    </div>
-    <div class="card c4">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg></span>مبدأ به تومان</div>
-      <div class="big" id="baseT">—</div>
-      <div class="sub">قیمت مبدأ × نرخ دلار</div>
-      <div class="sub">هر کیلو: <b id="baseKg"></b></div>
-    </div>
-
-    <div class="card w c7">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span>هزینه‌های تبدیل و ورود به ایران</div>
-      <div class="rows" id="rows"></div>
-      <button class="btn" id="add" type="button">+ افزودن هزینه</button>
-    </div>
-    <div class="card res c5">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>قیمت نهایی به تومان</div>
-      <div class="sub">هر کیلو</div>
-      <div class="big" id="perKg">—</div>
-      <div class="stats">
-        <div><span class="sub">هر تن</span><b id="perTon">—</b></div>
-        <div><span class="sub">کل محموله</span><b id="total">—</b></div>
-      </div>
-    </div>
-
-    <div class="card c12">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>تفکیک قیمت نهایی</div>
-      <div class="bk" id="bk"></div>
-    </div>
-
-    <div class="card w c12">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 5-6"/></svg></span>تاریخچه قیمت‌ها<span class="tag" id="hcount"></span></div>
-      <div class="tabs" id="tabs">
-        <button type="button" data-m="kg" class="on">قیمت نهایی هر کیلو</button>
-        <button type="button" data-m="p">دلار هر تن</button>
-        <button type="button" data-m="r">نرخ دلار</button>
-      </div>
-      <svg id="chart" viewBox="0 0 640 220" role="img" aria-label="نمودار تاریخچه"></svg>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn" id="save" type="button">ثبت قیمت و نرخ فعلی</button>
-      </div>
-      <div class="hl" id="hl"></div>
-      <div class="sub">قیمت نهایی هر کیلوی تاریخچه با هزینه‌های فعلی محاسبه می‌شود.</div>
+      <div class="sub">هزینه تبدیل ارز را در فهرست هزینه‌ها بیاور · منبع نرخ ارز: ارزدیجیتال</div>
     </div>
   </section>
+
+  <section class="cols" id="cols"></section>
+
   <p class="note">قیمت‌ها از فایل خودکار گیت‌هاب خوانده می‌شوند. محاسبات بر اساس قیمت ثبت‌شده در منبع و هزینه‌های واردشده است؛ پیش از تصمیم تجاری، واحد و مشخصات قرارداد آتی NCDEX را بررسی کنید.</p>
 </main>
 
 <script>
 const $ = id => document.getElementById(id);
+const g = (id,k) => $(id+'_'+k);
 const FAD = '۰۱۲۳۴۵۶۷۸۹', ARD = '٠١٢٣٤٥٦٧٨٩';
 
 const toEn = s => String(s)
@@ -206,15 +143,16 @@ function fmtInput(el){
   el.setSelectionRange(c,c);
 }
 
-let costs = [
-  {on:1,n:'هزینه تبدیل ارز',t:'pct',v:1},
-  {on:1,n:'حمل بین‌المللی',t:'cont',v:150000000},
-  {on:1,n:'بیمه',t:'pct',v:0.5},
-  {on:1,n:'گمرک',t:'pct',v:5},
-  {on:1,n:'ترخیص',t:'cont',v:20000000},
-  {on:1,n:'انبارداری',t:'ton',v:2000000},
-  {on:1,n:'هزینه بنگاه‌داری',t:'pct',v:2},
-  {on:1,n:'حمل داخلی',t:'cont',v:60000000}
+// همه هزینه‌ها صفر شروع می‌شوند؛ خودت عدد وارد کن
+const newCosts = () => [
+  {on:1,n:'هزینه تبدیل ارز',t:'pct',v:0},
+  {on:1,n:'حمل بین‌المللی',t:'cont',v:0},
+  {on:1,n:'بیمه',t:'pct',v:0},
+  {on:1,n:'گمرک',t:'pct',v:0},
+  {on:1,n:'ترخیص',t:'cont',v:0},
+  {on:1,n:'انبارداری',t:'ton',v:0},
+  {on:1,n:'هزینه بنگاه‌داری',t:'pct',v:0},
+  {on:1,n:'حمل داخلی',t:'cont',v:0}
 ];
 
 const TYPES = {
@@ -225,30 +163,123 @@ const TYPES = {
   all:'ثابت کل محموله'
 };
 
-function drawRows(){
-  $('rows').innerHTML = costs.map((c,i)=>`
-    <div class="row${c.on?'':' off'}" id="row${i}">
-      <input type="checkbox" data-i="${i}" data-k="on"${c.on?' checked':''} aria-label="فعال">
-      <input class="t" aria-label="عنوان هزینه" data-i="${i}" data-k="n" value="${c.n}">
-      <select aria-label="نوع هزینه" data-i="${i}" data-k="t">
-        ${Object.entries(TYPES).map(([k,l])=>`<option value="${k}"${k===c.t?' selected':''}>${l}</option>`).join('')}
+// دو محصول جدا: f نام فیلد قیمت در ثبت‌های تاریخچه است
+const KEYS = ['t','b'];
+const P = {
+  t:{name:'زردچوبه قلم', f:'p', src:'NCDEX', price:1800, auto:true, metric:'kg', costs:newCosts()},
+  b:{name:'فلفل سیاه نکوبیده (قلم)', f:'b', src:'NCDEX هند · قرارداد آتی Pepper', price:7000, auto:true, metric:'kg', costs:newCosts()}
+};
+
+const panelHTML = k => `
+<div class="panel">
+  <h3 class="ph">${P[k].name}</h3>
+
+  <div class="card w">
+    <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>قیمت جهانی<span class="tag" id="tag_${k}">در انتظار دریافت</span></div>
+    <div class="fld"><label for="price_${k}">دلار به ازای هر تن</label><input id="price_${k}" data-p="${k}" data-price="1" inputmode="decimal" value="${P[k].price}"></div>
+    <div class="sub" id="priceT_${k}"></div>
+    <div class="sub">منبع قیمت: ${P[k].src} · قیمت نمونه تا زمان دریافت داده</div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10"/></svg></span>بار</div>
+    <div class="two">
+      <div class="fld"><label for="tons_${k}">تن در هر کانتینر</label><input id="tons_${k}" data-p="${k}" inputmode="decimal" value="25"></div>
+      <div class="fld"><label for="cnt_${k}">تعداد کانتینر</label><input id="cnt_${k}" data-p="${k}" inputmode="decimal" value="1"></div>
+    </div>
+    <div class="sub">وزن کل: <b id="wt_${k}"></b></div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg></span>هزینه‌های مبدأ<label class="tag"><input type="checkbox" id="oon_${k}" data-p="${k}" checked aria-label="فعال">فعال</label></div>
+    <div class="two">
+      <div class="fld"><label for="opct_${k}">درصد از قیمت کالا</label><input id="opct_${k}" data-p="${k}" inputmode="decimal" value="10"></div>
+      <div class="fld"><label for="ofix_${k}">ثابت به دلار، هر کانتینر</label><input id="ofix_${k}" data-p="${k}" inputmode="decimal" value="0"></div>
+    </div>
+    <div class="sub" id="ofixT_${k}"></div>
+    <div class="sub">قیمت مبدأ به دلار</div>
+    <div class="big" id="originUsd_${k}">—</div>
+  </div>
+
+  <div class="two">
+    <div class="card" style="align-items:center;justify-content:center">
+      <div class="ring" role="img" aria-label="افزایش نسبت به قیمت مبدأ">
+        <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="#333" stroke-width="5"/><circle id="arc_${k}" cx="50" cy="50" r="46" fill="none" stroke="#e2654a" stroke-width="5" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100" style="transition:stroke-dasharray .6s"/></svg>
+        <div><span id="up_${k}">—</span><small>افزایش نسبت به مبدأ</small></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg></span>مبدأ به تومان</div>
+      <div class="big" id="baseT_${k}" style="font-size:22px">—</div>
+      <div class="sub">قیمت مبدأ × نرخ دلار</div>
+      <div class="sub">هر کیلو: <b id="baseKg_${k}"></b></div>
+    </div>
+  </div>
+
+  <div class="card w">
+    <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span>هزینه‌های تبدیل و ورود به ایران</div>
+    <div class="rows" id="rows_${k}"></div>
+    <button class="btn" type="button" data-act="add" data-p="${k}">+ افزودن هزینه</button>
+  </div>
+
+  <div class="card res">
+    <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>قیمت نهایی به تومان</div>
+    <div class="sub">هر کیلو</div>
+    <div class="big" id="perKg_${k}">—</div>
+    <div class="stats">
+      <div><span class="sub">هر تن</span><b id="perTon_${k}">—</b></div>
+      <div><span class="sub">کل محموله</span><b id="total_${k}">—</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>تفکیک قیمت نهایی</div>
+    <div class="bk" id="bk_${k}"></div>
+  </div>
+
+  <div class="card w">
+    <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 5-6"/></svg></span>تاریخچه قیمت‌ها<span class="tag" id="hcount_${k}"></span></div>
+    <div class="tabs" id="tabs_${k}">
+      <button type="button" data-m="kg" data-p="${k}" class="on">قیمت نهایی هر کیلو</button>
+      <button type="button" data-m="p" data-p="${k}">دلار هر تن</button>
+      <button type="button" data-m="r" data-p="${k}">نرخ دلار</button>
+    </div>
+    <svg class="chart" id="chart_${k}" viewBox="0 0 640 220" role="img" aria-label="نمودار تاریخچه"></svg>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" type="button" data-act="save">ثبت قیمت و نرخ فعلی</button>
+    </div>
+    <div class="hl" id="hl_${k}"></div>
+    <div class="sub">قیمت نهایی هر کیلوی تاریخچه با هزینه‌های فعلی محاسبه می‌شود.</div>
+  </div>
+</div>`;
+
+$('cols').innerHTML = KEYS.map(panelHTML).join('');
+
+function drawRows(k){
+  g('rows',k).innerHTML = P[k].costs.map((c,i)=>`
+    <div class="row${c.on?'':' off'}" id="row${i}_${k}">
+      <input type="checkbox" data-p="${k}" data-i="${i}" data-f="on"${c.on?' checked':''} aria-label="فعال">
+      <input class="t" aria-label="عنوان هزینه" data-p="${k}" data-i="${i}" data-f="n" value="${c.n}">
+      <button class="x" type="button" data-p="${k}" data-del="${i}" aria-label="حذف">×</button>
+      <select aria-label="نوع هزینه" data-p="${k}" data-i="${i}" data-f="t">
+        ${Object.entries(TYPES).map(([t,l])=>`<option value="${t}"${t===c.t?' selected':''}>${l}</option>`).join('')}
       </select>
-      <input inputmode="decimal" aria-label="مقدار" data-i="${i}" data-k="v" value="${group(String(c.v))}">
-      <button class="x" type="button" data-del="${i}" aria-label="حذف">×</button>
-      <div class="rr" id="rr${i}"></div>
+      <input inputmode="decimal" aria-label="مقدار" data-p="${k}" data-i="${i}" data-f="v" value="${group(String(c.v))}">
+      <div class="rr" id="rr${i}_${k}"></div>
     </div>
   `).join('');
 }
 
-// محاسبه قیمت و هزینه‌های بار
-function model(price, rate){
-  const tons = num($('tons').value);
-  const cnt = num($('cnt').value);
+// محاسبه قیمت و هزینه‌های بار برای یک محصول
+function model(k, price, rate){
+  const tons = num(g('tons',k).value);
+  const cnt = num(g('cnt',k).value);
   const wt = tons*cnt;
   const goods = price*wt;
+  const on = g('oon',k).checked;
 
-  const originExtra = $('oon').checked
-    ? goods*num($('opct').value)/100 + num($('ofix').value)*cnt
+  const originExtra = on
+    ? goods*num(g('opct',k).value)/100 + num(g('ofix',k).value)*cnt
     : 0;
 
   const origin = goods+originExtra;
@@ -256,10 +287,10 @@ function model(price, rate){
 
   const parts = [
     {n:'قیمت جهانی کالا',v:goods*rate,d:1},
-    {n:'هزینه‌های مبدأ',v:originExtra*rate,d:1,off:!$('oon').checked}
+    {n:'هزینه‌های مبدأ',v:originExtra*rate,d:1,off:!on}
   ];
 
-  costs.forEach((c,i)=>{
+  P[k].costs.forEach((c,i)=>{
     const v = !c.on ? 0 :
       c.t==='pct' ? base*c.v/100 :
       c.t==='cont' ? c.v*cnt :
@@ -278,38 +309,40 @@ function model(price, rate){
   };
 }
 
-function calc(){
-  const price = num($('price').value);
-  const rate = num($('rate').value);
-  const m = model(price,rate);
+const rateNow = () => num($('rate').value);
+
+function calc(k){
+  const price = P[k].price;
+  const rate = rateNow();
+  const m = model(k,price,rate);
   const kgs = m.wt*1000;
 
-  $('wt').textContent = fa(m.wt)+' تن';
+  g('wt',k).textContent = fa(m.wt)+' تن';
 
-  $('priceT').innerHTML =
+  g('priceT',k).innerHTML =
     `برابر <b>${tm(price*rate)}</b> هر تن · <b>${tm(price*rate/1000)}</b> هر کیلو`;
 
-  $('ofixT').innerHTML =
-    `برابر <b>${tm(num($('ofix').value)*rate)}</b> هر کانتینر`;
+  g('ofixT',k).innerHTML =
+    `برابر <b>${tm(num(g('ofix',k).value)*rate)}</b> هر کانتینر`;
 
-  $('originUsd').innerHTML = fa(m.origin)+'<small>دلار</small>';
-  $('baseT').innerHTML = fa(m.base)+'<small>تومان</small>';
-  $('baseKg').textContent = tm(kgs ? m.base/kgs : 0);
+  g('originUsd',k).innerHTML = fa(m.origin)+'<small>دلار</small>';
+  g('baseT',k).innerHTML = fa(m.base)+'<small>تومان</small>';
+  g('baseKg',k).textContent = tm(kgs ? m.base/kgs : 0);
 
   const up = m.base ? (m.total/m.base-1)*100 : 0;
-  $('up').textContent = fa(up,1)+'٪';
-  $('arc').setAttribute(
+  g('up',k).textContent = fa(up,1)+'٪';
+  g('arc',k).setAttribute(
     'stroke-dasharray',
     Math.min(Math.max(up,0),100)+' 100'
   );
 
-  $('perKg').innerHTML = fa(m.perKg)+'<small>تومان</small>';
-  $('perTon').textContent = tm(m.wt ? m.total/m.wt : 0);
-  $('total').textContent = tm(m.total);
+  g('perKg',k).innerHTML = fa(m.perKg)+'<small>تومان</small>';
+  g('perTon',k).textContent = tm(m.wt ? m.total/m.wt : 0);
+  g('total',k).textContent = tm(m.total);
 
   m.parts.forEach(p=>{
     if(p.i!==undefined){
-      const el = $('rr'+p.i);
+      const el = g('rr'+p.i,k);
       if(el){
         el.innerHTML = p.off
           ? 'غیرفعال'
@@ -318,7 +351,7 @@ function calc(){
     }
   });
 
-  $('bk').innerHTML = m.parts.map(p=>{
+  g('bk',k).innerHTML = m.parts.map(p=>{
     const pc = m.total ? p.v/m.total*100 : 0;
     return `
       <div style="${p.off?'opacity:.4':''}">
@@ -331,12 +364,13 @@ function calc(){
     `;
   }).join('');
 
-  drawHist();
+  drawHist(k);
 }
 
-/* تاریخچه: داده فایل data.json و ثبت‌های دستی مرورگر */
+const calcAll = () => KEYS.forEach(calc);
+
+/* تاریخچه: داده فایل data.json و ثبت‌های خودکار/دستی مرورگر. هر ثبت: t زمان، p زردچوبه، b فلفل سیاه، r نرخ دلار */
 let fileHist = [];
-let metric = 'kg';
 
 const LS = 'bazarban_hist';
 
@@ -359,20 +393,21 @@ const allHist = () => [
   ...localHist()
 ].sort((a,b)=>new Date(a.t)-new Date(b.t));
 
-function drawHist(){
-  const h = allHist();
-  $('hcount').textContent = fa(h.length)+' ثبت';
+function drawHist(k){
+  const f = P[k].f, metric = P[k].metric;
+  const h = allHist().filter(e=>e[f]>0);
+  g('hcount',k).textContent = fa(h.length)+' ثبت';
 
   const val = e =>
-    metric==='p' ? e.p :
+    metric==='p' ? e[f] :
     metric==='r' ? e.r :
-    model(e.p,e.r).perKg;
+    model(k,e[f],e.r).perKg;
 
   const ys = h.map(val);
   const W=640,H=220,L=60,R=16,T=16,B=34;
 
   if(h.length<2){
-    $('chart').innerHTML =
+    g('chart',k).innerHTML =
       `<text x="320" y="110" text-anchor="middle" fill="#8a8a8a" font-size="13">برای نمودار حداقل دو ثبت لازم است</text>`;
   } else {
     const lo = Math.min(...ys);
@@ -383,7 +418,7 @@ function drawHist(){
     const pts = ys.map((v,i)=>`${X(i)},${Y(v)}`).join(' ');
     const d0 = n => new Date(n.t).toLocaleDateString('fa-IR');
 
-    $('chart').innerHTML = `
+    g('chart',k).innerHTML = `
       <polygon points="${L},${H-B} ${pts} ${X(h.length-1)},${H-B}" fill="#e2654a" opacity=".1"/>
       <polyline points="${pts}" fill="none" stroke="#e2654a" stroke-width="2.5" stroke-linejoin="round"/>
       ${ys.map((v,i)=>`<circle cx="${X(i)}" cy="${Y(v)}" r="3.5" fill="#e2654a"><title>${d0(h[i])}: ${fa(v)}</title></circle>`).join('')}
@@ -395,31 +430,43 @@ function drawHist(){
       </g>`;
   }
 
-  $('hl').innerHTML = [...h].reverse().slice(0,30).map(e=>`
+  g('hl',k).innerHTML = [...h].reverse().slice(0,30).map(e=>`
     <div class="hr">
       <span>${new Date(e.t).toLocaleString('fa-IR',{dateStyle:'medium',timeStyle:'short'})}</span>
-      <span>${fa(e.p)} دلار/تن</span>
+      <span>${fa(e[f])} دلار/تن</span>
       <span>${fa(e.r)} تومان/دلار</span>
-      <span>${tm(model(e.p,e.r).perKg)}/کیلو</span>
+      <span>${tm(model(k,e[f],e.r).perKg)}/کیلو</span>
       ${e.f?'<span></span>':`<button class="x hx" type="button" data-hdel="${e.t}" aria-label="حذف ثبت">×</button>`}
     </div>
   `).join('');
 }
 
 /* کنترل ورود دستی و به‌روزرسانی قیمت‌ها */
-let autoPrice = true;
 let autoRate = true;
 let lastDataSignature = '';
 let lastGoodDataTime = null;
 
+const setTag = (k,s) => { g('tag',k).textContent = s; };
+
+function setCost(t){
+  const c = P[t.dataset.p].costs[t.dataset.i];
+  const f = t.dataset.f;
+  c[f] =
+    f==='v' ? num(t.value) :
+    f==='on' ? (t.checked?1:0) :
+    t.value;
+  if(f==='on') g('row'+t.dataset.i,t.dataset.p).classList.toggle('off',!t.checked);
+}
+
 document.addEventListener('input',e=>{
   const t = e.target;
-  const i = t.dataset.i;
+  const k = t.dataset.p;
 
-  // اگر کاربر قیمت را دستی تغییر داد، به‌روزرسانی خودکار آن متوقف می‌شود
-  if(t.id==='price'){
-    autoPrice = false;
-    $('tagP').textContent = 'دستی';
+  // اگر کاربر قیمت را دستی تغییر داد، به‌روزرسانی خودکار همان محصول متوقف می‌شود
+  if(t.dataset.price){
+    P[k].auto = false;
+    P[k].price = num(t.value);
+    setTag(k,'دستی');
   }
 
   // اگر کاربر نرخ ارز را دستی تغییر داد، به‌روزرسانی خودکار آن متوقف می‌شود
@@ -429,78 +476,56 @@ document.addEventListener('input',e=>{
   }
 
   if(t.inputMode==='decimal') fmtInput(t);
+  if(t.dataset.i!==undefined) setCost(t);
 
-  if(i!==undefined){
-    const k = t.dataset.k;
-    costs[i][k] =
-      k==='v' ? num(t.value) :
-      k==='on' ? (t.checked?1:0) :
-      t.value;
-
-    if(k==='on') $('row'+i).classList.toggle('off',!t.checked);
-  }
-
-  calc();
+  if(t.id==='rate') calcAll();
+  else if(k) calc(k);
 });
 
 document.addEventListener('change',e=>{
   const t = e.target;
-  const i = t.dataset.i;
+  const k = t.dataset.p;
 
-  if(i!==undefined){
-    const k = t.dataset.k;
-    costs[i][k] =
-      k==='v' ? num(t.value) :
-      k==='on' ? (t.checked?1:0) :
-      t.value;
-
-    if(k==='on') $('row'+i).classList.toggle('off',!t.checked);
-    calc();
-  }
-
-  if(t.id==='oon') calc();
+  if(t.dataset.i!==undefined) setCost(t);
+  if(k) calc(k);
 });
 
 document.addEventListener('click',e=>{
   const d = e.target.dataset;
 
   if(d.del!==undefined){
-    costs.splice(+d.del,1);
-    drawRows();
-    calc();
+    P[d.p].costs.splice(+d.del,1);
+    drawRows(d.p);
+    calc(d.p);
+  }
+
+  if(d.act==='add'){
+    P[d.p].costs.push({on:1,n:'',t:'cont',v:0});
+    drawRows(d.p);
+    calc(d.p);
+  }
+
+  if(d.act==='save'){
+    saveLocal([
+      ...localHist(),
+      {t:new Date().toISOString(), p:P.t.price, b:P.b.price, r:rateNow()}
+    ]);
+    KEYS.forEach(drawHist);
   }
 
   if(d.hdel){
     saveLocal(localHist().filter(x=>x.t!==d.hdel));
-    drawHist();
+    KEYS.forEach(drawHist);
   }
 
   if(d.m){
-    metric = d.m;
-    document.querySelectorAll('#tabs button').forEach(
+    P[d.p].metric = d.m;
+    document.querySelectorAll('#tabs_'+d.p+' button').forEach(
       b=>b.classList.toggle('on',b===e.target)
     );
-    drawHist();
+    drawHist(d.p);
   }
 });
-
-$('add').onclick = ()=>{
-  costs.push({on:1,n:'',t:'cont',v:0});
-  drawRows();
-  calc();
-};
-
-$('save').onclick = ()=>{
-  saveLocal([
-    ...localHist(),
-    {
-      t:new Date().toISOString(),
-      p:num($('price').value),
-      r:num($('rate').value)
-    }
-  ]);
-  drawHist();
-};
 
 /* تاریخ روز */
 function updateDate(){
@@ -529,6 +554,9 @@ async function loadMarketData(){
 
     const price = Number(data.usd_per_ton);
     const rate = Number(data.usd_toman);
+    // قیمت فلفل سیاه اختیاری است: اگر در data.json نبود، دست‌نخورده می‌ماند
+    const pepper = Number(data.pepper_usd_per_ton);
+    const hasB = Number.isFinite(pepper) && pepper>0;
 
     if(
       !Number.isFinite(price) || price<=0 ||
@@ -545,6 +573,7 @@ async function loadMarketData(){
     const signature = [
       data.updated || '',
       price,
+      hasB ? pepper : '',
       rate,
       historySignature
     ].join('|');
@@ -553,9 +582,16 @@ async function loadMarketData(){
     if(signature!==lastDataSignature){
       lastDataSignature = signature;
 
-      if(autoPrice){
-        $('price').value = group(String(price));
-        $('tagP').textContent = 'خودکار';
+      if(P.t.auto){
+        P.t.price = price;
+        g('price','t').value = group(String(price));
+        setTag('t','خودکار');
+      }
+
+      if(hasB && P.b.auto){
+        P.b.price = pepper;
+        g('price','b').value = group(String(pepper));
+        setTag('b','خودکار');
       }
 
       if(autoRate){
@@ -574,11 +610,22 @@ async function loadMarketData(){
         ).map(h=>({
           t:h.t,
           p:Number(h.p),
-          r:Number(h.r)
+          r:Number(h.r),
+          b:Number(h.b)>0 ? Number(h.b) : undefined
         }));
       }
 
-      calc();
+      // تاریخچه خودکارِ پایدار از data.json می‌آید؛ فقط اگر فایل قدیمی فاقد history بود،
+      // برای سازگاری با نسخه‌های قبلی در مرورگر یک ثبت محلی ایجاد کن.
+      if(!Array.isArray(data.history)){
+        const hh = allHist(), last = hh[hh.length-1];
+        const rec = {t:new Date().toISOString(), p:price, r:rate, b:hasB ? pepper : undefined};
+        if(!last || last.p!==rec.p || last.r!==rec.r || (hasB && last.b!==rec.b)){
+          saveLocal([...localHist(), rec].slice(-2000));
+        }
+      }
+
+      calcAll();
     }
 
     lastGoodDataTime = new Date();
@@ -587,13 +634,13 @@ async function loadMarketData(){
       ? new Date(data.updated)
       : null;
 
-    let message = 'بررسی موفق · هر ۳۰ ثانیه';
+    let message = 'بررسی موفق · هر ۵ دقیقه';
 
     if(sourceTime && !Number.isNaN(sourceTime.getTime())){
       message =
         'داده منبع: '+
         sourceTime.toLocaleString('fa-IR')+
-        ' · بررسی هر ۳۰ ثانیه';
+        ' · بررسی هر ۵ دقیقه';
     }
 
     $('dot').classList.add('on');
@@ -608,7 +655,7 @@ async function loadMarketData(){
       : '';
 
     $('upd').textContent =
-      'خطا در دریافت اطلاعات؛ تلاش مجدد تا ۳۰ ثانیه دیگر.'+
+      'خطا در دریافت اطلاعات؛ تلاش مجدد تا ۵ دقیقه دیگر.'+
       lastSuccess;
 
     console.warn('Bazarban data.json refresh failed:',error);
@@ -616,17 +663,18 @@ async function loadMarketData(){
 }
 
 // مرتب‌سازی اولیه ورودی‌ها
-['price','rate','tons','cnt','opct','ofix'].forEach(id=>{
-  $(id).value = group($(id).value);
-});
+$('rate').value = group($('rate').value);
+KEYS.forEach(k=>['price','tons','cnt','opct','ofix'].forEach(id=>{
+  g(id,k).value = group(g(id,k).value);
+}));
 
 // ساخت ردیف‌ها و محاسبه اولیه
-drawRows();
-calc();
+KEYS.forEach(drawRows);
+calcAll();
 
-// دریافت اولیه و سپس بررسی مجدد هر ۳۰ ثانیه
+// دریافت اولیه و سپس بررسی مجدد هر ۵ دقیقه
 loadMarketData();
-setInterval(loadMarketData,30000);
+setInterval(loadMarketData,300000);
 </script>
 </body>
 </html>
