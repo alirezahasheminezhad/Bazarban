@@ -1,16 +1,23 @@
 {
-  "usd_per_ton": 0,
-  "pepper_usd_per_ton": 0,
-  "usd_toman": 0,
+  "usd_per_ton": 2804.113,
+  "pepper_usd_per_ton": 8065.113,
+  "usd_toman": 270400,
   "source_price": "NCDEX official live futures quotes",
-  "turmeric_source_price_value": null,
+  "turmeric_source_price_value": 26650.0,
   "turmeric_source_price_unit": "INR per 100 kg",
-  "turmeric_contract": null,
-  "pepper_source_price_value": null,
-  "pepper_source_price_unit": "INR per 100 kg",
-  "pepper_contract": null,
-  "inr_to_usd": null,
-  "updated": null,
-  "status": "not_configured",
-  "history": []
+  "turmeric_contract": "Turmeric (Farmer Polished) | 18-Dec-2026 | 26,690.00 | 26150 26650 26800 | 26,596.00 | 54.00 | 0.20 | 26,495.30 | 24,705.20 | Oct 23 2026 | 04:55 PM | 26,640.00 | 26,650.00 | 17,700 | ",
+  "pepper_source_price_value": 766.5,
+  "pepper_source_price_unit": "INR per kg",
+  "pepper_contract": "Pepper | 20-Nov-2026 | 751.00 | 751 766.5 767.9 | 748.70 | 17.80 | 2.38 | 758.95 | 738.85 | Oct 23 2026 | 04:18 PM | 766.50 | 769.00 | 96 | ",
+  "inr_to_usd": 0.010522,
+  "updated": "2026-10-24T10:30:15Z",
+  "status": "ok",
+  "history": [
+    {
+      "t": "2026-10-24T10:30:15Z",
+      "p": 2804.113,
+      "b": 8065.113,
+      "r": 270400
+    }
+  ]
 }
