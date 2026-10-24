@@ -160,6 +160,11 @@ def fetch_ncdex_quote(product: str) -> dict:
                 selected = candidates[0]
                 print(f"NCDEX {product}: {selected['price']} INR/100 kg; {selected['label']}")
                 return {**selected, "url": url}
+            # DEBUG موقت: ببین ران‌نر گیت‌هاب دقیقاً چه چیزی از NCDEX گرفته
+            low = response.text.lower()
+            title = soup.title.get_text(strip=True) if soup.title else None
+            print(f"DEBUG {url}: status={response.status_code} bytes={len(response.text)} tables={len(soup.find_all('table'))} turmeric_in_html={'turmeric' in low} pepper_in_html={'pepper' in low} title={title!r}")
+            print("DEBUG snippet:", soup.get_text(' ', strip=True)[:300])
             errors.append(f"{url}: no matching quote rows found")
         except Exception as exc:
             errors.append(f"{url}: {exc}")
