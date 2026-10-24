@@ -148,6 +148,19 @@ def _candidate_rows(soup: BeautifulSoup, product: str) -> list[dict]:
     return candidates[:1]
 
 
+def render_html(url: str) -> str:
+    from playwright.sync_api import sync_playwright
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(user_agent=HEADERS["User-Agent"])
+        page.goto(url, wait_until="networkidle", timeout=45000)
+        page.wait_for_timeout(3000)
+        html = page.content()
+        browser.close()
+    return html
+
+
 def fetch_ncdex_quote(product: str) -> dict:
     errors = []
     for url in NCDEX_URLS:
@@ -160,11 +173,17 @@ def fetch_ncdex_quote(product: str) -> dict:
                 selected = candidates[0]
                 print(f"NCDEX {product}: {selected['price']} INR/100 kg; {selected['label']}")
                 return {**selected, "url": url}
-            # DEBUG موقت: ببین ران‌نر گیت‌هاب دقیقاً چه چیزی از NCDEX گرفته
-            low = response.text.lower()
-            title = soup.title.get_text(strip=True) if soup.title else None
-            print(f"DEBUG {url}: status={response.status_code} bytes={len(response.text)} tables={len(soup.find_all('table'))} turmeric_in_html={'turmeric' in low} pepper_in_html={'pepper' in low} title={title!r}")
-            print("DEBUG snippet:", soup.get_text(' ', strip=True)[:300])
+            # صفحه با جاوااسکریپت پر می‌شود (HTML خام ~۴KB و خالی است)؛ با مرورگر واقعی رندرش می‌کنیم
+            soup = BeautifulSoup(render_html(url), "html.parser")
+            candidates = _candidate_rows(soup, product)
+            if candidates:
+                selected = candidates[0]
+                print(f"NCDEX {product} (rendered): {selected['price']} INR/100 kg; {selected['label']}")
+                return {**selected, "url": url}
+            # DEBUG موقت: ببین بعد از رندر چه چیزی در صفحه هست
+            low = str(soup).lower()
+            print(f"DEBUG {url}: rendered tables={len(soup.find_all('table'))} turmeric_in_html={'turmeric' in low} pepper_in_html={'pepper' in low}")
+            print("DEBUG snippet:", soup.get_text(' ', strip=True)[:500])
             errors.append(f"{url}: no matching quote rows found")
         except Exception as exc:
             errors.append(f"{url}: {exc}")
