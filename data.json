@@ -1,7 +1,7 @@
 {
   "usd_per_ton": 2868.957,
   "pepper_usd_per_ton": 8228.547,
-  "usd_toman": 272700,
+  "usd_toman": 271700,
   "source_price": "NCDEX official live futures quotes",
   "turmeric_source_price_value": 27300.0,
   "turmeric_source_price_unit": "INR per 100 kg",
@@ -10,7 +10,7 @@
   "pepper_source_price_unit": "INR per kg",
   "pepper_contract": "Pepper | 20-Nov-2026 | 764.90 | 764.9 783 789.8 | 764.70 | 18.30 | 2.39 | 774.66 | 748.00 | Oct 26 2026 | 04:15 PM | 782.00 | 787.00 | 85 | ",
   "inr_to_usd": 0.010509,
-  "updated": "2026-10-26T14:05:21Z",
+  "updated": "2026-10-26T19:53:32Z",
   "status": "ok",
   "history": [
     {
@@ -114,6 +114,12 @@
       "p": 2868.957,
       "b": 8228.547,
       "r": 272700
+    },
+    {
+      "t": "2026-10-26T19:53:32Z",
+      "p": 2868.957,
+      "b": 8228.547,
+      "r": 271700
     }
   ]
 }
