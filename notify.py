@@ -16,8 +16,6 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 PRICE_FIELD = {"t": "usd_per_ton", "b": "pepper_usd_per_ton"}
-MIN_CHANGE = 0.01  # send automatically only when a final price moves 1% or more
-STATE = "last_sent.json"
 FA = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
 
 
@@ -43,34 +41,28 @@ def model(p: dict, price: float, rate: float) -> dict:
             "total": sum(v for _, v in parts)}
 
 
-def build_message(data: dict, cfg: dict) -> tuple[str, dict]:
-    """One neat message for all products + {product: final toman/kg} used for change detection."""
+def build_message(data: dict, cfg: dict) -> str:
+    """One neat message for all products."""
     rate = data["usd_toman"]
     tehran = datetime.fromisoformat(data["updated"].replace("Z", "+00:00")).astimezone(ZoneInfo("Asia/Tehran"))
-    blocks, kgs = [], {}
+    blocks = []
     for k, p in cfg["products"].items():
         price = data.get(PRICE_FIELD[k])
         if not price:
             continue
         m = model(p, price, rate)
         kg = m["wt"] * 1000
-        kgs[k] = m["total"] / kg
         lines = [f"• {n}: {fa(v / kg)} ت/کیلو · {fa(v / m['total'] * 100, 1)}٪" for n, v in m["parts"] if v]
         blocks.append(
             f"{p['name']}\n\n"
             f"📍 قیمت در مبدأ\n{fa(m['origin'] / m['wt'])} دلار هر تن\n{fa(m['base'] / kg)} تومان هر کیلو\n\n"
-            f"📦 قیمت با مصارف\n{fa(kgs[k])} تومان هر کیلو\n"
+            f"📦 قیمت با مصارف\n{fa(m['total'] / kg)} تومان هر کیلو\n"
             f"{fa(m['total'] / m['wt'])} تومان هر تن\n"
             f"کل {fa(m['wt'])} تن: {fa(m['total'])} تومان\n\n"
             f"🧾 ریز جزئیات\n" + "\n".join(lines))
     head = f"🌿 بازاربان\n💵 دلار: {fa(rate)} تومان\n🕐 {tehran.strftime('%H:%M').translate(FA)} (تهران)"
     line = "\n\n━━━━━━━━━━━━━━\n\n"
-    return head + line + line.join(blocks), kgs
-
-
-def changed(kgs: dict, last: dict) -> bool:
-    """True if any product's final price moved by MIN_CHANGE or more since the last send."""
-    return any(k not in last or abs(v / last[k] - 1) >= MIN_CHANGE for k, v in kgs.items())
+    return head + line + line.join(blocks)
 
 
 def send(text: str) -> None:
@@ -107,16 +99,8 @@ def send(text: str) -> None:
 if __name__ == "__main__":
     data = json.load(open("data.json", encoding="utf-8"))
     cfg = json.load(open("config.json", encoding="utf-8"))
-    text, kgs = build_message(data, cfg)
+    text = build_message(data, cfg)
     if "--dry" in sys.argv:
         print(text)
         raise SystemExit
-    try:
-        last = json.load(open(STATE))
-    except (OSError, ValueError):
-        last = {}
-    if "--force" not in sys.argv and not changed(kgs, last):
-        print("no significant price change; nothing sent")
-        raise SystemExit(0)
     send(text)
-    json.dump(kgs, open(STATE, "w"))
