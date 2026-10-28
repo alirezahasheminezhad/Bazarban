@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import re
 import sys
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -24,7 +24,20 @@ NCDEX_URLS = [
 ARZDIGITAL_URL = "https://arzdigital.com/currencies/united-states-dollar/"
 INR_FX_URL = "https://open.er-api.com/v6/latest/INR"
 OUTPUT = Path("data.json")
-HISTORY_LIMIT = 2000
+HISTORY_HOURS = 24
+
+
+def trim_history(history: list, now: datetime) -> list:
+    """Drop records older than HISTORY_HOURS (and malformed ones)."""
+    cutoff = now - timedelta(hours=HISTORY_HOURS)
+    kept = []
+    for h in history:
+        try:
+            if datetime.fromisoformat(h["t"].replace("Z", "+00:00")) >= cutoff:
+                kept.append(h)
+        except (KeyError, TypeError, ValueError, AttributeError):
+            pass
+    return kept
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
     "Accept": "text/html,application/json,*/*",
@@ -275,7 +288,7 @@ def main() -> None:
         history = []
     # One durable history record per successful scheduled fetch, even if the quote is unchanged.
     history.append({"t": now, "p": round(turmeric_usd_ton, 4), "b": round(pepper_usd_ton, 4), "r": usd_toman})
-    history = history[-HISTORY_LIMIT:]
+    history = trim_history(history, datetime.now(timezone.utc))
 
     result = {
         "usd_per_ton": round(turmeric_usd_ton, 4),

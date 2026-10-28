@@ -1,9 +1,7 @@
 name: Update Bazarban prices
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: '*/5 * * * *'
+  workflow_dispatch: # triggered every 5 min by cron-job.org; GitHub's own cron is unreliable
 
 permissions:
   contents: write
@@ -27,20 +25,23 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check requests beautifulsoup4 playwright
           python -m playwright install --with-deps chromium
+      - name: Restore previous data (history) from the data branch
+        run: |
+          git fetch --depth=1 origin data 2>/dev/null && git show FETCH_HEAD:data.json > data.json || echo "no data branch yet; using data.json from main"
       - name: Fetch NCDEX prices and USD/Toman, then build data.json
         id: fetch
         run: python fetch_prices.py
-      - name: Commit updated data.json
+      - name: Publish data.json to the data branch (single commit, no history growth)
         run: |
-          if git diff --quiet -- data.json; then
-            echo "No data changes to commit."
-            exit 0
-          fi
+          d=$(mktemp -d)
+          cp data.json "$d/"
+          cd "$d"
+          git init -q -b data
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data.json
-          git commit -m "Update automatic market prices"
-          git push
+          git commit -q -m "Prices $(date -u +%FT%TZ)"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" data
       # Same job as the fetch: a separate workflow_run job was skipped or delayed by GitHub.
       - name: Send prices to bots
         if: ${{ !cancelled() && steps.fetch.outcome == 'success' }}

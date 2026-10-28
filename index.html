@@ -582,8 +582,9 @@ updateDate();
 async function loadMarketData(){
   try{
     // اضافه کردن زمان به آدرس برای جلوگیری از کش شدن فایل
-    const url = new URL('data.json',window.location.href);
-    url.searchParams.set('_',Date.now());
+    // داده در شاخه data نگهداری می‌شود تا هر آپدیت، GitHub Pages را دوباره نسازد
+    const url = new URL('https://raw.githubusercontent.com/alirezahasheminezhad/Bazarban/data/data.json');
+    url.searchParams.set('_',Math.floor(Date.now()/60000));
 
     const response = await fetch(url.toString(),{
       cache:'no-store'
