@@ -55,6 +55,8 @@ def build_message(data: dict, cfg: dict) -> str:
         lines = [f"• {n}: {fa(v / kg)} ت/کیلو · {fa(v / m['total'] * 100, 1)}٪" for n, v in m["parts"] if v]
         blocks.append(
             f"{p['name']}\n\n"
+            f"🌍 قیمت جهانی (بدون هیچ هزینه‌ای)\n{fa(price)} دلار هر تن\n"
+            f"برابر {fa(price * rate)} تومان هر تن · {fa(price * rate / 1000)} تومان هر کیلو\n\n"
             f"📍 قیمت در مبدأ\n{fa(m['origin'] / m['wt'])} دلار هر تن\n{fa(m['base'] / kg)} تومان هر کیلو\n\n"
             f"📦 قیمت با مصارف\n{fa(m['total'] / kg)} تومان هر کیلو\n"
             f"{fa(m['total'] / m['wt'])} تومان هر تن\n"
