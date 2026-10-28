@@ -1,20 +1,39 @@
 name: Send prices to bots
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: '30 5,10 * * *' # 09:00 and 13:30 Tehran; edit as needed
+  workflow_dispatch: # manual run always sends
+  workflow_run:
+    workflows: ["Update Bazarban prices"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bazarban-notify
+  cancel-in-progress: false
 
 jobs:
   notify:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - run: python -m pip install --disable-pip-version-check requests
-      - run: python notify.py
+      - run: python notify.py ${{ github.event_name == 'workflow_dispatch' && '--force' || '' }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           RUBIKA_BOT_TOKEN: ${{ secrets.RUBIKA_BOT_TOKEN }}
           RUBIKA_CHAT_ID: ${{ secrets.RUBIKA_CHAT_ID }}
+      - name: Remember last sent prices
+        run: |
+          [ -f last_sent.json ] || exit 0
+          git add last_sent.json
+          git diff --cached --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update last sent prices"
+          git pull --rebase origin main
+          git push
