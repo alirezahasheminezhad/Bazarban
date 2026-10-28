@@ -81,15 +81,27 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 .note{font-size:11px;color:var(--mute);padding:0 32px 24px}
 @media(max-width:900px){.cols{grid-template-columns:1fr}.top,.grid,.cols{padding-inline:16px}.shell{border-radius:24px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+body.lock .shell{display:none}
+#lock{display:none;max-width:340px;margin:20vh auto;background:#fff;border-radius:28px;padding:28px;gap:12px}
+body.lock #lock{display:grid}
+.bar .x{width:auto;padding:0 12px;font-size:12px;height:32px}
 </style>
 </head>
-<body>
+<body class="lock">
+<form id="lock" autocomplete="off">
+  <h1 style="font-size:18px">بازاربان</h1>
+  <input type="password" id="pw" placeholder="رمز ورود" aria-label="رمز ورود" class="t" style="direction:ltr;text-align:center">
+  <button class="btn" style="align-self:stretch">ورود</button>
+  <div class="sub" id="lockErr"></div>
+</form>
 <main class="shell">
   <header class="top">
     <div class="bar">
       <div class="logo" aria-hidden="true">ب</div>
       <h1>بازاربان<span>هزینه تمام‌شده بار</span></h1>
       <div class="sp"></div>
+      <button class="x" type="button" data-act="cfg">کپی تنظیمات ربات</button>
+      <button class="x" type="button" data-act="pw">تغییر رمز</button>
       <div class="pill"><i class="dot" id="dot"></i><span id="upd">در حال دریافت اطلاعات...</span></div>
     </div>
     <div class="hero">
@@ -113,6 +125,19 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 
 <script>
 const $ = id => document.getElementById(id);
+
+/* قفل ورود: فقط هش رمز در کد است. shortcut: این قفل سمت مرورگر است و data.json همچنان عمومی است؛ برای امنیت واقعی باید مخزن خصوصی/سرور داشت. */
+const PASS_HASH = '8d535a61860efcb4cc2db3fd8993e97f7d2d8e18170c7714caf6070079c68eb1';
+const sha = async t => [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(b=>b.toString(16).padStart(2,'0')).join('');
+const unlock = () => document.body.classList.remove('lock');
+try{ if(localStorage.getItem('bazarban_auth')===PASS_HASH) unlock(); }catch{}
+$('lock').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const h = await sha($('pw').value);
+  if(h===PASS_HASH){ try{localStorage.setItem('bazarban_auth',h);}catch{} unlock(); }
+  else $('lockErr').textContent = 'رمز اشتباه است';
+});
+
 const g = (id,k) => $(id+'_'+k);
 const FAD = '۰۱۲۳۴۵۶۷۸۹', ARD = '٠١٢٣٤٥٦٧٨٩';
 
@@ -503,6 +528,24 @@ document.addEventListener('click',e=>{
     P[d.p].costs.push({on:1,n:'',t:'cont',v:0});
     drawRows(d.p);
     calc(d.p);
+  }
+
+  if(d.act==='pw'){
+    const n = prompt('رمز جدید را وارد کنید');
+    if(n) sha(n).then(h=>prompt('این متن را در index.html جلوی PASS_HASH بگذارید و ذخیره کنید:',h));
+  }
+
+  if(d.act==='cfg'){
+    const cfg = {products:Object.fromEntries(KEYS.map(k=>[k,{
+      name:P[k].name,
+      tons:num(g('tons',k).value), cnt:num(g('cnt',k).value),
+      oon:g('oon',k).checked?1:0, opct:num(g('opct',k).value), ofix:num(g('ofix',k).value),
+      costs:P[k].costs
+    }]))};
+    const txt = JSON.stringify(cfg,null,2);
+    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(
+      ()=>alert('کپی شد. در گیت‌هاب محتوای config.json را با آن جایگزین کنید.'),
+      ()=>prompt('این متن را در config.json بگذارید:',txt));
   }
 
   if(d.act==='save'){
