@@ -58,7 +58,9 @@ def build_message(data: dict, cfg: dict) -> str:
             f"🌍 قیمت جهانی (بدون هیچ هزینه‌ای)\n{fa(price)} دلار هر تن\n"
             f"برابر {fa(price * rate)} تومان هر تن · {fa(price * rate / 1000)} تومان هر کیلو\n\n"
             f"📍 قیمت در مبدأ\n{fa(m['origin'] / m['wt'])} دلار هر تن\n{fa(m['base'] / kg)} تومان هر کیلو\n\n"
-            f"📦 قیمت با مصارف\n{fa(m['total'] / kg)} تومان هر کیلو\n"
+            f"📦 قیمت با مصارف\n"
+            f"قیمت جهانی هر کیلو (بدون هزینه): {fa(price * rate / 1000)} تومان · {fa(price / 1000, 2)} دلار\n"
+            f"قیمت نهایی هر کیلو: {fa(m['total'] / kg)} تومان\n"
             f"{fa(m['total'] / m['wt'])} تومان هر تن\n"
             f"کل {fa(m['wt'])} تن: {fa(m['total'])} تومان\n\n"
             f"🧾 ریز جزئیات\n" + "\n".join(lines))
