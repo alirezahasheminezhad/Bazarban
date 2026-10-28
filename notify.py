@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 import sys
 
 import requests
@@ -84,11 +85,21 @@ def send(text: str) -> None:
         raise SystemExit("No bot token set (TELEGRAM_BOT_TOKEN / RUBIKA_BOT_TOKEN)")
     failed = False
     for url, body in jobs:  # one platform failing must not block the other
-        try:
-            requests.post(url, json=body, timeout=30).raise_for_status()
-        except Exception as e:
+        host = url.split("/")[2]  # the URL holds the token, never print it
+        for attempt in range(3):  # Rubika sometimes resets the connection
+            try:
+                r = requests.post(url, json=body, timeout=30)
+                r.raise_for_status()
+                # Rubika answers HTTP 200 even on errors, e.g. {"status":"INVALID_INPUT"}
+                if "rubika" in host and r.json().get("status") != "OK":
+                    raise RuntimeError(r.text[:200])
+                print(f"sent to {host}")
+                break
+            except Exception as e:
+                print(f"send failed ({host}, try {attempt + 1}): {type(e).__name__}: {e if 'rubika' in host else ''}", file=sys.stderr)
+                time.sleep(3)
+        else:
             failed = True
-            print(f"send failed ({url.split('/')[2]}): {type(e).__name__}", file=sys.stderr)  # URL holds the token
     if failed:
         raise SystemExit(1)
 
