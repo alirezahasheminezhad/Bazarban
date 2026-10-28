@@ -28,6 +28,7 @@ jobs:
           python -m pip install --disable-pip-version-check requests beautifulsoup4 playwright
           python -m playwright install --with-deps chromium
       - name: Fetch NCDEX prices and USD/Toman, then build data.json
+        id: fetch
         run: python fetch_prices.py
       - name: Commit updated data.json
         run: |
@@ -40,3 +41,12 @@ jobs:
           git add data.json
           git commit -m "Update automatic market prices"
           git push
+      # Same job as the fetch: a separate workflow_run job was skipped or delayed by GitHub.
+      - name: Send prices to bots
+        if: ${{ !cancelled() && steps.fetch.outcome == 'success' }}
+        run: python notify.py
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RUBIKA_BOT_TOKEN: ${{ secrets.RUBIKA_BOT_TOKEN }}
+          RUBIKA_CHAT_ID: ${{ secrets.RUBIKA_CHAT_ID }}
