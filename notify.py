@@ -41,10 +41,18 @@ def model(p: dict, price: float, rate: float) -> dict:
             "total": sum(v for _, v in parts)}
 
 
+def num(n: float, d: int = 2) -> str:
+    """Persian number with up to d decimals, trailing zeros trimmed (25.0 -> ۲۵)."""
+    t = f"{n:,.{d}f}"
+    if "." in t:
+        t = t.rstrip("0").rstrip(".")
+    return t.replace(",", "٬").replace(".", "٫").translate(FA)
+
+
 def build_message(data: dict, cfg: dict) -> str:
-    """One neat message for all products."""
+    """One message, one block per product, in the format the owner specified."""
     rate = data["usd_toman"]
-    tehran = datetime.fromisoformat(data["updated"].replace("Z", "+00:00")).astimezone(ZoneInfo("Asia/Tehran"))
+    line = "━" * 20
     blocks = []
     for k, p in cfg["products"].items():
         price = data.get(PRICE_FIELD[k])
@@ -52,21 +60,33 @@ def build_message(data: dict, cfg: dict) -> str:
             continue
         m = model(p, price, rate)
         kg = m["wt"] * 1000
-        lines = [f"• {n}: {fa(v / kg)} ت/کیلو · {fa(v / m['total'] * 100, 1)}٪" for n, v in m["parts"] if v]
-        blocks.append(
-            f"{p['name']}\n\n"
-            f"🌍 قیمت جهانی (بدون هیچ هزینه‌ای)\n{fa(price)} دلار هر تن\n"
-            f"برابر {fa(price * rate)} تومان هر تن · {fa(price * rate / 1000)} تومان هر کیلو\n\n"
-            f"📍 قیمت در مبدأ\n{fa(m['origin'] / m['wt'])} دلار هر تن\n{fa(m['base'] / kg)} تومان هر کیلو\n\n"
-            f"📦 قیمت با مصارف\n"
-            f"قیمت جهانی هر کیلو (بدون هزینه): {fa(price * rate / 1000)} تومان · {fa(price / 1000, 2)} دلار\n"
-            f"قیمت نهایی هر کیلو: {fa(m['total'] / kg)} تومان\n"
-            f"{fa(m['total'] / m['wt'])} تومان هر تن\n"
-            f"کل {fa(m['wt'])} تن: {fa(m['total'])} تومان\n\n"
-            f"🧾 ریز جزئیات\n" + "\n".join(lines))
-    head = f"🌿 بازاربان\n💵 دلار: {fa(rate)} تومان\n🕐 {tehran.strftime('%H:%M').translate(FA)} (تهران)"
-    line = "\n\n━━━━━━━━━━━━━━\n\n"
-    return head + line + line.join(blocks)
+        world_ton = price * rate
+        world_total = m["goods"] * rate
+        costs = m["total"] - world_total  # every enabled cost, as on the site
+        pct = costs / world_total * 100 if world_total else 0
+        world_kg = round(world_ton / 1000)
+        # final prices derive from the rounded per-kg figures, like the owner's example
+        cost_kg = round(costs / kg)
+        final_kg = world_kg + cost_kg
+        w = f"{num(m['wt'])} تنی"
+        blocks.append("\n".join([
+            f"🌿 گزارش قیمت {p['name']} هندی", line,
+            "🌍 ۱. قیمت جهانی | بدون احتساب مصارف",
+            f"💵 قیمت هر تن: {fa(price)} دلار",
+            f"⚖️ قیمت هر کیلو: {fa(world_kg)} تومان",
+            f"💰 قیمت هر تن: {fa(world_ton)} تومان",
+            f"📦 ارزش محموله {w}",
+            f"🔹 وزن کل: {fa(kg)} کیلوگرم",
+            f"💰 مبلغ کل: {fa(world_total)} تومان", line,
+            f"📦 ۲. قیمت نهایی | با احتساب {num(pct, 1)}٪ مصارف",
+            f"📊 درصد مصارف: {num(pct, 1)}٪",
+            f"➕ هزینه مصارف هر کیلو: {fa(cost_kg)} تومان",
+            f"⚖️ قیمت نهایی هر کیلو: {fa(final_kg)} تومان",
+            f"💰 قیمت نهایی هر تن: {fa(final_kg * 1000)} تومان",
+            f"🚛 ارزش محموله {w} با احتساب مصارف",
+            f"🔹 وزن کل: {fa(kg)} کیلوگرم",
+            f"💰 مبلغ کل: {fa(final_kg * kg)} تومان", line]))
+    return "\n\n".join(blocks)
 
 
 def send(text: str) -> None:
