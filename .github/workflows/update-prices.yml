@@ -35,6 +35,8 @@ jobs:
         if: ${{ steps.fetch.outcome == 'success' }}
         continue-on-error: true
         run: python fx_prices.py
+        env:
+          NABZESH_API_KEY: ${{ secrets.NABZESH_API_KEY }} # optional
       - name: Publish data.json to the data branch (single commit, no history growth)
         run: |
           d=$(mktemp -d)

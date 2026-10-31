@@ -19,7 +19,7 @@ old, new = {"t": "2026-10-27T11:59:00Z"}, {"t": "2026-10-27T12:01:00Z"}
 assert trim_history([old, new, {"x": 1}], now) == [new]  # >24h and malformed records are dropped
 # fx: 4 of 5 sources agree on the dollar -> 80% confidence, the odd one is flagged and left out of the average
 r = aggregate([("a", 275500), ("b", 275000), ("c", 276000), ("d", 275400), ("e", 262000)])
-assert r["conf"] == 80 and r["k"] == 4 and r["sources"][4]["ok"] is False and abs(r["avg"] - 275475) <= 1
+assert r["conf"] == 80 and r["k"] == 4 and r["sources"][4]["ok"] is False and r["avg"] == 272780  # all five count in the average
 assert aggregate([("a", 1000)])["conf"] is None and aggregate([("a", 1000), ("b", 1200)])["conf"] == 50
 # text extraction: toman page, rial page (/10), and a percent change that must not be picked
 usd = 270500
@@ -30,4 +30,17 @@ assert extract("gold", "tgju.org", "قیمت طلای 18 عیار 265,000,000 ر
 assert find_price("دلار 1.32 درصد", r"دلار", 1e5, 1e6) is None
 fx = build_fx_message({"fx": {"items": [{"id": "usd", "name": "دلار آمریکا", **r}]}})
 assert "اطمینان: ۸۰٪ (۴ از ۵ منبع)" in fx and "⚠️ e: ۲۶۲٬۰۰۰" in fx and build_fx_message({}) is None
+# nabzesh API: parses price.price; gold comes per milligram (x1000); stale prices are skipped
+import fx_prices
+from unittest import mock
+def fake(price, stale=False):
+    m = mock.Mock(); m.json.return_value = {"price": {"price": price, "isStale": stale}}; return m
+with mock.patch.object(fx_prices.requests, "get", return_value=fake("275000")):
+    assert fx_prices.fetch_nabzesh("usd", 270500) == 275000
+with mock.patch.object(fx_prices.requests, "get", return_value=fake("26200")):
+    assert fx_prices.fetch_nabzesh("gold", 270500) == 26200000
+with mock.patch.object(fx_prices.requests, "get", return_value=fake("275000", stale=True)):
+    assert fx_prices.fetch_nabzesh("usd", 270500) is None
+with mock.patch.object(fx_prices.requests, "get", return_value=fake("999")):
+    assert fx_prices.fetch_nabzesh("usd", 270500) is None  # implausible vs the USD rate
 print("ok")

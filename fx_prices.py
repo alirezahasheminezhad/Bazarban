@@ -7,6 +7,7 @@ Each source is independent: one that fails or changes layout is just skipped.
 from __future__ import annotations
 
 import json
+import os
 import re
 import statistics
 import sys
@@ -34,6 +35,7 @@ SPEC = {
     "aed": ("درهم امارات", r"درهم", lambda u: u / 3.6725, 0.08),
 }
 OK, KIF, NAB = "https://ok-ex.io/live/currency/", "https://kifpool.me/live/currency", "https://nabzesh.ir/"
+BIT, TAB = "https://bitpin.ir/academy/live/currency/", "https://tabdeal.org/convert/"
 TGJU, ALAN, ARZ = "https://www.tgju.org/profile/", "https://alanchand.com/currencies-price/", "https://arzdigital.com/"
 # (currency, source label, url). The owner's references for PKR/AFN come first; the rest are best guesses
 # for the same sites. Wrong or blocked ones just log "none".
@@ -42,12 +44,19 @@ PLAN = [
     ("usd", "tgju.org", TGJU + "price_dollar_rl"), ("usd", "alanchand.com", ALAN + "usd"),
     ("usdt", "arzdigital.com", ARZ + "coins/tether/"), ("usdt", "kifpool.me", KIF), ("usdt", "nabzesh.ir", NAB),
     ("gold", "tgju.org", TGJU + "geram18"), ("gold", "nabzesh.ir", NAB), ("gold", "kifpool.me", KIF),
-    ("afn", "tgju.org", TGJU + "price_afn"), ("afn", "bitpin.ir", "https://bitpin.ir/academy/live/currency/afn/"),
-    ("afn", "tabdeal.org", "https://tabdeal.org/convert/afn-irr"), ("afn", "alanchand.com", ALAN + "afn"),
+    ("afn", "tgju.org", TGJU + "price_afn"), ("afn", "bitpin.ir", BIT + "afn/"),
+    ("afn", "tabdeal.org", TAB + "afn-irr"), ("afn", "alanchand.com", ALAN + "afn"),
     ("pkr", "tgju.org", TGJU + "price_pkr"), ("pkr", "alanchand.com", ALAN + "pkr"),
     ("pkr", "arzdigital.com", ARZ + "convert/pakistani-rupee/ir-toman/"),
     ("aed", "ok-ex.io", OK), ("aed", "kifpool.me", KIF), ("aed", "nabzesh.ir", NAB),
     ("aed", "tgju.org", TGJU + "price_aed"), ("aed", "alanchand.com", ALAN + "aed"),
+    # same URL patterns as the owner's AFN/PKR references (guesses; a 404 is just skipped)
+    ("usd", "bitpin.ir", BIT + "usd/"), ("aed", "bitpin.ir", BIT + "aed/"), ("pkr", "bitpin.ir", BIT + "pkr/"),
+    ("usd", "tabdeal.org", TAB + "usd-irr"), ("aed", "tabdeal.org", TAB + "aed-irr"),
+    ("pkr", "tabdeal.org", TAB + "pkr-irr"), ("usdt", "tabdeal.org", TAB + "usdt-irr"),
+    ("usd", "arzdigital.com", ARZ + "convert/united-states-dollar/ir-toman/"),
+    ("afn", "arzdigital.com", ARZ + "convert/afghan-afghani/ir-toman/"),
+    ("aed", "arzdigital.com", ARZ + "convert/united-arab-emirates-dirham/ir-toman/"),
 ]
 NUM = re.compile(r"\d[\d,٬]*(?:[.٫]\d+)?")
 
@@ -68,18 +77,17 @@ def find_price(text: str, kw: str, lo: float, hi: float, divisors=(1, 10)) -> fl
 
 
 def aggregate(vals: list[tuple[str, float]], tol: float = TOL) -> dict:
-    """vals: [(source, toman)]. Average of the largest group of agreeing sources + confidence %."""
+    """vals: [(source, toman)]. Average of all sources; confidence % = share of sources agreeing within tol."""
     n = len(vals)
-    best = max(([w for _, w in vals if abs(w / v - 1) <= tol] for _, v in vals), key=len)
+    best = max(([w for _, w in vals if abs(w / v - 1) <= tol] for _, v in vals), key=len)  # largest agreeing group
     if n == 1:
-        avg, conf, ok = vals[0][1], None, [True]
-    elif len(best) == 1:  # nobody agrees: plain average, low confidence
-        avg, conf, ok = statistics.mean(w for _, w in vals), round(100 / n), [True] * n
+        conf, ok = None, [True]
+    elif len(best) == 1:  # nobody agrees
+        conf, ok = round(100 / n), [True] * n
     else:
         med = statistics.median(best)
-        avg, conf = statistics.mean(best), round(100 * len(best) / n)
-        ok = [abs(w / med - 1) <= tol for _, w in vals]
-    return {"avg": round(avg), "conf": conf, "n": n, "k": sum(ok),
+        conf, ok = round(100 * len(best) / n), [abs(w / med - 1) <= tol for _, w in vals]
+    return {"avg": round(statistics.mean(w for _, w in vals)), "conf": conf, "n": n, "k": sum(ok),
             "sources": [{"s": s, "v": round(w), "ok": o} for (s, w), o in zip(vals, ok)]}
 
 
@@ -94,13 +102,40 @@ def extract(cur: str, label: str, text: str, usd: float) -> float | None:
     return find_price(text, SPEC[cur][1], lo, hi, div)
 
 
+NABZESH = {"usd": "USD", "usdt": "USDT", "afn": "AFN", "pkr": "PKR", "aed": "AED", "gold": "GOLD18_MG"}
+
+
+def fetch_nabzesh(cur: str, usd: float) -> float | None:
+    """nabzesh.ir public API (docs: api.nabzesh.ir); the key is optional. GOLD18_MG is per milligram."""
+    key = os.environ.get("NABZESH_API_KEY")
+    try:
+        r = requests.get(f"https://api.nabzesh.ir/v1/currencies/{NABZESH[cur]}", params={"quote": "IRT"},
+                         headers={**HEADERS, **({"x-api-key": key} if key else {})}, timeout=20)
+        r.raise_for_status()
+        p = r.json()["price"]
+        if p.get("isStale"):
+            return None
+        v = float(p["price"])
+    except Exception as e:
+        print(f"fx nabzesh {cur}: {type(e).__name__} {getattr(getattr(e, 'response', None), 'status_code', '')}", file=sys.stderr)
+        return None
+    lo, hi = bounds(cur, usd)
+    return next((x for x in ((v, v * 1000) if cur == "gold" else (v,)) if lo <= x <= hi), None)
+
+
+DEAD: set[str] = set()  # urls answering 404: no point rendering them in a browser
+
+
 def fetch_plain(url: str) -> str:
     try:
         r = requests.get(url, headers=HEADERS, timeout=25)
         r.raise_for_status()
         return to_text(r.text)
     except Exception as e:
-        print(f"fx fetch {url}: {type(e).__name__}", file=sys.stderr)
+        status = getattr(getattr(e, "response", None), "status_code", "")
+        if status == 404:
+            DEAD.add(url)
+        print(f"fx fetch {url}: {type(e).__name__} {status}", file=sys.stderr)
         return ""
 
 
@@ -115,7 +150,7 @@ def main() -> None:
         missing = [(c, s, u) for c, s, u in PLAN if (c, s) not in found]
         if pass_no == 2:  # JS-rendered pages: retry the failed ones in a real browser, within a time budget
             start = time.time()
-            for u in sorted({u for _, _, u in missing}):
+            for u in sorted({u for _, _, u in missing} - DEAD):
                 if time.time() - start > RENDER_BUDGET_S:
                     break
                 try:
@@ -128,7 +163,11 @@ def main() -> None:
                 found[(c, s)] = v
     items = []
     for cur, (name, *_rest) in SPEC.items():
+        nab = fetch_nabzesh(cur, usd)
+        print(f"fx {cur} nabzesh.ir: {nab or 'none'}")
         vals = ([("arzdigital.com", usd)] if cur == "usd" else []) + [(s, found[(c, s)]) for c, s, _ in PLAN if c == cur and (c, s) in found]
+        if nab:
+            vals.append(("nabzesh.ir", nab))
         for c, s, _ in PLAN:
             if c == cur:
                 print(f"fx {cur} {s}: {found.get((c, s), 'none')}")
