@@ -108,6 +108,28 @@ def build_fx_message(data: dict) -> str | None:
     return "\n".join(out)
 
 
+def build_alert_message(data: dict) -> str | None:
+    """Third message, only when something needs the owner's attention."""
+    alerts = data.get("alerts")
+    return "🔧 هشدار فنی بازاربان\n" + "\n".join(alerts) if alerts else None
+
+
+def stale_alert(data: dict, log_path: str, now: datetime | None = None) -> str | None:
+    """Run after a failed price update. Fires in one run only (data 40-55 min old, runs are 15 min apart)."""
+    updated = datetime.fromisoformat(data["updated"].replace("Z", "+00:00"))
+    age = ((now or datetime.now(updated.tzinfo)) - updated).total_seconds() / 60
+    if not 40 <= age < 55:
+        return None
+    try:
+        lines = [l for l in open(log_path, encoding="utf-8", errors="replace").read().splitlines() if l.strip()]
+    except OSError:
+        lines = []
+    err = next((l for l in reversed(lines) if "fail" in l.lower() or "error" in l.lower()), lines[-1] if lines else "")
+    at = updated.astimezone(ZoneInfo("Asia/Tehran")).strftime("%H:%M").translate(FA)
+    return (f"🔧 هشدار فنی بازاربان\nقیمت ادویه‌جات حدود {fa(age)} دقیقه است به‌روز نشده (آخرین قیمت موفق: {at} تهران).\n"
+            f"خطا: {err[:300]}")
+
+
 def send(text: str) -> None:
     jobs = []
     if os.environ.get("TELEGRAM_BOT_TOKEN"):
@@ -141,8 +163,13 @@ def send(text: str) -> None:
 
 if __name__ == "__main__":
     data = json.load(open("data.json", encoding="utf-8"))
+    if "--alert-stale" in sys.argv:  # after a failed update: tell the group, once per outage
+        msg = stale_alert(data, sys.argv[sys.argv.index("--alert-stale") + 1])
+        if msg:
+            send(msg)
+        raise SystemExit(0)
     cfg = json.load(open("config.json", encoding="utf-8"))
-    texts = [t for t in (build_message(data, cfg), build_fx_message(data)) if t]  # two separate messages
+    texts = [t for t in (build_message(data, cfg), build_fx_message(data), build_alert_message(data)) if t]  # separate messages
     if "--dry" in sys.argv:
         print("\n\n=====\n\n".join(texts))
         raise SystemExit

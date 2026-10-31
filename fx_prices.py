@@ -23,6 +23,7 @@ from fetch_prices import HEADERS, digits_to_ascii, render_html
 
 OUTPUT = Path("data.json")
 TOL = 0.02  # sources within 2% of each other "agree"
+FAIL_ALERT = 3  # consecutive misses of a source that used to work before the group is told
 RENDER_BUDGET_S = 180  # total time allowed for slow browser fallbacks
 
 # currency: (name, keyword regex, expected toman given the USD rate, tolerance of that expectation)
@@ -34,21 +35,21 @@ SPEC = {
     "pkr": ("روپیه پاکستان", r"روپیه", lambda u: u / 280, 0.15),
     "aed": ("درهم امارات", r"درهم", lambda u: u / 3.6725, 0.08),
 }
-OK, KIF, NAB = "https://ok-ex.io/live/currency/", "https://kifpool.me/live/currency", "https://nabzesh.ir/"
+OK, KIF = "https://ok-ex.io/live/currency/", "https://kifpool.me/live/currency"
 BIT, TAB = "https://bitpin.ir/academy/live/currency/", "https://tabdeal.org/convert/"
 TGJU, ALAN, ARZ = "https://www.tgju.org/profile/", "https://alanchand.com/currencies-price/", "https://arzdigital.com/"
 # (currency, source label, url). The owner's references for PKR/AFN come first; the rest are best guesses
 # for the same sites. Wrong or blocked ones just log "none".
 PLAN = [
-    ("usd", "ok-ex.io", OK), ("usd", "kifpool.me", KIF), ("usd", "nabzesh.ir", NAB),
+    ("usd", "ok-ex.io", OK), ("usd", "kifpool.me", KIF),
     ("usd", "tgju.org", TGJU + "price_dollar_rl"), ("usd", "alanchand.com", ALAN + "usd"),
-    ("usdt", "arzdigital.com", ARZ + "coins/tether/"), ("usdt", "kifpool.me", KIF), ("usdt", "nabzesh.ir", NAB),
-    ("gold", "tgju.org", TGJU + "geram18"), ("gold", "nabzesh.ir", NAB), ("gold", "kifpool.me", KIF),
+    ("usdt", "arzdigital.com", ARZ + "coins/tether/"), ("usdt", "kifpool.me", KIF),
+    ("gold", "tgju.org", TGJU + "geram18"), ("gold", "kifpool.me", KIF),
     ("afn", "tgju.org", TGJU + "price_afn"), ("afn", "bitpin.ir", BIT + "afn/"),
     ("afn", "tabdeal.org", TAB + "afn-irr"), ("afn", "alanchand.com", ALAN + "afn"),
     ("pkr", "tgju.org", TGJU + "price_pkr"), ("pkr", "alanchand.com", ALAN + "pkr"),
     ("pkr", "arzdigital.com", ARZ + "convert/pakistani-rupee/ir-toman/"),
-    ("aed", "ok-ex.io", OK), ("aed", "kifpool.me", KIF), ("aed", "nabzesh.ir", NAB),
+    ("aed", "ok-ex.io", OK), ("aed", "kifpool.me", KIF),
     ("aed", "tgju.org", TGJU + "price_aed"), ("aed", "alanchand.com", ALAN + "aed"),
     # same URL patterns as the owner's AFN/PKR references (guesses; a 404 is just skipped)
     ("usd", "bitpin.ir", BIT + "usd/"), ("aed", "bitpin.ir", BIT + "aed/"), ("pkr", "bitpin.ir", BIT + "pkr/"),
@@ -139,8 +140,40 @@ def fetch_plain(url: str) -> str:
         return ""
 
 
+def update_health(health: dict, key: str, text: str, got: bool) -> list[str]:
+    """Track consecutive misses. Only a source that has worked before can raise an alert (guessed URLs stay quiet)."""
+    h = health.setdefault(key, {"worked": False, "fails": 0})
+    alerts = []
+    if got:
+        if h["fails"] >= FAIL_ALERT:
+            alerts.append(f"✅ {text}: دوباره جواب داد")
+        h.update(worked=True, fails=0)
+    else:
+        h["fails"] += 1
+        if h["worked"] and h["fails"] == FAIL_ALERT:
+            alerts.append(f"⚠️ {text}: چند بار پیاپی قیمت نداد (دسترسی قطع شده یا ظاهر صفحه عوض شده)")
+    return alerts
+
+
 def main() -> None:
     data = json.loads(OUTPUT.read_text(encoding="utf-8"))
+    health = data.setdefault("fx_health", {})
+    try:
+        alerts = run(data, health)
+    except Exception as e:  # keep the spice update; tell the group after repeated crashes
+        print(f"fx crashed: {type(e).__name__}: {e}", file=sys.stderr)
+        health.setdefault("_crash", {"worked": True, "fails": 0})
+        alerts = update_health(health, "_crash", "بخش ارز و طلا (خطای برنامه)", False)
+        data["alerts"] = alerts
+        OUTPUT.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        raise
+    alerts += update_health(health, "_crash", "بخش ارز و طلا", True)
+    if alerts:
+        data["alerts"] = alerts
+    OUTPUT.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def run(data: dict, health: dict) -> list[str]:
     usd = float(data["usd_toman"])
     urls = sorted({u for _, _, u in PLAN})
     with ThreadPoolExecutor(8) as ex:
@@ -161,21 +194,25 @@ def main() -> None:
             v = extract(c, s, texts.get(u, ""), usd)
             if v:
                 found[(c, s)] = v
-    items = []
+    items, alerts = [], []
     for cur, (name, *_rest) in SPEC.items():
         nab = fetch_nabzesh(cur, usd)
         print(f"fx {cur} nabzesh.ir: {nab or 'none'}")
         vals = ([("arzdigital.com", usd)] if cur == "usd" else []) + [(s, found[(c, s)]) for c, s, _ in PLAN if c == cur and (c, s) in found]
         if nab:
             vals.append(("nabzesh.ir", nab))
+        alerts += update_health(health, f"{cur}|nabzesh.ir", f"nabzesh.ir برای {name}", bool(nab))
+        for c, s_, _ in PLAN:
+            if c == cur:
+                alerts += update_health(health, f"{cur}|{s_}", f"{s_} برای {name}", (c, s_) in found)
         for c, s, _ in PLAN:
             if c == cur:
                 print(f"fx {cur} {s}: {found.get((c, s), 'none')}")
         if vals:
             items.append({"id": cur, "name": name, **aggregate(vals)})
     data["fx"] = {"updated": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"), "items": items}
-    OUTPUT.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(data["fx"], ensure_ascii=False))
+    return alerts
 
 
 if __name__ == "__main__":

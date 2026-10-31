@@ -306,6 +306,8 @@ def main() -> None:
         "status": "ok",
         "history": history,
     }
+    if "fx_health" in previous:  # source-health state owned by fx_prices.py
+        result["fx_health"] = previous["fx_health"]
     OUTPUT.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({k: v for k, v in result.items() if k != "history"}, ensure_ascii=False, indent=2))
 

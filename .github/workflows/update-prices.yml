@@ -30,7 +30,7 @@ jobs:
           git fetch --depth=1 origin data 2>/dev/null && git show FETCH_HEAD:data.json > data.json || echo "no data branch yet; using data.json from main"
       - name: Fetch NCDEX prices and USD/Toman, then build data.json
         id: fetch
-        run: python fetch_prices.py
+        run: python fetch_prices.py 2>&1 | tee fetch.log
       - name: Fetch currency and gold prices (same run; a failure here must not stop the spice update)
         if: ${{ steps.fetch.outcome == 'success' }}
         continue-on-error: true
@@ -52,6 +52,16 @@ jobs:
       - name: Send prices to bots
         if: ${{ !cancelled() && steps.fetch.outcome == 'success' }}
         run: python notify.py
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RUBIKA_BOT_TOKEN: ${{ secrets.RUBIKA_BOT_TOKEN }}
+          RUBIKA_CHAT_ID: ${{ secrets.RUBIKA_CHAT_ID }}
+      - name: Tell the group if prices have not updated for ~45 minutes
+        if: ${{ failure() }}
+        run: |
+          git fetch --depth=1 origin data && git show FETCH_HEAD:data.json > data.json
+          python notify.py --alert-stale fetch.log
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

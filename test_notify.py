@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 
 from fetch_prices import trim_history
 from fx_prices import aggregate, find_price, extract
-from notify import build_fx_message, build_message
+from notify import build_alert_message, build_fx_message, build_message, stale_alert
+from fx_prices import update_health
 
 cfg = json.load(open("config.json", encoding="utf-8"))["products"]["t"]  # 25 t, 10% origin cost
 # rate 1000 makes the world price per ton exactly the owner's example: 761,899,030 toman
@@ -43,4 +44,16 @@ with mock.patch.object(fx_prices.requests, "get", return_value=fake("275000", st
     assert fx_prices.fetch_nabzesh("usd", 270500) is None
 with mock.patch.object(fx_prices.requests, "get", return_value=fake("999")):
     assert fx_prices.fetch_nabzesh("usd", 270500) is None  # implausible vs the USD rate
+# health: a source that never worked stays quiet; one that worked alerts on the 3rd miss only, then on recovery
+h = {}
+assert [update_health(h, "a", "x", False) for _ in range(5)] == [[]] * 5
+assert update_health(h, "b", "src", True) == []
+assert [bool(update_health(h, "b", "src", False)) for _ in range(4)] == [False, False, True, False]
+assert update_health(h, "b", "src", True) == ["✅ src: دوباره جواب داد"]
+assert build_alert_message({}) is None and "x" in build_alert_message({"alerts": ["x"]})
+# stale alert fires only when the last good data is 40-55 min old
+from datetime import datetime, timedelta, timezone
+d = {"updated": "2026-10-31T08:00:00Z"}; t0 = datetime(2026, 10, 31, 8, 0, tzinfo=timezone.utc)
+assert stale_alert(d, "none.log", t0 + timedelta(minutes=20)) is None and stale_alert(d, "none.log", t0 + timedelta(minutes=60)) is None
+assert "۱۱:۳۰ تهران" in stale_alert(d, "none.log", t0 + timedelta(minutes=47))
 print("ok")
