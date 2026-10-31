@@ -89,6 +89,25 @@ def build_message(data: dict, cfg: dict) -> str:
     return "\n\n".join(blocks)
 
 
+FX_EMOJI = {"usd": "💵", "usdt": "🪙", "gold": "🥇", "afn": "🇦🇫", "pkr": "🇵🇰", "aed": "🇦🇪"}
+
+
+def build_fx_message(data: dict) -> str | None:
+    """Second message: currency/gold prices with the sources and the agreement confidence."""
+    items = data.get("fx", {}).get("items")
+    if not items:
+        return None
+    line = "━" * 20
+    out = ["💱 گزارش نرخ ارز و طلا", line]
+    for it in items:
+        conf = f"{fa(it['conf'])}٪ ({fa(it['k'])} از {fa(it['n'])} منبع)" if it["conf"] is not None else "فقط یک منبع"
+        out += [f"{FX_EMOJI.get(it['id'], '•')} {it['name']}",
+                f"💰 میانگین: {fa(it['avg'])} تومان",
+                f"🎯 اطمینان: {conf}",
+                *[f"{'📌' if x['ok'] else '⚠️'} {x['s']}: {fa(x['v'])}" for x in it["sources"]], line]
+    return "\n".join(out)
+
+
 def send(text: str) -> None:
     jobs = []
     if os.environ.get("TELEGRAM_BOT_TOKEN"):
@@ -123,8 +142,14 @@ def send(text: str) -> None:
 if __name__ == "__main__":
     data = json.load(open("data.json", encoding="utf-8"))
     cfg = json.load(open("config.json", encoding="utf-8"))
-    text = build_message(data, cfg)
+    texts = [t for t in (build_message(data, cfg), build_fx_message(data)) if t]  # two separate messages
     if "--dry" in sys.argv:
-        print(text)
+        print("\n\n=====\n\n".join(texts))
         raise SystemExit
-    send(text)
+    failed = False
+    for t in texts:  # a failing platform must not stop the other message
+        try:
+            send(t)
+        except SystemExit:
+            failed = True
+    raise SystemExit(1 if failed else 0)

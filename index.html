@@ -85,6 +85,12 @@ body.lock .shell{display:none}
 #lock{display:none;max-width:340px;margin:20vh auto;background:#fff;border-radius:28px;padding:28px;gap:12px}
 body.lock #lock{display:grid}
 .bar .x{width:auto;padding:0 12px;font-size:12px;height:32px}
+.fxg{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.fxi{background:var(--card);border-radius:20px;padding:16px;display:grid;gap:6px;align-content:start}
+.fxi h4{font-size:14px;font-weight:600;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.fxi .big{font-size:22px}
+.fxs{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--mute);direction:rtl}
+.fxs.bad{opacity:.55;text-decoration:line-through}
 </style>
 </head>
 <body class="lock">
@@ -115,6 +121,14 @@ body.lock #lock{display:grid}
       <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></span>نرخ ارز (مشترک بین هر دو محصول)<span class="tag" id="tagR">در انتظار دریافت</span></div>
       <div class="fld"><label for="rate">تومان به ازای هر دلار</label><input id="rate" inputmode="decimal" value="120000"></div>
       <div class="sub">هزینه تبدیل ارز را در فهرست هزینه‌ها بیاور · منبع نرخ ارز: ارزدیجیتال</div>
+    </div>
+  </section>
+
+  <section class="grid" id="fx" hidden>
+    <div class="card w">
+      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>نرخ ارز و طلا (میانگین منابع)<span class="tag" id="fxTag"></span></div>
+      <div class="fxg" id="fxList"></div>
+      <div class="sub">اطمینان = سهم منابعی که قیمتشان (تا ۲٪ اختلاف) به هم نزدیک است. منبع دورافتاده خط‌خورده است و در میانگین نمی‌آید.</div>
     </div>
   </section>
 
@@ -578,6 +592,20 @@ function updateDate(){
 }
 updateDate();
 
+/* نرخ ارز و طلا: data.fx از فایل خودکار */
+function renderFx(fx){
+  const box = $('fx');
+  if(!fx || !Array.isArray(fx.items) || !fx.items.length){ box.hidden = true; return; }
+  $('fxList').innerHTML = fx.items.map(it=>`
+    <div class="fxi">
+      <h4><span>${it.name}</span><span class="tag">${it.conf==null ? 'تک‌منبع' : 'اطمینان '+fa(it.conf)+'٪ · '+fa(it.k)+' از '+fa(it.n)}</span></h4>
+      <div class="big">${fa(it.avg)}<small>تومان</small></div>
+      ${it.sources.map(x=>`<div class="fxs${x.ok?'':' bad'}"><span>${fa(x.v)}</span><span dir="ltr">${x.s}</span></div>`).join('')}
+    </div>`).join('');
+  $('fxTag').textContent = fx.updated ? new Date(fx.updated).toLocaleTimeString('fa-IR',{hour:'2-digit',minute:'2-digit'}) : '';
+  box.hidden = false;
+}
+
 /* دریافت خودکار data.json از GitHub Pages */
 async function loadMarketData(){
   try{
@@ -608,6 +636,8 @@ async function loadMarketData(){
     ){
       throw new Error('قیمت یا نرخ ارز معتبر نیست');
     }
+
+    renderFx(data.fx);
 
     // تاریخچه هم در تشخیص تغییرات لحاظ می‌شود
     const historySignature = JSON.stringify(

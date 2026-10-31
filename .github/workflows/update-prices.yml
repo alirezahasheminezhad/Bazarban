@@ -13,7 +13,7 @@ concurrency:
 jobs:
   update-prices:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 12
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -31,6 +31,10 @@ jobs:
       - name: Fetch NCDEX prices and USD/Toman, then build data.json
         id: fetch
         run: python fetch_prices.py
+      - name: Fetch currency and gold prices (same run; a failure here must not stop the spice update)
+        if: ${{ steps.fetch.outcome == 'success' }}
+        continue-on-error: true
+        run: python fx_prices.py
       - name: Publish data.json to the data branch (single commit, no history growth)
         run: |
           d=$(mktemp -d)
