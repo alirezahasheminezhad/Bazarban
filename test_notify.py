@@ -56,4 +56,25 @@ from datetime import datetime, timedelta, timezone
 d = {"updated": "2026-10-31T08:00:00Z"}; t0 = datetime(2026, 10, 31, 8, 0, tzinfo=timezone.utc)
 assert stale_alert(d, "none.log", t0 + timedelta(minutes=20)) is None and stale_alert(d, "none.log", t0 + timedelta(minutes=60)) is None
 assert "۱۱:۳۰ تهران" in stale_alert(d, "none.log", t0 + timedelta(minutes=47))
+# public-API parsers (response shapes taken from the iran-crypto-mcp / iran-gold-mcp sources)
+fp = fx_prices
+assert fp._wallex({"result": {"symbols": {"USDTTMN": {"baseAsset": "USDT", "quoteAsset": "TMN", "stats": {"lastPrice": "271900"}}}}}) == 271900
+assert fp._exir({"usdt-irt": {"last": 271800}}) == 271800
+assert fp._tabdeal({"currencies": {"usdt": {"IRT": {"price": "271700"}}}}) == 271700
+assert fp._omp({"data": [{"baseCurrencyId": "USDT", "quoteCurrencyId": "IRR", "status": "LISTED", "price": 2719000}]}) == 2719000
+assert fp._ramz({"data": [{"quote_currency_symbol": {"en": "irr"}, "base_currency_symbol": {"en": "USDT"}, "financial": {"last24h": {"close": 2718000}}}]}) == 2718000
+assert fp._bitpin([{"symbol": "BTC_IRT", "price": "1"}, {"symbol": "USDT_IRT", "price": "271600"}]) == 271600
+assert fp._okex([{"asset": "USDT", "buyAmt": 271000, "sellAmt": 272000}]) == 271500
+assert fp._milli({"data": {"price18": "258190"}}) == 25819000
+assert fp._wallgold({"result": [{"symbol": "GLD_18C_750TMN", "side": "buy", "price": 26000000}, {"symbol": "GLD_18C_750TMN", "side": "sell", "price": 25800000}]}) == 25900000
+assert fp._melligold({"data": {"price_buy": 26000000, "price_sell": 25900000}}) == 25950000
+assert fp._daric({"Data": {"BestSellPrice": 26100000, "BestBuyPrice": 25900000}}) == 26000000
+# a rial feed is scaled to toman, an implausible value is dropped
+with mock.patch.object(fp, "jget", return_value={"data": [{"baseCurrencyId": "USDT", "quoteCurrencyId": "IRR", "status": "LISTED", "price": 2719000}]}):
+    assert fp.fetch_api(("usdt", "ompfinex.com", "u", None, None, fp._omp), 270500) == 271900
+with mock.patch.object(fp, "jget", return_value={"data": [{"baseCurrencyId": "USDT", "quoteCurrencyId": "IRR", "status": "LISTED", "price": 5}]}):
+    assert fp.fetch_api(("usdt", "ompfinex.com", "u", None, None, fp._omp), 270500) is None
+with mock.patch.object(fp, "jget", side_effect=RuntimeError("blocked")):
+    assert fp.fetch_api(("usdt", "x", "u", None, None, fp._omp), 270500) is None  # a dead source never breaks the run
+assert fp.extract("coin", "tgju.org", "سکه امامی طرح جدید 2,950,000,000 ریال", 270500) == 295000000
 print("ok")

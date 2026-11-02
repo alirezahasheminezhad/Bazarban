@@ -89,7 +89,7 @@ def build_message(data: dict, cfg: dict) -> str:
     return "\n\n".join(blocks)
 
 
-FX_EMOJI = {"usd": "💵", "usdt": "🪙", "gold": "🥇", "afn": "🇦🇫", "pkr": "🇵🇰", "aed": "🇦🇪"}
+FX_EMOJI = {"usd": "💵", "usdt": "🪙", "gold": "🥇", "coin": "🏅", "afn": "🇦🇫", "pkr": "🇵🇰", "aed": "🇦🇪"}
 
 
 def build_fx_message(data: dict) -> str | None:

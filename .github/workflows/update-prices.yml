@@ -23,7 +23,7 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: |
-          python -m pip install --disable-pip-version-check requests beautifulsoup4 playwright
+          python -m pip install --disable-pip-version-check requests beautifulsoup4 playwright curl_cffi
           python -m playwright install --with-deps chromium
       - name: Restore previous data (history) from the data branch
         run: |
