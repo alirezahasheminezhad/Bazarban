@@ -42,6 +42,7 @@ SPEC = {
     "aed": ("درهم امارات", r"درهم", lambda u: u / 3.6725, 0.08),
 }
 OK, KIF = "https://ok-ex.io/live/currency/", "https://kifpool.me/live/currency"
+GUARD = "https://app.guardnet.qzz.io/#market"  # JS-rendered page ("Narkhnama"): read through the browser fallback
 BIT, TAB = "https://bitpin.ir/academy/live/currency/", "https://tabdeal.org/convert/"
 TGJU, ALAN, ARZ = "https://www.tgju.org/profile/", "https://alanchand.com/currencies-price/", "https://arzdigital.com/"
 # (currency, source label, url). The owner's references for PKR/AFN come first; the rest are best guesses
@@ -52,6 +53,7 @@ PLAN = [
     ("usdt", "arzdigital.com", ARZ + "coins/tether/"), ("usdt", "kifpool.me", KIF),
     ("gold", "tgju.org", TGJU + "geram18"), ("gold", "kifpool.me", KIF),
     ("coin", "tgju.org", TGJU + "sekee"),
+    ("usd", "guardnet", GUARD), ("usdt", "guardnet", GUARD), ("gold", "guardnet", GUARD), ("aed", "guardnet", GUARD),
     ("afn", "tgju.org", TGJU + "price_afn"), ("afn", "bitpin.ir", BIT + "afn/"),
     ("afn", "tabdeal.org", TAB + "afn-irr"), ("afn", "alanchand.com", ALAN + "afn"),
     ("pkr", "tgju.org", TGJU + "price_pkr"), ("pkr", "alanchand.com", ALAN + "pkr"),
