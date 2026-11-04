@@ -42,7 +42,6 @@ SPEC = {
     "aed": ("درهم امارات", r"درهم", lambda u: u / 3.6725, 0.08),
 }
 OK, KIF = "https://ok-ex.io/live/currency/", "https://kifpool.me/live/currency"
-GUARD = "https://app.guardnet.qzz.io/#market"  # JS-rendered page ("Narkhnama"): read through the browser fallback
 BIT, TAB = "https://bitpin.ir/academy/live/currency/", "https://tabdeal.org/convert/"
 TGJU, ALAN, ARZ = "https://www.tgju.org/profile/", "https://alanchand.com/currencies-price/", "https://arzdigital.com/"
 # (currency, source label, url). The owner's references for PKR/AFN come first; the rest are best guesses
@@ -53,7 +52,6 @@ PLAN = [
     ("usdt", "arzdigital.com", ARZ + "coins/tether/"), ("usdt", "kifpool.me", KIF),
     ("gold", "tgju.org", TGJU + "geram18"), ("gold", "kifpool.me", KIF),
     ("coin", "tgju.org", TGJU + "sekee"),
-    ("usd", "guardnet", GUARD), ("usdt", "guardnet", GUARD), ("gold", "guardnet", GUARD), ("aed", "guardnet", GUARD),
     ("afn", "tgju.org", TGJU + "price_afn"), ("afn", "bitpin.ir", BIT + "afn/"),
     ("afn", "tabdeal.org", TAB + "afn-irr"), ("afn", "alanchand.com", ALAN + "afn"),
     ("pkr", "tgju.org", TGJU + "price_pkr"), ("pkr", "alanchand.com", ALAN + "pkr"),
@@ -144,7 +142,17 @@ def fetch_nabzesh(cur: str, usd: float) -> float | None:
 
 
 
+_JSON: dict = {}
+
+
 def jget(url: str, site: str | None = None, params: dict | None = None):
+    key = (url, json.dumps(params, sort_keys=True))
+    if key not in _JSON:
+        _JSON[key] = _jget(url, site, params)
+    return _JSON[key]
+
+
+def _jget(url: str, site: str | None, params: dict | None):
     headers = {"Accept": "application/json", **({"Referer": site + "/"} if site else {})}
     if cffi:
         r = cffi.get(url, params=params, headers=headers, impersonate="chrome", timeout=20)
@@ -216,6 +224,19 @@ def _daric(js):
     return _mid(js["Data"]["BestSellPrice"], js["Data"]["BestBuyPrice"])
 
 
+def _guard_cur(code):
+    return lambda js: next((_num(i["sell_price"]["value"]) for i in js["data"]["currency_prices"]["items"] if i.get("code") == code), None)
+
+
+def _guard_gold(slug):
+    return lambda js: next((_num(i["price"]) for i in js["data"]["gold_prices"]["items"] if i.get("slug") == slug), None)
+
+
+def _guard_usdt(js):
+    return next((_num(i["price_toman"]) for i in js["data"]["crypto_prices"]["items"] if i.get("symbol") == "USDT"), None)
+
+
+GUARD = "https://app.guardnet.qzz.io/api/prices"  # the JSON behind app.guardnet.qzz.io (toman)
 # (currency, label, url, site, params, parser): public endpoints taken from the iran-crypto-mcp / iran-gold-mcp sources
 API = [
     ("usdt", "wallex.ir", "https://api.wallex.ir/v1/markets", None, None, _wallex),
@@ -225,6 +246,10 @@ API = [
     ("usdt", "ramzinex.com", "https://api.ramzinex.ir/exchange/api/v1.0/exchange/pairs", None, None, _ramz),
     ("usdt", "bitpin.ir", "https://api.bitpin.ir/api/v1/mkt/tickers/", None, None, _bitpin),
     ("usdt", "ok-ex.io", "https://azapi.ok-ex.io/api/v1/asset/otc/tickers", None, None, _okex),
+    *[(c, "guardnet.qzz.io", GUARD, None, None, _guard_cur(c)) for c in ("usd", "aed", "afn", "pkr")],
+    ("usdt", "guardnet.qzz.io", GUARD, None, None, _guard_usdt),
+    ("gold", "guardnet.qzz.io", GUARD, None, None, _guard_gold("18ayar")),
+    ("coin", "guardnet.qzz.io", GUARD, None, None, _guard_gold("sekkeh")),
     ("gold", "milli.gold", "https://milli.gold/api/v1/public/milli-price/external", "https://milli.gold", None, _milli),
     ("gold", "wallgold.ir", "https://api.wallgold.ir/api/v1/prices", "https://wallgold.ir", None, _wallgold),
     ("gold", "melligold.com", "https://melligold.com/api/v1/exchange/buy-sell-price/", "https://melligold.com",
@@ -314,6 +339,10 @@ def run(data: dict, health: dict) -> list[str]:
             v = extract(c, s, texts.get(u, ""), usd)
             if v:
                 found[(c, s)] = v
+    try:
+        jget(GUARD)  # one shared reply for 7 entries: fetch it once before the parallel calls
+    except Exception:
+        pass  # each entry reports its own failure below
     with ThreadPoolExecutor(8) as ex:
         api_vals = list(ex.map(lambda e: fetch_api(e, usd), API))
     api_found = {(e[0], e[1]): v for e, v in zip(API, api_vals) if v}

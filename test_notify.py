@@ -77,4 +77,10 @@ with mock.patch.object(fp, "jget", return_value={"data": [{"baseCurrencyId": "US
 with mock.patch.object(fp, "jget", side_effect=RuntimeError("blocked")):
     assert fp.fetch_api(("usdt", "x", "u", None, None, fp._omp), 270500) is None  # a dead source never breaks the run
 assert fp.extract("coin", "tgju.org", "سکه امامی طرح جدید 2,950,000,000 ریال", 270500) == 295000000
+# guardnet JSON (shape from /api/prices): currency sell price, 18k gold per gram, Emami coin, USDT toman
+g = {"data": {"currency_prices": {"items": [{"code": "usd", "sell_price": {"value": 269300}}, {"code": "pkr", "sell_price": {"value": 990}}]},
+              "gold_prices": {"items": [{"slug": "18ayar", "price": 25800000}, {"slug": "sekkeh", "price": 295000000}]},
+              "crypto_prices": {"items": [{"symbol": "USDT", "price_toman": 270275}]}}}
+assert fp._guard_cur("usd")(g) == 269300 and fp._guard_cur("pkr")(g) == 990 and fp._guard_cur("aed")(g) is None
+assert fp._guard_gold("18ayar")(g) == 25800000 and fp._guard_gold("sekkeh")(g) == 295000000 and fp._guard_usdt(g) == 270275
 print("ok")
