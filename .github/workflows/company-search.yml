@@ -1,0 +1,44 @@
+name: Company search
+
+on:
+  workflow_dispatch:
+    inputs:
+      keyword:
+        description: Product or activity keyword, e.g. ذرت
+        required: true
+      refresh:
+        description: Ignore the cache and search again
+        default: 'false'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bazarban-company-search
+  cancel-in-progress: false
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check rasmio-mcp
+      - name: Restore the database (db branch)
+        run: |
+          mkdir -p db
+          git fetch --depth=1 origin db 2>/dev/null && for f in companies searches; do git show FETCH_HEAD:$f.json > db/$f.json; done || echo "no db branch yet"
+      - name: Search and update the database
+        env:
+          KW: ${{ inputs.keyword }}
+          REFRESH: ${{ inputs.refresh }}
+        run: python company_search.py "$KW" ${{ inputs.refresh == 'true' && '--refresh' || '' }}
+      - name: Publish the database (single commit on the db branch)
+        run: |
+          d=$(mktemp -d) && cp db/*.json "$d" && cd "$d"
+          git init -q -b db && git config user.name bazarban-bot && git config user.email bot@users.noreply.github.com
+          git add . && git commit -qm "db $(date -u +%FT%TZ)"
+          git push -q -f https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git db

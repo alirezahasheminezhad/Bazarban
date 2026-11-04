@@ -28,6 +28,7 @@ body{font-family:Vazirmatn,Tahoma,sans-serif;background:var(--bg);color:var(--in
 .panel{display:grid;gap:16px;min-width:0}
 .ph{font-size:20px;font-weight:600;padding:0 6px;display:flex;align-items:center;gap:10px}
 .ph::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--acc)}
+.tbl{border-collapse:collapse;font-size:12px;width:100%}.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:right;vertical-align:top}.tbl th{color:var(--mute);font-weight:500;white-space:nowrap}
 .card{background:var(--card);border-radius:28px;padding:22px;display:flex;flex-direction:column;gap:12px;min-width:0}
 .card.w{background:#fff;border:1px solid var(--line)}
 .ch{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:13px}
@@ -129,6 +130,17 @@ body.lock #lock{display:grid}
       <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>نرخ ارز و طلا (میانگین منابع)<span class="tag" id="fxTag"></span></div>
       <div class="fxg" id="fxList"></div>
       <div class="sub">میانگین همه‌ی منابع است. اطمینان = سهم منابعی که قیمتشان (تا ۲٪ اختلاف) به هم نزدیک است؛ منبع کمرنگ‌شده با بقیه فاصله دارد.</div>
+    </div>
+  </section>
+
+  <section class="grid" id="co">
+    <div class="card w">
+      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>جستجوی شرکت‌ها (رسمیو)<span class="tag" id="coTag"></span></div>
+      <div class="two"><div class="fld"><label for="coKw">کالا یا حوزه‌ی فعالیت (مثلاً ذرت)</label><input id="coKw" class="t"></div>
+      <div class="fld"><label for="coTok">توکن گیت‌هاب (فقط روی همین مرورگر ذخیره می‌شود)</label><input id="coTok" type="password" autocomplete="off"></div></div>
+      <div class="bar"><button class="btn" type="button" id="coGo">جستجو</button><button class="x" type="button" id="coRef" title="جستجوی دوباره‌ی کامل (نادیده گرفتن ذخیره)">↻</button><button class="btn" type="button" id="coXls" hidden>خروجی اکسل</button><span class="sub" id="coMsg"></span></div>
+      <div style="overflow:auto"><table id="coTbl" class="tbl"></table></div>
+      <div class="sub">نتیجه‌ی هر جستجو در پایگاه‌داده‌ی گیت‌هاب ذخیره می‌شود و جستجوی تکراری بدون اجرای دوباره نمایش داده می‌شود. مرتب‌سازی: سرمایه‌ی ثبتی بالاتر، تأییدشده‌تر و دارای مجوز بیشتر. نشانی و کد پستی فقط برای شرکت‌هایی پر می‌شود که پروفایلشان دریافت شده؛ رسمیو در هر اجرا حدود ۵ پروفایل می‌دهد و با جستجوی دوباره تکمیل می‌شود. شماره تلفن در رسمیو وجود ندارد.</div>
     </div>
   </section>
 
@@ -749,6 +761,43 @@ calcAll();
 // دریافت اولیه و سپس بررسی مجدد هر ۵ دقیقه
 loadMarketData();
 setInterval(loadMarketData,300000);
+
+/* جستجوی شرکت‌ها: دیتابیس روی شاخه‌ی db، اجرا با workflow_dispatch */
+const REPO='alirezahasheminezhad/Bazarban', RAW='https://raw.githubusercontent.com/'+REPO+'/db/';
+const norm = t => t.replace(/\s+/g,' ').trim().replace(/ي/g,'ی').replace(/ك/g,'ک');
+let coRows=[];
+const rj = async n => { try{ const r=await fetch(RAW+n+'.json?_='+Date.now()); return r.ok ? await r.json() : {}; }catch{ return {}; } };
+function coShow(s,db){
+  coRows = s.ranked.map((id,i)=>{ const c=db[id]||{}, p=c.profile||{};
+    return {'رتبه':i+1,'نام':c.name,'شناسه ملی':id,'مدیرعامل':c.ceo||'','نشانی':p.address||'','کد پستی':p.postal_code||'','سرمایه (ریال)':p.capital_rial||'','تاریخ تأسیس':p.founded||'','تأییدشده':c.verified_by_company?'بله':'','تعداد مجوز':c.license_count||'','محصولات':(c.top_products||[]).join('، '),'خلاصه':c.summary||''}; });
+  const h=Object.keys(coRows[0]);
+  $('coTbl').innerHTML='<tr>'+h.map(k=>'<th>'+k+'</th>').join('')+'</tr>'+coRows.map(r=>'<tr>'+h.map(k=>'<td>'+String(r[k]).replace(/</g,'&lt;')+'</td>').join('')+'</tr>').join('');
+  $('coXls').hidden=false; $('coTag').textContent=fa(s.total)+' شرکت یافت شد · '+fa(coRows.length)+' ذخیره';
+}
+async function coSearch(refresh){
+  const kw=norm($('coKw').value), tok=$('coTok').value.trim(), msg=t=>$('coMsg').textContent=t;
+  if(!kw) return;
+  if(!refresh){ const s=(await rj('searches'))[kw]; if(s&&s.ranked){ coShow(s,await rj('companies')); msg('از پایگاه‌داده'); return; } }
+  if(!tok){ msg('این کلمه هنوز جستجو نشده؛ برای اجرا توکن گیت‌هاب (دسترسی Actions: write) را وارد کن.'); return; }
+  try{ localStorage.setItem('bazarban_gh',tok); }catch{}
+  const r=await fetch('https://api.github.com/repos/'+REPO+'/actions/workflows/company-search.yml/dispatches',{method:'POST',headers:{Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'},body:JSON.stringify({ref:'main',inputs:{keyword:kw,refresh:String(!!refresh)}})});
+  if(r.status!==204){ msg('اجرای جستجو ناموفق بود ('+r.status+'): توکن یا دسترسی را بررسی کن.'); return; }
+  const t0=Date.now(), was=refresh?((await rj('searches'))[kw]||{}).at:null;
+  msg('جستجو در حال اجراست… (معمولاً ۱ تا ۳ دقیقه)');
+  const iv=setInterval(async()=>{
+    const s=(await rj('searches'))[kw];
+    if(s&&s.ranked&&(!refresh||s.at!==was)){ clearInterval(iv); coShow(s,await rj('companies')); msg('انجام شد'); }
+    else if(Date.now()-t0>12*60e3){ clearInterval(iv); msg('نتیجه نیامد؛ لاگ اجرا را در تب Actions گیت‌هاب ببین.'); }
+  },15000);
+}
+$('coGo').onclick=()=>coSearch(false); $('coRef').onclick=()=>coSearch(true);
+$('coKw').onkeydown=e=>{ if(e.key==='Enter') coSearch(false); };
+try{ $('coTok').value=localStorage.getItem('bazarban_gh')||''; }catch{}
+$('coXls').onclick=async()=>{
+  if(!window.XLSX){ await new Promise((ok,no)=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload=ok; s.onerror=no; document.head.appendChild(s); }); }
+  const wb=XLSX.utils.book_new(), ws=XLSX.utils.json_to_sheet(coRows); wb.Workbook={Views:[{RTL:true}]};
+  XLSX.utils.book_append_sheet(wb,ws,'شرکت‌ها'); XLSX.writeFile(wb,'companies-'+norm($('coKw').value)+'.xlsx');
+};
 </script>
 </body>
 </html>
