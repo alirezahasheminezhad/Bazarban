@@ -12,7 +12,7 @@ PRODUCTS = {  # Persian name -> English news query
     "فلفل قرمز پاکستانی (عنابی)": "Pakistan red chilli price Kunri Sindh",
     "زنجبیل": "ginger price China India",
 }
-FAST, STRONG = ("deepseek-v4.1-flash",), ("kimi-k3.1-pro", "mistral-large-4", "kimi-k2.6", "nemotron-3-ultra")  # first match wins
+MODELS = ("mistral-large-4", "gemma-4-31b-it", "deepseek-v4.1-flash")  # non-reasoning first (fast); first match wins
 
 
 def headlines(q, n=8):
@@ -28,13 +28,13 @@ def headlines(q, n=8):
 
 
 def pick(ids, want):
-    return os.environ.get("FAST_MODEL" if want == FAST else "STRONG_MODEL") or next((i for w in want for i in ids if w in i), None)
+    return os.environ.get("MODEL") or next((i for w in want for i in ids if w in i), None)
 
 
-def chat(key, model, prompt, max_tokens=8000):
-    for a in range(3):
+def chat(key, model, prompt, max_tokens=2500):
+    for a in range(2):
         try:
-            r = requests.post(f"{BASE}/chat/completions", headers={"Authorization": f"Bearer {key}"}, timeout=300,
+            r = requests.post(f"{BASE}/chat/completions", headers={"Authorization": f"Bearer {key}"}, timeout=120,
                               json={"model": model, "messages": [{"role": "user", "content": prompt}],
                                     "temperature": 0.3, "max_tokens": max_tokens})
             r.raise_for_status()
@@ -53,29 +53,26 @@ def main():
     r = requests.get(f"{BASE}/models", headers={"Authorization": f"Bearer {key}"}, timeout=30)
     r.raise_for_status()
     ids = [m["id"] for m in r.json()["data"]]
-    fast, strong = pick(ids, FAST), pick(ids, STRONG)
-    print("models:", fast, strong)
-    if not fast or not strong:
+    model = pick(ids, MODELS)
+    print("model:", model)
+    if not model:
         raise SystemExit("model not found; candidates: " + ", ".join(i for i in ids if re.search("kimi|deepseek|mistral|gemma|nemotron", i)))
-    notes = []
+    blocks = []
     for fa_name, q in PRODUCTS.items():
         h = headlines(q)
         print(fa_name, len(h), "headlines")
-        if not h:
-            continue
-        notes.append(f"## {fa_name}\n" + chat(key, fast, f"""این تیترهای خبری اخیر درباره‌ی «{fa_name}» است. فقط بر پایه‌ی همین تیترها (بدون حدس) به فارسی بنویس:
-۱) حداکثر ۳ خط خلاصه‌ی اخبار مهم، هر کدام با لینک منبع. ۲) اثر کلی روی قیمت: صعودی / نزولی / خنثی / نامشخص.
-اگر تیتری بی‌ربط بود نادیده بگیر.
-{chr(10).join(h)}""", 8000))
-    final = chat(key, strong, f"""تو کارشناس بازار ادویه برای یک واردکننده‌ی ایرانی هستی. خلاصه‌ی اخبار ۲ هفته‌ی اخیر هر محصول:
+        if h:
+            blocks.append(f"## {fa_name}\n" + "\n".join(h))
+    text = "📰 مرور خبر بازار ادویه (آزمایشی)\n\n" + chat(key, model, f"""تو تحلیلگر بازار ادویه برای یک واردکننده‌ی ایرانی هستی. تیترهای خبری ۲ هفته‌ی اخیر هر محصول:
 
-{chr(10).join(notes)}
+{chr(10).join(blocks)}
 
-به فارسی روان و کوتاه بنویس. برای هر محصول: روند محتمل ۲ تا ۴ هفته‌ی آینده (افزایشی / ثابت / کاهشی / نامشخص)، درجه‌ی اطمینان (کم/متوسط/زیاد)، ۲ دلیل از همین خبرها، و یک ریسک.
-فقط از خبرهای بالا استفاده کن؛ اگر شواهد کم است صریح بنویس «شواهد کافی نیست». عدد قیمت نساز. در پایان بنویس که این تحلیل خبری است نه تضمین قیمت.""", 12000)
-    text = "📰 تحلیل خبری بازار ادویه (آزمایشی)\n\n" + final
+فقط بر پایه‌ی همین تیترها و کوتاه، به فارسی بنویس. برای هر محصول یک خط:
+«نام محصول — 🟢 مثبت / 🔴 منفی / ⚪ خنثی (برای قیمت‌ها: مثبت یعنی احتمال گرانی، منفی یعنی احتمال ارزانی؛ سیل و کمبود محصول = گرانی) — یک جمله دلیل — لینک مهم‌ترین خبر».
+اگر شواهد کم است بنویس «شواهد کافی نیست». عدد قیمت نساز.
+در پایان یک پاراگراف ۲ تا ۳ خطی «جمع‌بندی کلی» بنویس و بگو این مرور خبری است نه تضمین قیمت.""")
     print(text)
-    open(os.environ.get("GITHUB_STEP_SUMMARY", "news_test.out.md"), "a", encoding="utf-8").write(text + "\n\n---\n" + "\n\n".join(notes))
+    open(os.environ.get("GITHUB_STEP_SUMMARY", "news_test.out.md"), "a", encoding="utf-8").write(text + "\n")
     if os.environ.get("SEND") == "true":
         from notify import send
         send(text[:3900])
