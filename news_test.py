@@ -12,7 +12,7 @@ PRODUCTS = {  # Persian name -> English news query
     "فلفل قرمز پاکستانی (عنابی)": "Pakistan red chilli price Kunri Sindh",
     "زنجبیل": "ginger price China India",
 }
-FAST, STRONG = ("deepseek-v4.1-flash", "kimi-k3.1-pro")
+FAST, STRONG = ("deepseek-v4.1-flash",), ("kimi-k3.1-pro", "mistral-large-4", "kimi-k2.6", "nemotron-3-ultra")  # first match wins
 
 
 def headlines(q, n=8):
@@ -28,7 +28,7 @@ def headlines(q, n=8):
 
 
 def pick(ids, want):
-    return os.environ.get("FAST_MODEL" if want == FAST else "STRONG_MODEL") or next((i for i in ids if want in i), None)
+    return os.environ.get("FAST_MODEL" if want == FAST else "STRONG_MODEL") or next((i for w in want for i in ids if w in i), None)
 
 
 def chat(key, model, prompt, max_tokens=3000):
