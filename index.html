@@ -759,7 +759,7 @@ async function loadLiveUsdt(){
   try{
     const d = await (await fetch(LIVE_USDT_URL,{cache:'no-store'})).json();
     if(!d || d.error || d.stale || !(d.price>0)) throw new Error('no fresh price');
-    el.innerHTML = `<span>${fa(d.price)} تومان</span><span>تتر لایو · ${fa(d.age_s)} ثانیه پیش</span>`;
+    el.innerHTML = `<span>${fa(d.price)} تومان</span><span>تتر لایو · <a href="https://t.me/tetherpriceFa" target="_blank" rel="noopener" dir="ltr" style="color:inherit">@tetherpriceFa</a> · ${fa(d.age_s)} ثانیه پیش</span>`;
     el.hidden = false;
   }catch(e){ el.hidden = true; }
 }
