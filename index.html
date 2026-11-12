@@ -752,7 +752,7 @@ loadMarketData();
 setInterval(loadMarketData,300000);
 
 /* تتر لایو از Worker کلودفلر (کانال tetherpriceFa، هر دقیقه). آدرس Worker را اینجا بگذارید؛ خالی = غیرفعال. */
-const LIVE_USDT_URL = '';
+const LIVE_USDT_URL = 'https://weathered-mode-6253.ezaccess14ea188.workers.dev/';
 async function loadLiveUsdt(){
   if(!LIVE_USDT_URL) return;
   const el = $('fxLive');
