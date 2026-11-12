@@ -128,6 +128,7 @@ body.lock #lock{display:grid}
     <div class="card w">
       <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>نرخ ارز و طلا (میانگین منابع)<span class="tag" id="fxTag"></span></div>
       <div class="fxg" id="fxList"></div>
+      <div class="fxs" id="fxLive" hidden style="margin-top:10px"></div>
       <div class="sub">میانگین همه‌ی منابع است. اطمینان = سهم منابعی که قیمتشان (تا ۲٪ اختلاف) به هم نزدیک است؛ منبع کمرنگ‌شده با بقیه فاصله دارد.</div>
     </div>
   </section>
@@ -749,6 +750,21 @@ calcAll();
 // دریافت اولیه و سپس بررسی مجدد هر ۵ دقیقه
 loadMarketData();
 setInterval(loadMarketData,300000);
+
+/* تتر لایو از Worker کلودفلر (کانال tetherpriceFa، هر دقیقه). آدرس Worker را اینجا بگذارید؛ خالی = غیرفعال. */
+const LIVE_USDT_URL = '';
+async function loadLiveUsdt(){
+  if(!LIVE_USDT_URL) return;
+  const el = $('fxLive');
+  try{
+    const d = await (await fetch(LIVE_USDT_URL,{cache:'no-store'})).json();
+    if(!d || d.error || d.stale || !(d.price>0)) throw new Error('no fresh price');
+    el.innerHTML = `<span>${fa(d.price)} تومان</span><span>تتر لایو · ${fa(d.age_s)} ثانیه پیش</span>`;
+    el.hidden = false;
+  }catch(e){ el.hidden = true; }
+}
+loadLiveUsdt();
+setInterval(loadLiveUsdt,30000);
 </script>
 </body>
 </html>
