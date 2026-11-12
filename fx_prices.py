@@ -258,6 +258,42 @@ API = [
 ]
 
 
+# Public Telegram channels that post a rate every minute (read through the t.me/s/<channel> web preview).
+# (currency, source label, channel). The price is the newest "<number> IRT" post (IRT = toman).
+TG = [("usdt", "t.me/tetherpriceFa", "tetherpriceFa")]
+TG_MAX_AGE_S = 15 * 60  # the channel posts every minute: an older last post means it stopped, so don't trust it
+TG_PRICE = re.compile(r"(\d[\d,٬]*(?:\.\d+)?)\s*IRT\b")
+
+
+def parse_tg(html: str, now: datetime | None = None) -> float | None:
+    """Newest post of a t.me/s page that holds '<number> IRT' and is fresh enough -> toman."""
+    now = now or datetime.now(timezone.utc)
+    for msg in reversed(BeautifulSoup(html, "html.parser").select(".tgme_widget_message")):
+        box, stamp = msg.select_one(".tgme_widget_message_text"), msg.select_one("time[datetime]")
+        m = TG_PRICE.search(digits_to_ascii(box.get_text(" ", strip=True))) if box else None
+        if not m:
+            continue  # an ad or announcement: look at the post before it
+        try:
+            age = (now - datetime.fromisoformat(stamp["datetime"])).total_seconds()
+        except (TypeError, ValueError, KeyError):
+            return None  # no readable time: can't tell if it is fresh
+        return float(m.group(1).replace(",", "").replace("٬", "")) if age <= TG_MAX_AGE_S else None
+    return None
+
+
+def fetch_tg(entry, usd: float) -> float | None:
+    cur, label, channel = entry
+    try:
+        r = requests.get(f"https://t.me/s/{channel}", headers=HEADERS, timeout=20)
+        r.raise_for_status()
+        v = parse_tg(r.text)
+    except Exception as e:
+        print(f"fx tg {cur} {label}: {type(e).__name__} {getattr(getattr(e, 'response', None), 'status_code', '')}", file=sys.stderr)
+        return None
+    lo, hi = bounds(cur, usd)
+    return next((v / d for d in (1, 10) if v and lo <= v / d <= hi), None)
+
+
 def fetch_api(entry, usd: float) -> float | None:
     cur, label, url, site, params, parse = entry
     try:
@@ -345,8 +381,9 @@ def run(data: dict, health: dict) -> list[str]:
         pass  # each entry reports its own failure below
     with ThreadPoolExecutor(8) as ex:
         api_vals = list(ex.map(lambda e: fetch_api(e, usd), API))
-    api_found = {(e[0], e[1]): v for e, v in zip(API, api_vals) if v}
-    for e, v in zip(API, api_vals):
+    tg_vals = [fetch_tg(e, usd) for e in TG]
+    api_found = {(e[0], e[1]): v for e, v in zip(API + TG, api_vals + tg_vals) if v}
+    for e, v in zip(API + TG, api_vals + tg_vals):
         print(f"fx {e[0]} {e[1]}: {v or 'none'}")
     items, alerts = [], []
     for cur, (name, *_rest) in SPEC.items():
@@ -356,7 +393,7 @@ def run(data: dict, health: dict) -> list[str]:
         vals += [(lbl, v) for (c, lbl), v in api_found.items() if c == cur]
         if nab:
             vals.append(("nabzesh.ir", nab))
-        for e in API:
+        for e in API + TG:
             if e[0] == cur:
                 alerts += update_health(health, f"{cur}|{e[1]}", f"{e[1]} برای {name}", (e[0], e[1]) in api_found)
         alerts += update_health(health, f"{cur}|nabzesh.ir", f"nabzesh.ir برای {name}", bool(nab))
