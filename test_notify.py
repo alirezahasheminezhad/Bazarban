@@ -1,7 +1,10 @@
 import json
-from datetime import datetime, timezone
+import os
+import tempfile
+from datetime import date, datetime, timezone
+from pathlib import Path
 
-from fetch_prices import trim_history
+from fetch_prices import trim_history, expiry_key, _candidate_rows
 from fx_prices import aggregate, find_price, extract
 from notify import build_alert_message, build_fx_message, build_message, stale_alert
 from fx_prices import update_health
@@ -83,4 +86,48 @@ g = {"data": {"currency_prices": {"items": [{"code": "usd", "sell_price": {"valu
               "crypto_prices": {"items": [{"symbol": "USDT", "price_toman": 270275}]}}}
 assert fp._guard_cur("usd")(g) == 269300 and fp._guard_cur("pkr")(g) == 990 and fp._guard_cur("aed")(g) is None
 assert fp._guard_gold("18ayar")(g) == 25800000 and fp._guard_gold("sekkeh")(g) == 295000000 and fp._guard_usdt(g) == 270275
+# expiry: full dates keep the day; month-only labels do not
+assert expiry_key("20-Nov-2026") == (2026, 11, 20)
+assert expiry_key("18-Dec-2026") == (2026, 12, 18)
+assert expiry_key("Nov26") == (2026, 11, None)
+assert expiry_key("Dec 2026") == (2026, 12, None)
+assert expiry_key("26,600.00") is None
+# an expired contract is rolled over on its expiry DAY, not at month end
+from bs4 import BeautifulSoup
+tbl = ('<table><tr><th>Contract</th><th>Expiry</th><th>LTP</th></tr>'
+       '<tr><td>Pepper</td><td>20-Nov-2026</td><td>780</td></tr>'
+       '<tr><td>Pepper</td><td>18-Dec-2026</td><td>790</td></tr></table>')
+soup = BeautifulSoup(tbl, "html.parser")
+assert _candidate_rows(soup, "pepper", today=date(2026, 11, 19))[0]["price"] == 780
+assert _candidate_rows(soup, "pepper", today=date(2026, 11, 21))[0]["price"] == 790  # Nov contract expired on the 20th
+assert _candidate_rows(soup, "pepper", today=date(2026, 12, 17))[0]["price"] == 790
+assert _candidate_rows(soup, "pepper", today=date(2026, 12, 19)) == []  # Dec contract expired on the 18th
+# turmeric: Farmer Polished is preferred over the plain contract at the same expiry
+tbl2 = ('<table><tr><th>Contract</th><th>Expiry</th><th>LTP</th></tr>'
+        '<tr><td>Turmeric</td><td>18-Dec-2026</td><td>26500</td></tr>'
+        '<tr><td>Turmeric (Farmer Polished)</td><td>18-Dec-2026</td><td>26600</td></tr></table>')
+assert _candidate_rows(BeautifulSoup(tbl2, "html.parser"), "turmeric", today=date(2026, 11, 14))[0]["price"] == 26600
+# fx alerts are transition events: a run with no new alerts must clear the old ones (no repeated bot messages)
+import fx_prices
+with tempfile.TemporaryDirectory() as td:
+    p = Path(td) / "data.json"
+    p.write_text(json.dumps({"usd_toman": 270500, "alerts": ["old"]}), encoding="utf-8")
+    with mock.patch.object(fx_prices, "OUTPUT", p), mock.patch.object(fx_prices, "run", return_value=[]):
+        fx_prices.main()
+    assert "alerts" not in json.loads(p.read_text(encoding="utf-8"))
+    p.write_text(json.dumps({"usd_toman": 270500}), encoding="utf-8")
+    with mock.patch.object(fx_prices, "OUTPUT", p), mock.patch.object(fx_prices, "run", return_value=["new"]):
+        fx_prices.main()
+    assert json.loads(p.read_text(encoding="utf-8"))["alerts"] == ["new"]
+# notify: long messages are split below the Telegram limit, on line boundaries
+import notify
+long = "\n".join(f"line {i} " + "x" * 100 for i in range(60))
+with mock.patch.dict(os.environ, {"TELEGRAM_BOT_TOKEN": "t", "TELEGRAM_CHAT_ID": "1"}, clear=True):
+    with mock.patch.object(notify.requests, "post") as post:
+        post.return_value = mock.Mock(raise_for_status=lambda: None, json=lambda: {"ok": True})
+        notify.send(long)
+        assert post.call_count >= 2
+        sent = [c.kwargs["json"]["text"] for c in post.call_args_list]
+        assert all(len(t) <= notify.MSG_LIMIT for t in sent)
+        assert "\n".join(sent) == long
 print("ok")

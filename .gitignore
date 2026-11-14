@@ -1,1 +1,6 @@
 __pycache__/
+*.log
+.venv/
+node_modules/
+.wrangler/
+news_test.out.md

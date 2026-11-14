@@ -349,8 +349,11 @@ def main() -> None:
         OUTPUT.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         raise
     alerts += update_health(health, "_crash", "بخش ارز و طلا", True)
+    # Alerts are transition events (3rd miss / recovery): never keep an old one, or the bots re-send it every run.
     if alerts:
         data["alerts"] = alerts
+    else:
+        data.pop("alerts", None)
     OUTPUT.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 

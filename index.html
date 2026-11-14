@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="بازاربان — محاسبه هزینه تمام‌شده بار وارداتی زردچوبه و فلفل سیاه با قیمت زنده NCDEX و نرخ ارز و طلا">
+<meta name="theme-color" content="#e2654a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23000'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='%23fff' font-family='Tahoma'%3E%D8%A8%3C/text%3E%3C/svg%3E">
 <title>بازاربان | هزینه تمام‌شده بار</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,6 +37,7 @@ body{font-family:Vazirmatn,Tahoma,sans-serif;background:var(--bg);color:var(--in
 .ico{width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--acc);flex:none}
 .ico svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .tag{margin-inline-start:auto;font-size:11px;border:1px solid var(--line);background:#fff;border-radius:99px;padding:2px 10px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tag.reset{cursor:pointer;border-color:var(--acc);color:var(--acc)}
 .fld{display:grid;gap:4px}
 .fld label{font-size:12px;color:var(--mute)}
 input,select{font:inherit;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 14px;width:100%;direction:ltr;text-align:right;transition:border-color .2s}
@@ -118,7 +122,7 @@ body.lock #lock{display:grid}
 
   <section class="grid">
     <div class="card w">
-      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></span>نرخ ارز (مشترک بین هر دو محصول)<span class="tag" id="tagR">در انتظار دریافت</span></div>
+      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></span>نرخ ارز (مشترک بین هر دو محصول)<span class="tag" id="tagR" data-act="autoRate">در انتظار دریافت</span></div>
       <div class="fld"><label for="rate">تومان به ازای هر دلار</label><input id="rate" inputmode="decimal" value="120000"></div>
       <div class="sub">هزینه تبدیل ارز را در فهرست هزینه‌ها بیاور · منبع نرخ ارز: ارزدیجیتال</div>
     </div>
@@ -164,6 +168,7 @@ const toEn = s => String(s)
 const num = v => parseFloat(toEn(v).replace(/[^\d.]/g,'')) || 0;
 const fa = (n,d=0) => isFinite(n) ? n.toLocaleString('fa-IR',{maximumFractionDigits:d}) : '—';
 const tm = n => fa(n)+' تومان';
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // سه‌رقم سه‌رقم کردن ورودی‌ها
 const group = s => {
@@ -215,7 +220,7 @@ const panelHTML = k => `
   <h3 class="ph">${P[k].name}</h3>
 
   <div class="card w">
-    <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>قیمت جهانی<span class="tag" id="tag_${k}">در انتظار دریافت</span></div>
+    <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>قیمت جهانی<span class="tag" id="tag_${k}" data-act="auto" data-p="${k}">در انتظار دریافت</span></div>
     <div class="fld"><label for="price_${k}">دلار به ازای هر تن</label><input id="price_${k}" data-p="${k}" data-price="1" inputmode="decimal" value="${P[k].price}"></div>
     <div class="sub" id="priceT_${k}"></div>
     <div class="sub">منبع قیمت: ${P[k].src} · قیمت نمونه تا زمان دریافت داده</div>
@@ -299,7 +304,7 @@ function drawRows(k){
   g('rows',k).innerHTML = P[k].costs.map((c,i)=>`
     <div class="row${c.on?'':' off'}" id="row${i}_${k}">
       <input type="checkbox" data-p="${k}" data-i="${i}" data-f="on"${c.on?' checked':''} aria-label="فعال">
-      <input class="t" aria-label="عنوان هزینه" data-p="${k}" data-i="${i}" data-f="n" value="${c.n}">
+      <input class="t" aria-label="عنوان هزینه" data-p="${k}" data-i="${i}" data-f="n" value="${esc(c.n)}">
       <button class="x" type="button" data-p="${k}" data-del="${i}" aria-label="حذف">×</button>
       <select aria-label="نوع هزینه" data-p="${k}" data-i="${i}" data-f="t">
         ${Object.entries(TYPES).map(([t,l])=>`<option value="${t}"${t===c.t?' selected':''}>${l}</option>`).join('')}
@@ -396,7 +401,7 @@ function calc(k){
     return `
       <div style="${p.off?'opacity:.4':''}">
         <div class="l">
-          <span>${p.n}</span>
+          <span>${esc(p.n)}</span>
           <span>${tm(p.v)} · ${tm(kgs?p.v/kgs:0)} هر کیلو · ${fa(pc,1)}٪</span>
         </div>
         <div class="tr"><i class="${p.d?'d':''}" style="width:${pc}%"></i></div>
@@ -435,7 +440,8 @@ const allHist = () => [
 
 function drawHist(k){
   const f = P[k].f, metric = P[k].metric;
-  const h = allHist().filter(e=>e[f]>0);
+  const ok = e => metric==='r' ? e.r>0 : metric==='p' ? e[f]>0 : (e[f]>0 && e.r>0);
+  const h = allHist().filter(ok);
   g('hcount',k).textContent = fa(h.length)+' ثبت';
 
   const val = e =>
@@ -476,7 +482,7 @@ function drawHist(k){
       <span>${fa(e[f])} دلار/تن</span>
       <span>${fa(e.r)} تومان/دلار</span>
       <span>${tm(model(k,e[f],e.r).perKg)}/کیلو</span>
-      ${e.f?'<span></span>':`<button class="x hx" type="button" data-hdel="${e.t}" aria-label="حذف ثبت">×</button>`}
+      ${e.f?'<span></span>':`<button class="x hx" type="button" data-hdel="${esc(e.t)}" aria-label="حذف ثبت">×</button>`}
     </div>
   `).join('');
 }
@@ -485,8 +491,61 @@ function drawHist(k){
 let autoRate = true;
 let lastDataSignature = '';
 let lastGoodDataTime = null;
+let lastMarket = null;  // آخرین قیمت‌های دریافتی، برای بازگشت از حالت دستی به خودکار
 
-const setTag = (k,s) => { g('tag',k).textContent = s; };
+const setTag = (k,s) => {
+  const el = g('tag',k);
+  el.textContent = s==='دستی' ? 'دستی ↺' : s;
+  el.classList.toggle('reset', s==='دستی');
+  el.title = s==='دستی' ? 'کلیک: بازگشت به قیمت خودکار' : '';
+};
+const setRateTag = s => {
+  const el = $('tagR');
+  el.textContent = s==='دستی' ? 'دستی ↺' : s;
+  el.classList.toggle('reset', s==='دستی');
+  el.title = s==='دستی' ? 'کلیک: بازگشت به نرخ خودکار' : '';
+};
+
+/* وضعیت ورودی‌ها در مرورگر می‌ماند تا با رفرش از دست نرود */
+const CFG_KEY = 'bazarban_cfg_v1';
+function saveState(){
+  try{
+    const s = {rate:$('rate').value, autoRate, products:{}};
+    KEYS.forEach(k=>{
+      s.products[k] = {
+        price:P[k].price, auto:P[k].auto, metric:P[k].metric,
+        tons:g('tons',k).value, cnt:g('cnt',k).value, oon:g('oon',k).checked?1:0,
+        opct:g('opct',k).value, ofix:g('ofix',k).value, costs:P[k].costs
+      };
+    });
+    localStorage.setItem(CFG_KEY, JSON.stringify(s));
+  }catch{}
+}
+function loadState(){
+  try{
+    const s = JSON.parse(localStorage.getItem(CFG_KEY));
+    if(!s) return;
+    if(s.rate) $('rate').value = s.rate;
+    if(s.autoRate===false){ autoRate = false; setRateTag('دستی'); }
+    KEYS.forEach(k=>{
+      const p = s.products && s.products[k];
+      if(!p) return;
+      if(Array.isArray(p.costs)) P[k].costs = p.costs;
+      if(['kg','p','r'].includes(p.metric)) P[k].metric = p.metric;
+      ['tons','cnt','opct','ofix'].forEach(f=>{ if(p[f]!==undefined) g(f,k).value = p[f]; });
+      g('oon',k).checked = !!p.oon;
+      if(p.auto===false && p.price>0){
+        P[k].auto = false;
+        P[k].price = p.price;
+        g('price',k).value = group(String(p.price));
+        setTag(k,'دستی');
+      }
+      document.querySelectorAll('#tabs_'+k+' button').forEach(
+        b=>b.classList.toggle('on', b.dataset.m===P[k].metric)
+      );
+    });
+  }catch{}
+}
 
 function setCost(t){
   const c = P[t.dataset.p].costs[t.dataset.i];
@@ -512,7 +571,7 @@ document.addEventListener('input',e=>{
   // اگر کاربر نرخ ارز را دستی تغییر داد، به‌روزرسانی خودکار آن متوقف می‌شود
   if(t.id==='rate'){
     autoRate = false;
-    $('tagR').textContent = 'دستی';
+    setRateTag('دستی');
   }
 
   if(t.inputMode==='decimal') fmtInput(t);
@@ -520,6 +579,7 @@ document.addEventListener('input',e=>{
 
   if(t.id==='rate') calcAll();
   else if(k) calc(k);
+  saveState();
 });
 
 document.addEventListener('change',e=>{
@@ -528,6 +588,7 @@ document.addEventListener('change',e=>{
 
   if(t.dataset.i!==undefined) setCost(t);
   if(k) calc(k);
+  saveState();
 });
 
 document.addEventListener('click',e=>{
@@ -537,12 +598,36 @@ document.addEventListener('click',e=>{
     P[d.p].costs.splice(+d.del,1);
     drawRows(d.p);
     calc(d.p);
+    saveState();
   }
 
   if(d.act==='add'){
     P[d.p].costs.push({on:1,n:'',t:'cont',v:0});
     drawRows(d.p);
     calc(d.p);
+    saveState();
+  }
+
+  // بازگشت از حالت دستی به خودکار (کلیک روی برچسب «دستی ↺»)
+  if(d.act==='auto' && d.p && !P[d.p].auto){
+    const k = d.p;
+    P[k].auto = true;
+    const v = lastMarket && (k==='t' ? lastMarket.price : lastMarket.pepper);
+    if(v>0){
+      P[k].price = v;
+      g('price',k).value = group(String(v));
+    }
+    setTag(k,'خودکار');
+    calc(k);
+    saveState();
+  }
+
+  if(d.act==='autoRate' && !autoRate){
+    autoRate = true;
+    if(lastMarket && lastMarket.rate>0) $('rate').value = group(String(lastMarket.rate));
+    setRateTag('خودکار');
+    calcAll();
+    saveState();
   }
 
   if(d.act==='pw'){
@@ -582,6 +667,7 @@ document.addEventListener('click',e=>{
       b=>b.classList.toggle('on',b===e.target)
     );
     drawHist(d.p);
+    saveState();
   }
 });
 
@@ -599,9 +685,9 @@ function renderFx(fx){
   if(!fx || !Array.isArray(fx.items) || !fx.items.length){ box.hidden = true; return; }
   $('fxList').innerHTML = fx.items.map(it=>`
     <div class="fxi">
-      <h4><span>${it.name}</span><span class="tag">${it.conf==null ? 'تک‌منبع' : 'اطمینان '+fa(it.conf)+'٪ · '+fa(it.k)+' از '+fa(it.n)}</span></h4>
+      <h4><span>${esc(it.name)}</span><span class="tag">${it.conf==null ? 'تک‌منبع' : 'اطمینان '+fa(it.conf)+'٪ · '+fa(it.k)+' از '+fa(it.n)}</span></h4>
       <div class="big">${fa(it.avg)}<small>تومان</small></div>
-      ${it.sources.map(x=>`<div class="fxs${x.ok?'':' bad'}"><span>${fa(x.v)}</span><span dir="ltr">${x.s}</span></div>`).join('')}
+      ${it.sources.map(x=>`<div class="fxs${x.ok?'':' bad'}"><span>${fa(x.v)}</span><span dir="ltr">${esc(x.s)}</span></div>`).join('')}
     </div>`).join('');
   $('fxTag').textContent = fx.updated ? new Date(fx.updated).toLocaleTimeString('fa-IR',{hour:'2-digit',minute:'2-digit'}) : '';
   box.hidden = false;
@@ -639,6 +725,7 @@ async function loadMarketData(){
     }
 
     renderFx(data.fx);
+    lastMarket = {price, pepper: hasB ? pepper : null, rate};
 
     // تاریخچه هم در تشخیص تغییرات لحاظ می‌شود
     const historySignature = JSON.stringify(
@@ -671,7 +758,7 @@ async function loadMarketData(){
 
       if(autoRate){
         $('rate').value = group(String(rate));
-        $('tagR').textContent = 'خودکار';
+        setRateTag('خودکار');
       }
 
       if(Array.isArray(data.history)){
@@ -737,7 +824,8 @@ async function loadMarketData(){
   }
 }
 
-// مرتب‌سازی اولیه ورودی‌ها
+// بازیابی وضعیت ذخیره‌شده، سپس مرتب‌سازی اولیه ورودی‌ها
+loadState();
 $('rate').value = group($('rate').value);
 KEYS.forEach(k=>['price','tons','cnt','opct','ofix'].forEach(id=>{
   g(id,k).value = group(g(id,k).value);

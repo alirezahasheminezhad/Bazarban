@@ -3,7 +3,7 @@
 const CHANNEL = "tetherpriceFa";
 const STALE_S = 900;
 
-const toAscii = (s) => s.replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/٬/g, ",");
+const toAscii = (s) => s.replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/٬/g, ",").replace(/٫/g, ".");
 
 export function parse(html, now = Date.now()) {
   for (const p of html.split('data-post="').slice(1).reverse()) { // newest post last on the page

@@ -16,7 +16,10 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - run: python -m pip install --disable-pip-version-check requests
+      - name: Restore latest data.json from the data branch (main's copy is stale)
+        run: |
+          git fetch --depth=1 origin data 2>/dev/null && git show FETCH_HEAD:data.json > data.json || echo "no data branch yet; using data.json from main"
+      - run: python -m pip install --disable-pip-version-check requests tzdata
       - run: python notify.py
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}

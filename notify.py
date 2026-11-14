@@ -130,14 +130,37 @@ def stale_alert(data: dict, log_path: str, now: datetime | None = None) -> str |
             f"خطا: {err[:300]}")
 
 
+MSG_LIMIT = 3900  # Telegram caps a message at 4096 chars; stay below it
+
+
+def chunks(text: str) -> list[str]:
+    """Split a long message on line boundaries so no part exceeds MSG_LIMIT."""
+    if len(text) <= MSG_LIMIT:
+        return [text]
+    parts, cur = [], ""
+    for line in text.split("\n"):
+        while len(line) > MSG_LIMIT:  # a single huge line: hard split
+            parts.append(line[:MSG_LIMIT])
+            line = line[MSG_LIMIT:]
+        if cur and len(cur) + len(line) + 1 > MSG_LIMIT:
+            parts.append(cur)
+            cur = line
+        else:
+            cur = f"{cur}\n{line}" if cur else line
+    if cur:
+        parts.append(cur)
+    return parts
+
+
 def send(text: str) -> None:
     jobs = []
-    if os.environ.get("TELEGRAM_BOT_TOKEN"):
-        jobs.append((f"https://api.telegram.org/bot{os.environ['TELEGRAM_BOT_TOKEN']}/sendMessage",
-                     {"chat_id": os.environ["TELEGRAM_CHAT_ID"], "text": text}))
-    if os.environ.get("RUBIKA_BOT_TOKEN"):
-        jobs.append((f"https://botapi.rubika.ir/v3/{os.environ['RUBIKA_BOT_TOKEN']}/sendMessage",
-                     {"chat_id": os.environ["RUBIKA_CHAT_ID"], "text": text}))
+    for part in chunks(text):
+        if os.environ.get("TELEGRAM_BOT_TOKEN"):
+            jobs.append((f"https://api.telegram.org/bot{os.environ['TELEGRAM_BOT_TOKEN']}/sendMessage",
+                         {"chat_id": os.environ["TELEGRAM_CHAT_ID"], "text": part}))
+        if os.environ.get("RUBIKA_BOT_TOKEN"):
+            jobs.append((f"https://botapi.rubika.ir/v3/{os.environ['RUBIKA_BOT_TOKEN']}/sendMessage",
+                         {"chat_id": os.environ["RUBIKA_CHAT_ID"], "text": part}))
     if not jobs:
         raise SystemExit("No bot token set (TELEGRAM_BOT_TOKEN / RUBIKA_BOT_TOKEN)")
     failed = False

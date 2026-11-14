@@ -1,7 +1,7 @@
 name: Update Bazarban prices
 
 on:
-  workflow_dispatch: # triggered every 5 min by cron-job.org; GitHub's own cron is unreliable
+  workflow_dispatch: # triggered every 15 min by cron-job.org; GitHub's own cron is unreliable
 
 permissions:
   contents: write
@@ -21,9 +21,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: 'pip'
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
       - name: Install dependencies
         run: |
-          python -m pip install --disable-pip-version-check requests beautifulsoup4 playwright curl_cffi
+          python -m pip install --disable-pip-version-check -r requirements.txt
           python -m playwright install --with-deps chromium
       - name: Restore previous data (history) from the data branch
         run: |

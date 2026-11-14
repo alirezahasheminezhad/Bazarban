@@ -1,0 +1,27 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check requests beautifulsoup4 tzdata
+      - name: Python tests (prices, fx, notify)
+        run: python test_notify.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Worker parser tests
+        run: node worker/test.mjs

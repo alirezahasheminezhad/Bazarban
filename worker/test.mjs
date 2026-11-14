@@ -20,6 +20,8 @@ assert.equal(r.age_s, 30);
 assert.equal(r.stale, false);
 assert.equal(r.id, "tetherpriceFa/1210176");
 assert.equal(parse(post(1, "۲۶۷٬۴۵۰ IRT", iso(10)), now).price, 267450);   // Persian digits
+assert.equal(parse(post(1, "٢٦٧٬٤٥٠ IRT", iso(10)), now).price, 267450);   // Arabic-Indic digits
+assert.equal(parse(post(1, "267٫450 IRT", iso(10)), now).price, 267.45);  // Arabic decimal separator
 assert.equal(parse(post(1, "267,450 IRT", iso(1200)), now).stale, true);   // channel stopped
 assert.equal(parse(post(1, "267,450 IRT", "garbage"), now).stale, true);   // unreadable time
 assert.equal(parse("<html></html>", now), null);                            // layout changed

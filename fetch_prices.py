@@ -7,7 +7,9 @@ from ArzDigital. data.json is only written after all required sources validate.
 """
 from __future__ import annotations
 
+import atexit
 import json
+import os
 import re
 import sys
 from datetime import date, datetime, timedelta, timezone
@@ -62,29 +64,29 @@ def parse_number(value: str) -> float | None:
     return number if number > 0 else None
 
 
-def expiry_key(text: str) -> tuple[int, int] | None:
-    """Parse common NCDEX labels such as Nov26, Dec 2026, or 20-Nov-2026."""
+def expiry_key(text: str) -> tuple[int, int, int | None] | None:
+    """Parse NCDEX labels such as 20-Nov-2026, Nov26, or Dec 2026 -> (year, month, day|None)."""
     text = digits_to_ascii(text).strip()
+    for fmt in ("%d-%b-%Y", "%d-%B-%Y", "%d-%m-%Y", "%Y-%m-%d"):
+        try:
+            d = datetime.strptime(text, fmt).date()
+            return (d.year, d.month, d.day)
+        except ValueError:
+            pass
     m = re.search(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\s\-/]*(\d{2,4})\b", text, re.I)
     if m:
         month = MONTHS[m.group(1).lower()[:3]]
         year = int(m.group(2))
         if year < 100:
             year += 2000
-        return (year, month)
-    for fmt in ("%d-%b-%Y", "%d-%B-%Y", "%d-%m-%Y", "%Y-%m-%d"):
-        try:
-            d = datetime.strptime(text, fmt).date()
-            return (d.year, d.month)
-        except ValueError:
-            pass
+        return (year, month, None)
     return None
 
 
-def _candidate_rows(soup: BeautifulSoup, product: str) -> list[dict]:
+def _candidate_rows(soup: BeautifulSoup, product: str, today: date | None = None) -> list[dict]:
     """Read product rows from NCDEX live-quote tables; tolerate table layout changes."""
     candidates = []
-    today = datetime.now(ZoneInfo("Asia/Kolkata")).date()
+    today = today or datetime.now(ZoneInfo("Asia/Kolkata")).date()
     month_now = (today.year, today.month)
     for table in soup.find_all("table"):
         rows = table.find_all("tr")
@@ -106,18 +108,18 @@ def _candidate_rows(soup: BeautifulSoup, product: str) -> list[dict]:
             else:
                 if "turmeric" not in low:
                     continue
-                # Prefer the Farmer Polished futures contract when the site labels it.
-                if "farmer polished" not in low and "turmeric" in low:
-                    # Some tables shorten the contract label to Turmeric; allow it as fallback.
-                    pass
 
             exp = None
             for text in texts:
                 exp = expiry_key(text)
                 if exp:
                     break
-            if exp and exp < month_now:
-                continue
+            if exp:
+                year, month, day = exp
+                # A contract expires mid-month (e.g. 20-Nov): once the day passes, roll to the next one.
+                expired = date(year, month, day) < today if day else (year, month) < month_now
+                if expired:
+                    continue
 
             price = None
             # The official live-quotes page groups Low / LTP / High in one cell.
@@ -157,21 +159,49 @@ def _candidate_rows(soup: BeautifulSoup, product: str) -> list[dict]:
         return []
     dated = [x for x in candidates if x["expiry"] is not None]
     if dated:
-        return [min(dated, key=lambda x: x["expiry"])]
+        # Prefer the Farmer Polished contract when the site labels it; plain Turmeric is the fallback.
+        polished = [x for x in dated if "farmer polished" in x["label"].lower()]
+        if polished:
+            dated = polished
+        return [min(dated, key=lambda x: (x["expiry"][0], x["expiry"][1], x["expiry"][2] or 32))]
     return candidates[:1]
 
 
-def render_html(url: str) -> str:
-    from playwright.sync_api import sync_playwright
+_PW = None
+_BROWSER = None
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch()
-        page = browser.new_page(user_agent=HEADERS["User-Agent"])
+
+def _close_browser() -> None:
+    global _PW, _BROWSER
+    try:
+        if _BROWSER:
+            _BROWSER.close()
+        if _PW:
+            _PW.stop()
+    except Exception:
+        pass
+    _PW = _BROWSER = None
+
+
+atexit.register(_close_browser)
+
+
+def render_html(url: str) -> str:
+    """Render a JS-heavy page. One browser is shared by all renders in the process (each launch costs seconds)."""
+    global _PW, _BROWSER
+    if _BROWSER is None or not _BROWSER.is_connected():
+        _close_browser()
+        from playwright.sync_api import sync_playwright
+
+        _PW = sync_playwright().start()
+        _BROWSER = _PW.chromium.launch()
+    page = _BROWSER.new_page(user_agent=HEADERS["User-Agent"])
+    try:
         page.goto(url, wait_until="networkidle", timeout=45000)
         page.wait_for_timeout(3000)
-        html = page.content()
-        browser.close()
-    return html
+        return page.content()
+    finally:
+        page.close()
 
 
 def fetch_ncdex_quote(product: str) -> dict:
@@ -193,10 +223,10 @@ def fetch_ncdex_quote(product: str) -> dict:
                 selected = candidates[0]
                 print(f"NCDEX {product} (rendered): {selected['price']} INR/100 kg; {selected['label']}")
                 return {**selected, "url": url}
-            # DEBUG موقت: ببین بعد از رندر چه چیزی در صفحه هست
-            low = str(soup).lower()
-            print(f"DEBUG {url}: rendered tables={len(soup.find_all('table'))} turmeric_in_html={'turmeric' in low} pepper_in_html={'pepper' in low}")
-            print("DEBUG snippet:", soup.get_text(' ', strip=True)[:500])
+            if os.environ.get("BAZARBAN_DEBUG"):
+                low = str(soup).lower()
+                print(f"DEBUG {url}: rendered tables={len(soup.find_all('table'))} turmeric_in_html={'turmeric' in low} pepper_in_html={'pepper' in low}")
+                print("DEBUG snippet:", soup.get_text(' ', strip=True)[:500])
             errors.append(f"{url}: no matching quote rows found")
         except Exception as exc:
             errors.append(f"{url}: {exc}")
@@ -248,11 +278,11 @@ def fetch_usd_toman() -> int:
         html = render_html(ARZDIGITAL_URL)
         rate = _parse_usd_toman(html)
         if rate is None:
-            # DEBUG موقت: جمله‌های اطراف «تومان» را چاپ کن تا الگو درست شود
-            text = digits_to_ascii(re.sub(r"\s+", " ", BeautifulSoup(html, "html.parser").get_text(" ", strip=True)))
-            print(f"DEBUG arzdigital: chars={len(text)}")
-            for m in list(re.finditer("تومان", text))[:6]:
-                print("DEBUG ctx:", text[max(0, m.start() - 90):m.end() + 20])
+            if os.environ.get("BAZARBAN_DEBUG"):
+                text = digits_to_ascii(re.sub(r"\s+", " ", BeautifulSoup(html, "html.parser").get_text(" ", strip=True)))
+                print(f"DEBUG arzdigital: chars={len(text)}")
+                for m in list(re.finditer("تومان", text))[:6]:
+                    print("DEBUG ctx:", text[max(0, m.start() - 90):m.end() + 20])
     if rate is None:
         raise RuntimeError("Could not reliably parse USD/Toman from ArzDigital; data.json was not updated")
     print(f"ArzDigital USD/Toman: {rate}")
