@@ -28,7 +28,7 @@ from fetch_prices import HEADERS, digits_to_ascii, render_html
 
 OUTPUT = Path("data.json")
 TOL = 0.02  # sources within 2% of each other "agree"
-FAIL_ALERT = 3  # consecutive misses of a source that used to work before the group is told
+FAIL_ALERT = 8  # consecutive misses (runs are 15 min apart, so ~2 h) of a source that used to work before the group is told
 RENDER_BUDGET_S = 180  # total time allowed for slow browser fallbacks
 
 # currency: (name, keyword regex, expected toman given the USD rate, tolerance of that expectation)
