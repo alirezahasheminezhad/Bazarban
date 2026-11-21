@@ -4,3 +4,5 @@ __pycache__/
 node_modules/
 .wrangler/
 news_test.out.md
+dist/
+.offline-cache/

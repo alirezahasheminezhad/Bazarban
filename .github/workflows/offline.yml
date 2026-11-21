@@ -1,0 +1,27 @@
+name: offline-build
+# نسخه‌ی آفلاین تک‌فایلی (بدون هیچ وابستگی اینترنتی) را می‌سازد و در Release غلتانِ offline-latest می‌گذارد.
+on:
+  push:
+    branches: [main]
+    paths: [index.html, "css/**", "js/**", "fonts/**", "assets/**", "data/**", build_offline.py, .github/workflows/offline.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build self-contained offline file
+        run: python3 build_offline.py
+      - name: Publish to Releases (rolling offline-latest)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view offline-latest >/dev/null 2>&1 || \
+            gh release create offline-latest --title "نسخه آفلاین (همیشه آخرین)" \
+              --notes "خروجی خودکار تک‌فایلیِ بدون نیاز به اینترنت؛ با هر تغییر در main به‌روز می‌شود. فایل را دانلود و با دو بار کلیک اجرا کنید." \
+              --target "$GITHUB_SHA"
+          gh release upload offline-latest dist/*-offline.html --clobber
