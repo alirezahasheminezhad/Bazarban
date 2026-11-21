@@ -79,7 +79,7 @@ def assets_in_text(text: str) -> str:
 def link_tag(m):
     tag = m.group(0)
     rel, href = (attr(tag, "rel") or "").lower(), attr(tag, "href")
-    if not href:
+    if not href or href.startswith("data:"):
         return tag
     if "stylesheet" in rel:
         data, loc = load(href, ROOT)
