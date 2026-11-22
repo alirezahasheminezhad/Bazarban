@@ -6,17 +6,26 @@ jobs:
     steps:
       - name: probe
         shell: bash {0}
+        env:
+          K: ${{ secrets.COMTRADE_API_KEY }}
         run: |
           UA="Mozilla/5.0 (compatible; BazarbanBot/1.0; +https://github.com/alirezahasheminezhad/Bazarban)"
-          echo "== vpsa robots"; curl -sS -m 15 -A "$UA" -w "\nHTTP %{http_code}\n" https://vpsaspice.org/robots.txt | head -40
-          echo "== vpsa home"; curl -sS -m 15 -A "$UA" -o /tmp/v.html -w "HTTP %{http_code} %{size_download}\n" https://vpsaspice.org/; grep -oiE 'href="[^"]*(price|market)[^"]*"' /tmp/v.html | sort -u | head -20
-          echo "== govi home"; curl -sS -m 15 -A "$UA" -o /tmp/g.html -w "HTTP %{http_code}\n" https://govisaviya.lk/; grep -oE 'src="[^"]+\.js"' /tmp/g.html | head
-          echo "== govi robots"; curl -sS -m 15 -A "$UA" https://govisaviya.lk/robots.txt | head -20
-          for js in $(grep -oE '/assets/index-[A-Za-z0-9_-]+\.js' /tmp/g.html | sort -u); do
-            curl -sS -m 15 -A "$UA" "https://govisaviya.lk$js" -o /tmp/i.js
-            echo "== bundle $js $(wc -c </tmp/i.js)"
-            grep -oE '.{80}markets\?more.{80}' /tmp/i.js | head -3
-            grep -oE 'https?://[A-Za-z0-9./_-]*(api|govisaviya)[A-Za-z0-9./_-]*' /tmp/i.js | sort -u | head -15
+          echo "key set: ${K:+yes}"
+          curl -sS -m 20 -A "$UA" https://govisaviya.lk/assets/index-zt1uGtMp.js -o /tmp/i.js
+          grep -oE '(mainWorld|LivePrices|Prices|Market)[A-Za-z0-9_-]*\.js' /tmp/i.js | sort -u | head -20
+          for n in $(grep -oE '(mainWorld|LivePrices)-[A-Za-z0-9_-]+\.js' /tmp/i.js | sort -u); do
+            curl -sS -m 20 -A "$UA" "https://govisaviya.lk/assets/$n" -o /tmp/c.js; echo "== $n $(wc -c </tmp/c.js)"
+            grep -oE '.{120}(markets\?more|homepage\?more|/summary|/status).{120}' /tmp/c.js | head -6
+            grep -oE '(baseURL|BASE_URL|API_URL)[^,;]{0,80}' /tmp/c.js | head -5
           done
-          for f in $(grep -oE 'mainWorld[^"'"'"' ]*\.js' /tmp/*.js 2>/dev/null | sort -u | head -3); do echo "ref $f"; done
-          echo "== comtrade preview"; curl -sS -m 60 -A "$UA" -w "\nHTTP %{http_code}\n" "https://comtradeapi.un.org/public/v1/preview/C/A/HS?reporterCode=704&period=2024&cmdCode=090411&flowCode=X&partnerCode=0&maxRecords=5" | head -c 1500
+          grep -oE '.{100}(baseURL|VITE_API)[^,;]{0,100}' /tmp/i.js | head -5
+          for p in markets?more=1 homepage?more=1 summary status; do
+            for b in /api/prices /api/market /api; do
+              c=$(curl -sS -m 20 -A "$UA" -o /tmp/r.json -w "%{http_code} %{content_type}" "https://govisaviya.lk$b/$p"); echo "$b/$p -> $c $(head -c 120 /tmp/r.json | tr '\n' ' ')"
+            done
+          done
+          echo "== comtrade"
+          for rc in 704 699 360 76 364 586; do for fl in X M; do for cmd in 090411 091030; do
+            curl -sS -m 60 -H "Ocp-Apim-Subscription-Key: $K" "https://comtradeapi.un.org/data/v1/get/C/A/HS?reporterCode=$rc&period=2023,2024&cmdCode=$cmd&flowCode=$fl&partnerCode=0&includeDesc=false" -o /tmp/x.json -w "$rc $fl $cmd HTTP %{http_code} "; python3 -c "
+import json;d=json.load(open('/tmp/x.json'));print(d.get('count'),[(r['period'],r['primaryValue'],r['netWgt']) for r in d.get('data',[])][:3],d.get('error') or d.get('message',''))" ; sleep 1.2
+          done; done; done
