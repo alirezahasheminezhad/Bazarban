@@ -276,7 +276,7 @@ def run(data: dict, health: dict) -> list[str]:
         ("spices_board", "Spices Board هند", lambda: parse_spices_board(get(SPICES_BOARD_URL), usd_per_inr) if usd_per_inr else None),
         ("spices_weekly", "Spices Board (PDF هفتگی)", fetch_spices_weekly),
         ("arm_pk", "ARM پاکستان", fetch_arm),
-        ("govi", "Govi Saviya سریلانکا", lambda: parse_govi(requests.get(GOVI_URL, headers=HEADERS, timeout=30).json())),
+        ("govi", "Govi Saviya سریلانکا", lambda: parse_govi(json.loads(get(GOVI_URL)))),
         ("comtrade", "Comtrade (سازمان ملل)", lambda: fetch_comtrade((data.get("world") or {}).get("comtrade"))),
         ("manual", "قیمت‌های دستی", read_manual),
     ):
