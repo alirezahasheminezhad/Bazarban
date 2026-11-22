@@ -95,6 +95,16 @@ body.lock #lock{display:grid}
 .fxi .big{font-size:22px}
 .fxs{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--mute);direction:rtl}
 .fxs.bad{opacity:.55}
+.src summary{cursor:pointer;font-weight:600;padding:8px 0}
+.srcg{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin:8px 0 14px}
+.srci{background:var(--card);border-radius:20px;padding:14px;display:grid;gap:4px;align-content:start;font-size:12px}
+.srci h4{font-size:13px;font-weight:600;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.srci a{color:var(--acc);text-decoration:none}
+.srci .k{color:var(--mute)}
+.warn{background:#fff6f3;border:1px solid #f3d3c9;border-radius:16px;padding:12px 14px;font-size:12px;display:grid;gap:4px}
+.hs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;font-size:12px;margin:8px 0 14px}
+.hs span{background:var(--card);border-radius:12px;padding:6px 12px;display:flex;justify-content:space-between;gap:8px}
+.hs b{direction:ltr;font-weight:500}
 </style>
 </head>
 <body class="lock">
@@ -134,6 +144,26 @@ body.lock #lock{display:grid}
       <div class="fxg" id="fxList"></div>
       <div class="fxs" id="fxLive" hidden style="margin-top:10px"></div>
       <div class="sub">میانگین همه‌ی منابع است. اطمینان = سهم منابعی که قیمتشان (تا ۲٪ اختلاف) به هم نزدیک است؛ منبع کمرنگ‌شده با بقیه فاصله دارد.</div>
+    </div>
+  </section>
+
+  <section class="grid" id="world">
+    <div class="card w">
+      <div class="ch"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span>قیمت مرجع جهانی ادویه (فقط منابع رایگان)<span class="tag" id="worldTag"></span></div>
+      <div class="fxg" id="worldLive" hidden></div>
+      <div class="warn">
+        <b>سه قیمت را هرگز با هم قاطی نکن</b>
+        <span>۱) قیمت بازار مبدأ (مثلاً زردچوبه در Erode) · ۲) قیمت صادراتی FOB (مثلاً فلفل ۵۵۰ g/L ویتنام) · ۳) ارزش واحد صادرات از آمار گمرکی (ارزش ÷ وزن؛ میانگین محموله‌های مختلف است، نه قیمت یک گرید).</span>
+        <span>قیمت روزانه‌ی استاندارد و رایگان برای فلفل ۳ میل، Broken، Dust، Husk، Light Berries و Screenings وجود ندارد؛ برای این‌ها از صادرکننده استعلام مستقیم بگیر و رطوبت، چگالی، مش، درصد ناخالصی، FOB و حداقل سفارش را بخواه.</span>
+      </div>
+      <details class="src">
+        <summary>فهرست منابع رایگان برای کنترل قیمت (<span id="srcCount"></span> منبع)</summary>
+        <div class="srcg" id="srcList"></div>
+        <div class="sub">کد تعرفه (HS) برای جست‌وجو در UN Comtrade و آمار گمرکی کشورها — در آمار تفصیلی، زیرردیف کشور گزارش‌دهنده را هم کنترل کن:</div>
+        <div class="hs" id="hsList"></div>
+        <div class="sub" dir="ltr" style="text-align:left">ارزش واحد = Export value (USD) ÷ Net weight (kg)</div>
+        <div class="sub" style="margin-top:8px">عبارت‌های جست‌وجوی فلفل قرمز پاکستان/هند: <b dir="ltr">Lal Mirch · Dried Red Chilli · Stemless · Dandi Cut · Kunri · Longi · Kashmiri · Byadgi · Teja</b>. «Morich» بیشتر نام بنگالی است؛ بدون بررسی گرید آن را معادل قطعی فلفل عنابی پاکستان نگیر.</div>
+      </details>
     </div>
   </section>
 
@@ -693,6 +723,54 @@ function renderFx(fx){
   box.hidden = false;
 }
 
+/* قیمت مرجع جهانی: data.world (IPC و Spices Board) + فهرست ثابت منابع رایگان */
+const SOURCES = [
+  ['IPC','https://www.ipcnet.org/','فلفل · FOB گزارش‌شده','روزانه','فلفل سیاه ویتنام ۵۰۰/۵۵۰ g/L، برزیل ASTA 570، اندونزی، مالزی و فلفل سفید. IPC قیمت تعیین نمی‌کند و فقط قیمت‌های گزارش‌شده را نشان می‌دهد.'],
+  ['Spices Board India','https://www.indianspices.com/marketing/price/domestic/current-market-price.html','هند · بازار مبدأ','روزانه','قیمت روز با ستون گرید و منبع. ستون Min/Max اغلب خالی است و فقط میانگین می‌آید.'],
+  ['AGMARKNET','https://agmarknet.gov.in/','هند · بازار مبدأ','روزانه','حداقل/حداکثر/قیمت غالب هر بازار برای زردچوبه، زنجبیل، فلفل قرمز. آرشیو بلندمدت تضمین نیست؛ برای تاریخچه باید خودمان ذخیره کنیم.'],
+  ['VPSA','https://vpsaspice.org/','ویتنام · بازار داخلی','روزانه / هفتگی','نرخ خرید فلفل از کشاورز به دونگ و گزارش بازار. بعضی گزارش‌ها فقط برای اعضاست و نرخ داخلی با FOB فرق دارد.'],
+  ['Dept. of Export Agriculture','https://www.doea.gov.lk/','سریلانکا · قیمت کشاورز','هفتگی','دارچین سیلان، فلفل، زنجبیل، زردچوبه به تفکیک گرید و منطقه. Farm-gate است و معادل FOB نیست.'],
+  ['Sri Lanka Census & Statistics','https://www.statistics.gov.lk/','سریلانکا · عمده‌فروشی کلمبو','هفتگی / ماهانه','تاریخچه و میانگین ماهانه؛ بیشتر برای بازار داخلی مناسب است تا قیمت صادراتی.'],
+  ['ARM Pakistan','','پاکستان · نرخ مندی','روزانه','فلفل قرمز خشک کامل و زردچوبه در مولتان، فیصل‌آباد و ... سایت دولتی نیست، نرخ‌ها دستی وارد می‌شوند؛ تاریخ تک‌تک نرخ‌ها را کنترل کن. (نشانی را با جست‌وجوی «ARM Pakistan mandi rates» پیدا کن.)'],
+  ['Pakistan Bureau of Statistics','https://www.pbs.gov.pk/','پاکستان · شاخص رسمی','هفتگی / ماهانه','شاخص SPI و WPI. برای قیمت روز یک گرید فلفل مناسب نیست، فقط روند کلی.'],
+  ['DAM Bangladesh','https://market.dam.gov.bd/','بنگلادش · عمده و خرده','روزانه','زنجبیل و فلفل سبز دیده شد؛ بقیه اقلام را داخل انتخابگر کالا تست کن.'],
+  ['Comex Stat','https://comexstat.mdic.gov.br/','برزیل · آمار صادرات','ماهانه','وزن و ارزش FOB صادرات فلفل از ۱۹۹۷؛ ارزش واحد واقعی صادرات، مستقل از قیمت‌های تبلیغاتی فروشندگان.'],
+  ['BPS Indonesia','https://www.bps.go.id/','اندونزی · آمار تجارت','ماهانه','صادرات/واردات با کد HS و کشور مقصد.'],
+  ['China Customs','http://stats.customs.gov.cn/','چین · آمار گمرکی','ماهانه','استعلام رایگان واردات/صادرات با کد کالا از ۲۰۱۵. قیمت روز گرید ندارد.'],
+  ['UN Comtrade','https://comtradeplus.un.org/','همه کشورها · ارزش واحد','ماهانه / سالانه','آمار رسمی تجارت بین‌المللی. نسخه بدون ثبت‌نام تا ۵۰۰ ردیف پیش‌نمایش می‌دهد.'],
+  ['Husfarm','https://www.husfarm.com/','مقایسه چندکشوری','بسته به بازار','بخش رایگان قیمت زردچوبه، دارچین، زنجبیل، فلفل و پاپریکا در ده‌ها بازار (یورو/کیلو).'],
+  ['Tridge (سطح رایگان)','https://www.tridge.com/','معاملات و صادرکنندگان','محدود','سطح رایگان ماهانه فقط ۱۰ اعتبار دارد؛ برای شناسایی صادرکننده و دیدن قیمت‌های ثبت‌شده کافی است.'],
+];
+const HS = [['فلفل سیاه کامل','090411'],['فلفل سیاه خرد/آسیاب','090412'],['فلفل قرمز خشک کامل','090421'],['فلفل قرمز خرد/آسیاب','090422'],['دارچین (کاسیا ۰۹۰۶۱۹ · سیلان ۰۹۰۶۱۱)','0906'],['زنجبیل خشک کامل','091011'],['زنجبیل خرد/آسیاب','091012'],['زردچوبه','091030']];
+
+function renderSources(){
+  $('srcCount').textContent = fa(SOURCES.length);
+  $('srcList').innerHTML = SOURCES.map(([n,u,kind,freq,note])=>`
+    <div class="srci">
+      <h4>${u ? `<a href="${esc(u)}" target="_blank" rel="noopener" dir="ltr">${esc(n)}</a>` : `<span dir="ltr">${esc(n)}</span>`}<span class="tag">${esc(freq)}</span></h4>
+      <div class="k">${esc(kind)}</div>
+      <div>${esc(note)}</div>
+    </div>`).join('');
+  $('hsList').innerHTML = HS.map(([n,c])=>`<span>${esc(n)}<b>${c}</b></span>`).join('');
+}
+renderSources();
+
+function renderWorld(w){
+  const box = $('worldLive');
+  const cards = [];
+  if(w && w.ipc && Array.isArray(w.ipc.items) && w.ipc.items.length){
+    cards.push(`<div class="fxi"><h4><span>IPC · فلفل (دلار/تن)</span><span class="tag" dir="ltr">${esc(w.ipc.date)}</span></h4>
+      ${w.ipc.items.map(i=>`<div class="fxs"><span>${fa(i.usd_ton)}</span><span dir="ltr">${esc(i.name)}</span></div>`).join('')}</div>`);
+  }
+  if(w && w.spices_board && Array.isArray(w.spices_board.items) && w.spices_board.items.length){
+    cards.push(`<div class="fxi"><h4><span>Spices Board هند · بازار مبدأ</span><span class="tag" dir="ltr">${esc(w.spices_board.date)}</span></h4>
+      ${w.spices_board.items.map(i=>`<div class="fxs"><span>${fa(i.inr_kg,2)} ₹/kg · ${fa(i.usd_ton)} $/t</span><span dir="ltr">${esc(i.market)} · ${esc(i.grade)}</span></div>`).join('')}</div>`);
+  }
+  box.innerHTML = cards.join('');
+  box.hidden = !cards.length;
+  $('worldTag').textContent = cards.length && w.updated ? new Date(w.updated).toLocaleTimeString('fa-IR',{hour:'2-digit',minute:'2-digit'}) : '';
+}
+
 /* دریافت خودکار data.json از GitHub Pages */
 async function loadMarketData(){
   try{
@@ -725,6 +803,7 @@ async function loadMarketData(){
     }
 
     renderFx(data.fx);
+    renderWorld(data.world);
     lastMarket = {price, pepper: hasB ? pepper : null, rate};
 
     // تاریخچه هم در تشخیص تغییرات لحاظ می‌شود

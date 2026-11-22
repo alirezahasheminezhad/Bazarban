@@ -130,4 +130,24 @@ with mock.patch.dict(os.environ, {"TELEGRAM_BOT_TOKEN": "t", "TELEGRAM_CHAT_ID":
         sent = [c.kwargs["json"]["text"] for c in post.call_args_list]
         assert all(len(t) <= notify.MSG_LIMIT for t in sent)
         assert "\n".join(sent) == long
+# world prices: IPC daily table (the % change cell must not be taken as the price)
+import world_prices
+ipc = ('<h3>DAILY PRICES 20-11-2026</h3><table>'
+       '<tr><td>Indonesia - Black Pepper</td><td>6,748</td><td>-0.04%</td></tr>'
+       '<tr><td>Brazil Black - Pepper ASTA 570</td><td>5,400</td><td>-2.78%</td></tr>'
+       '<tr><td>Viet Nam - Black Pepper 500 g/l</td><td>5,700</td><td>-</td><td>0.00%</td></tr>'
+       '<tr><td>Some other spice</td><td>1,000</td></tr></table>')
+w = world_prices.parse_ipc(ipc)
+assert w["date"] == "2026-11-20" and [i["usd_ton"] for i in w["items"]] == [6748, 5400, 5700]
+assert world_prices.parse_ipc("<p>no table</p>") is None
+# Spices Board: blank Min/Max -> the average column is used; INR/kg -> USD/t with the INR rate
+sb = ('<table><tr><th>Date</th><th>Spice</th><th>Market Centre</th><th>State</th><th>Grade</th><th>Source</th><th>Min</th><th>Max</th><th>Avg</th></tr>'
+      '<tr><td>18-Nov-2026</td><td>Pepper</td><td>Cochin</td><td>KERALA</td><td>Garbled</td><td>IPSTA</td><td>-</td><td>-</td><td>774.00</td></tr>'
+      '<tr><td>18-Nov-2026</td><td>Cardamom</td><td>X</td><td>Y</td><td>Z</td><td>W</td><td>-</td><td>-</td><td>2000</td></tr></table>')
+s = world_prices.parse_spices_board(sb, 0.0105)
+assert s["date"] == "2026-11-18" and len(s["items"]) == 1 and s["items"][0]["spice"] == "فلفل سیاه" and s["items"][0]["usd_ton"] == 8127.0
+# one source down must not drop the other, and a never-working source stays quiet
+with mock.patch.object(world_prices, "get", side_effect=lambda u: ipc if "ipcnet" in u else (_ for _ in ()).throw(OSError("down"))):
+    d = {"inr_to_usd": 0.0105}
+    assert world_prices.run(d, {}) == [] and list(d["world"]) == ["updated", "ipc"]
 print("ok")
