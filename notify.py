@@ -49,43 +49,49 @@ def num(n: float, d: int = 2) -> str:
     return t.replace(",", "٬").replace(".", "٫").translate(FA)
 
 
+LINE = "━" * 20
+
+
+def sections(p: dict, price: float, rate: float) -> list[str]:
+    """The owner's two-part report body: world price, then final price with costs (shared by every report)."""
+    m = model(p, price, rate)
+    kg = m["wt"] * 1000
+    world_ton = price * rate
+    world_total = m["goods"] * rate
+    costs = m["total"] - world_total  # every enabled cost, as on the site
+    pct = costs / world_total * 100 if world_total else 0
+    world_kg = round(world_ton / 1000)
+    # final prices derive from the rounded per-kg figures, like the owner's example
+    cost_kg = round(costs / kg)
+    final_kg = world_kg + cost_kg
+    w = f"{num(m['wt'])} تنی"
+    return [
+        "🌍 ۱. قیمت جهانی | بدون احتساب مصارف",
+        f"💵 قیمت هر تن: {fa(price)} دلار",
+        f"⚖️ قیمت هر کیلو: {fa(world_kg)} تومان",
+        f"💰 قیمت هر تن: {fa(world_ton)} تومان",
+        f"📦 ارزش محموله {w}",
+        f"🔹 وزن کل: {fa(kg)} کیلوگرم",
+        f"💰 مبلغ کل: {fa(world_total)} تومان", LINE,
+        f"📦 ۲. قیمت نهایی | با احتساب {num(pct, 1)}٪ مصارف",
+        f"📊 درصد مصارف: {num(pct, 1)}٪",
+        f"➕ هزینه مصارف هر کیلو: {fa(cost_kg)} تومان",
+        f"⚖️ قیمت نهایی هر کیلو: {fa(final_kg)} تومان",
+        f"💰 قیمت نهایی هر تن: {fa(final_kg * 1000)} تومان",
+        f"🚛 ارزش محموله {w} با احتساب مصارف",
+        f"🔹 وزن کل: {fa(kg)} کیلوگرم",
+        f"💰 مبلغ کل: {fa(final_kg * kg)} تومان", LINE]
+
+
 def build_message(data: dict, cfg: dict) -> str:
     """One message, one block per product, in the format the owner specified."""
     rate = data["usd_toman"]
-    line = "━" * 20
     blocks = []
     for k, p in cfg["products"].items():
         price = data.get(PRICE_FIELD[k])
         if not price:
             continue
-        m = model(p, price, rate)
-        kg = m["wt"] * 1000
-        world_ton = price * rate
-        world_total = m["goods"] * rate
-        costs = m["total"] - world_total  # every enabled cost, as on the site
-        pct = costs / world_total * 100 if world_total else 0
-        world_kg = round(world_ton / 1000)
-        # final prices derive from the rounded per-kg figures, like the owner's example
-        cost_kg = round(costs / kg)
-        final_kg = world_kg + cost_kg
-        w = f"{num(m['wt'])} تنی"
-        blocks.append("\n".join([
-            f"🌿 گزارش قیمت {p['name']} هندی", line,
-            "🌍 ۱. قیمت جهانی | بدون احتساب مصارف",
-            f"💵 قیمت هر تن: {fa(price)} دلار",
-            f"⚖️ قیمت هر کیلو: {fa(world_kg)} تومان",
-            f"💰 قیمت هر تن: {fa(world_ton)} تومان",
-            f"📦 ارزش محموله {w}",
-            f"🔹 وزن کل: {fa(kg)} کیلوگرم",
-            f"💰 مبلغ کل: {fa(world_total)} تومان", line,
-            f"📦 ۲. قیمت نهایی | با احتساب {num(pct, 1)}٪ مصارف",
-            f"📊 درصد مصارف: {num(pct, 1)}٪",
-            f"➕ هزینه مصارف هر کیلو: {fa(cost_kg)} تومان",
-            f"⚖️ قیمت نهایی هر کیلو: {fa(final_kg)} تومان",
-            f"💰 قیمت نهایی هر تن: {fa(final_kg * 1000)} تومان",
-            f"🚛 ارزش محموله {w} با احتساب مصارف",
-            f"🔹 وزن کل: {fa(kg)} کیلوگرم",
-            f"💰 مبلغ کل: {fa(final_kg * kg)} تومان", line]))
+        blocks.append("\n".join([f"🌿 گزارش قیمت {p['name']} هندی", LINE, *sections(p, price, rate)]))
     return "\n\n".join(blocks)
 
 
@@ -114,72 +120,94 @@ def build_alert_message(data: dict) -> str | None:
     return "🔧 هشدار فنی بازاربان\n" + "\n".join(alerts) if alerts else None
 
 
-def build_world_message(data: dict) -> str | None:
-    """Fourth message: free world spice price sources, Persian equivalents, toman equivalents and the notes needed to read them."""
+SPICE_KEY = {"فلفل سیاه": "b", "زردچوبه": "t"}  # which configured product (cost model) a world price belongs to
+
+
+def fad(text: str) -> str:
+    return str(text).translate(FA)
+
+
+def build_world_messages(data: dict, cfg: dict) -> list[str]:
+    """Free world spice prices, one message per source, each item in the owner's report format (world price, then price with costs)."""
     w = data.get("world")
     if not w:
-        return None
+        return []
     rate = data.get("usd_toman") or 0
+    inr = float(data.get("inr_to_usd") or 0)
     pkr = next((i["avg"] for i in data.get("fx", {}).get("items", []) if i["id"] == "pkr"), 0)
-    line = "━" * 20
-    tk = lambda v: f"≈ {fa(v)} تومان" if rate and v else ""  # noqa: E731
-    out = ["🌍 گزارش قیمت جهانی ادویه (منابع رایگان)", line]
+    prods = cfg.get("products", {})
+
+    def usd_block(title: str, spice: str, usd_ton: float, extra: list[str]) -> str:
+        p = prods.get(SPICE_KEY.get(spice, ""))
+        body = sections(p, usd_ton, rate) if p and rate else [
+            "🌍 قیمت جهانی | بدون احتساب مصارف", f"💵 قیمت هر تن: {fa(usd_ton)} دلار",
+            f"⚖️ قیمت هر کیلو: {fa(usd_ton * rate / 1000)} تومان", f"💰 قیمت هر تن: {fa(usd_ton * rate)} تومان", LINE]
+        return "\n".join([f"🌿 {title}", LINE, *extra, *body])
+
+    msgs = []
     if ipc := w.get("ipc"):
-        out += [f"🔹 IPC | شورای بین‌المللی فلفل ({ipc['date']})", "قیمت صادراتی FOB فلفل سیاه، دلار بر تن:"]
-        for i in ipc["items"]:
-            out += [f"• {i.get('name_fa') or i['name']}", f"  {i['name']}", f"  💵 {fa(i['usd_ton'])} دلار/تن  {tk(i['usd_ton'] * rate / 1000)}/کیلو"]
-        out.append(line)
+        msgs.append("\n\n".join(usd_block(f"گزارش قیمت {i.get('name_fa') or i['name']} | IPC", "فلفل سیاه", i["usd_ton"],
+                                          [f"🏷️ {i['name']}", f"📅 تاریخ: {fad(ipc['date'])}", "🧭 نوع قیمت: صادراتی (FOB) | منبع: شورای بین‌المللی فلفل", LINE])
+                                for i in ipc["items"] if rate))
     if sb := w.get("spices_board"):
-        out += [f"🔹 Spices Board هند | بازار داخلی ({sb['date']})", "روپیه بر کیلو (قیمت بازار داخلی، نه FOB):"]
-        for i in sb["items"]:
-            out += [f"• {i['spice']} | {i.get('market_fa') or i['market']} ({i['market']}) | درجه: {i.get('grade_fa') or i['grade']}",
-                    f"  {num(i['inr_kg'])} روپیه/کیلو = {fa(i['usd_ton'])} دلار/تن  {tk(i['usd_ton'] * rate / 1000)}/کیلو"]
-        out.append(line)
+        msgs.append("\n\n".join(usd_block(f"گزارش قیمت {i['spice']} | بازار {i.get('market_fa') or i['market']}", i["spice"], i["usd_ton"],
+                                          [f"🏷️ {i['market']} | درجه: {i.get('grade_fa') or i['grade']}", f"📅 تاریخ: {fad(sb['date'])}",
+                                           f"🇮🇳 قیمت بازار داخلی هند: {num(i['inr_kg'])} روپیه/کیلو", "🧭 نوع قیمت: بازار مبدأ (نه FOB) | منبع: Spices Board", LINE])
+                                for i in sb["items"] if rate))
     if wk := w.get("spices_weekly"):
-        out += [f"🔹 Spices Board | میانگین هفتگی بازارهای داخلی هند (هفته منتهی به {wk['date']})", "روپیه بر کیلو: این هفته | هفته قبل | ماه قبل | پارسال"]
+        blocks = []
         for i in wk["items"]:
-            out += [f"• {i['spice']} | {i['market_fa']} ({i['market']})",
-                    f"  {num(i['inr_kg'])} | {num(i['prev_week'])} | {num(i['prev_month'])} | {num(i['last_year'])}  "
-                    + (tk(i["inr_kg"] * float(data.get("inr_to_usd") or 0) * rate) + "/کیلو")]
-        out.append(line)
+            if not (rate and inr):
+                continue
+            blocks.append(usd_block(f"گزارش قیمت {i['spice']} | بازار {i['market_fa']}", i["spice"], i["inr_kg"] * inr * 1000,
+                                    [f"🏷️ {i['market']}", f"📅 هفتهٔ منتهی به: {fad(wk['date'])}",
+                                     f"🇮🇳 این هفته: {num(i['inr_kg'])} | هفتهٔ قبل: {num(i['prev_week'])} | ماه قبل: {num(i['prev_month'])} | پارسال: {num(i['last_year'])} روپیه/کیلو",
+                                     "🧭 نوع قیمت: میانگین هفتگی بازار مبدأ (نه FOB) | منبع: Spices Board", LINE]))
+        msgs.append("\n\n".join(blocks))
     if gv := w.get("govi"):
-        out += [f"🔹 Govi Saviya | بازار عمده سری‌لانکا ({gv['date']})", "روپیه سری‌لانکا بر کیلو (قیمت بازار داخلی؛ نرخ تبدیل ندارد):"]
-        for i in gv["items"]:
-            out.append(f"• {i['spice']} ({i['name']}): {num(i['lkr_kg'])} (بازهٔ {num(i['min'] or 0)}–{num(i['max'] or 0)}) | روز قبل {num(i['prev'] or 0)} | بهترین بازار: {i['market_fa']} ({i['market']})")
-        out.append(line)
+        msgs.append("\n\n".join("\n".join([
+            f"🌿 گزارش قیمت {i['spice']} | سری‌لانکا", LINE, f"🏷️ {i['name']}", f"📅 تاریخ: {fad(i['date'])}",
+            f"🇱🇰 قیمت عمده: {num(i['lkr_kg'])} روپیه سری‌لانکا/کیلو (بازه {num(i['min'] or 0)}–{num(i['max'] or 0)})",
+            f"↩️ روز قبل: {num(i['prev'] or 0)} | بهترین بازار: {i['market_fa']}", "🧭 نوع قیمت: بازار مبدأ | منبع: Govi Saviya", LINE]) for i in gv["items"]))
     if ct := w.get("comtrade"):
-        out += [f"🔹 Comtrade سازمان ملل | ارزش گمرکی سالانه (آخرین سال: {ct['date']})", "ارزش واحد گمرکی = ارزش کل ÷ وزن؛ قیمت روز و FOB نیست:"]
-        for prod in dict.fromkeys(i["product_fa"] for i in ct["items"]):
-            out.append(f"{prod}:")
-            for i in (x for x in ct["items"] if x["product_fa"] == prod):
-                out.append(f"• {i['reporter_fa']} ({i['reporter']}) {i['flow_fa']} {i['period']}: {fa(i['usd_kg'] * 1000)} دلار/تن  {tk(i['usd_kg'] * rate)}/کیلو")
-        out.append(line)
+        blocks = []
+        for i in ct["items"]:
+            if not rate:
+                continue
+            blocks.append(usd_block(f"گزارش ارزش گمرکی {i['product_fa']} | {i['reporter_fa']}", i["product_fa"], i["usd_kg"] * 1000,
+                                    [f"🏷️ {i['reporter']} | {i['flow_fa']}", f"📅 سال: {fad(i['period'])}",
+                                     "🧭 نوع قیمت: ارزش واحد گمرکی سالانه (نه قیمت روز و نه FOB) | منبع: Comtrade", LINE]))
+        msgs.append("\n\n".join(blocks))
     if mn := w.get("manual"):
-        out += [f"🔹 قیمت‌های واردشده دستی ({mn['date']})"]
+        blocks = []
         for i in mn["items"]:
-            out.append(f"• {i.get('source', '')} | {i.get('name_fa') or i['name']} ({i['name']}): {num(i['price'])} {i.get('unit', '')} | {i['date']}" + (f" | {i['note']}" if i.get("note") else ""))
-        out.append(line)
+            usd = i["price"] if "ton" in i.get("unit", "").lower() and "usd" in i.get("unit", "").lower() else None
+            extra = [f"🏷️ {i['name']}", f"📅 تاریخ: {fad(i['date'])}", f"✍️ واردشده دستی از {i.get('source', '')}: {num(i['price'])} {i.get('unit', '')}"] + ([f"📝 {i['note']}"] if i.get("note") else []) + [LINE]
+            spice = "فلفل سیاه" if "pepper" in i["name"].lower() else "زردچوبه" if "turmeric" in i["name"].lower() else ""
+            blocks.append(usd_block(f"گزارش قیمت {i.get('name_fa') or i['name']}", spice, usd, extra) if usd and rate else "\n".join([f"🌿 گزارش قیمت {i.get('name_fa') or i['name']}", LINE, *extra]))
+        msgs.append("\n\n".join(blocks))
     if arm := w.get("arm_pk"):
-        out.append(f"🔹 ARM پاکستان | قیمت منڈی (بازار عمده) تا {arm['date']}")
+        blocks = []
         for com in dict.fromkeys(i["commodity"] for i in arm["items"]):
-            out.append(f"{com} — روپیه پاکستان بر کیلو:")
+            rows = [LINE]
             for i in sorted((x for x in arm["items"] if x["commodity"] == com), key=lambda x: x["date"], reverse=True)[:6]:
-                mark = " ⚠️ پرت" if i["outlier"] else ""
-                old = " 🕓 قدیمی" if (date.fromisoformat(arm["date"]) - date.fromisoformat(i["date"])).days > 3 else ""
-                out.append(f"• {i.get('market_fa') or i['market']} ({i['market']}) {i['date']}: {num(i['kg_min'])}–{num(i['kg_max'])}{mark}{old}"
-                           + (f"  {tk((i['kg_min'] + i['kg_max']) / 2 * pkr)}" if pkr else ""))
-        out.append(line)
-    out += ["📝 نکته‌ها",
-            "• سه قیمت را هرگز با هم قاطی نکنید: قیمت بازار مبدأ (داخلی) ≠ قیمت FOB صادراتی ≠ ارزش گمرکی واردات.",
-            "• قیمت‌های هند و پاکستان قیمت بازار داخلی‌اند؛ برای قیمت تمام‌شده باید هزینهٔ بسته‌بندی، حمل و سود صادرکننده را اضافه کرد.",
-            "• فلفل: ۵۰۰ گرم/لیتر با ۵۵۰ گرم/لیتر و ASTA فرق دارد و قیمت‌شان یکی نیست؛ درجه را حتماً مقایسه کنید.",
-            "• گاربلد = فلفل تمیزشده (جداسازی سبک و ناخالصی)؛ آن‌گاربلد = تمیزنشده و ارزان‌تر.",
-            "• ردیف ⚠️ پرت یعنی منبع آن را نامعتبر/غیرعادی علامت زده؛ 🕓 یعنی تاریخ آن ردیف قدیمی‌تر از بقیه است.",
-            "• ارزش گمرکی Comtrade سالانه و چند ماه عقب است؛ فقط برای مقایسهٔ سطح قیمت‌ها مناسب است، نه قیمت روز.",
-            "• ARM به‌صورت دستی و غیررسمی به‌روز می‌شود و ممکن است عقب باشد؛ تاریخ هر ردیف را ببینید.",
-            "• برای فلفل ۳ میلی‌متری، شکسته، گرد، پوسته و سبک (Light Berries/Screenings) منبع رایگان روزانه نداریم؛ استعلام مستقیم از تأمین‌کننده لازم است.",
-            "• معادل تومانی با نرخ دلار و ارز همین گزارش محاسبه شده و تقریبی است."]
-    return "\n".join(out)
+                flag = (" ⚠️ پرت" if i["outlier"] else "") + (" 🕓 قدیمی" if (date.fromisoformat(arm["date"]) - date.fromisoformat(i["date"])).days > 3 else "")
+                mid = (i["kg_min"] + i["kg_max"]) / 2
+                rows += [f"🏷️ {i.get('market_fa') or i['market']} ({i['market']}) | 📅 {fad(i['date'])}{flag}",
+                         f"🇵🇰 قیمت: {num(i['kg_min'])}–{num(i['kg_max'])} روپیه پاکستان/کیلو" + (f" ≈ {fa(mid * pkr)} تومان/کیلو" if pkr else ""), LINE]
+            blocks.append("\n".join([f"🌿 گزارش قیمت {com} | منڈی‌های پاکستان", *rows]))
+        msgs.append("\n\n".join(blocks))
+    notes = ["📝 نکته‌ها", LINE,
+             "• سه قیمت را هرگز با هم قاطی نکنید: قیمت بازار مبدأ (داخلی) ≠ قیمت FOB صادراتی ≠ ارزش گمرکی واردات.",
+             "• قیمت‌های هند، پاکستان و سری‌لانکا قیمت بازار داخلی‌اند؛ برای قیمت تمام‌شده، بسته‌بندی، حمل و سود صادرکننده را هم باید اضافه کرد.",
+             "• درصد مصارف و وزن محموله همان تنظیمات سایت است و برای قیمت داخلی هم صرفاً برای مقایسه محاسبه شده.",
+             "• فلفل: ۵۰۰ گرم/لیتر با ۵۵۰ گرم/لیتر و ASTA فرق دارد؛ درجه را حتماً مقایسه کنید.",
+             "• گاربلد = فلفل تمیزشده؛ آن‌گاربلد = تمیزنشده و ارزان‌تر.",
+             "• ⚠️ پرت = منبع آن ردیف را غیرعادی علامت زده؛ 🕓 قدیمی = تاریخ آن ردیف از بقیه عقب‌تر است. ARM دستی و غیررسمی است.",
+             "• ارزش گمرکی Comtrade سالانه و چند ماه عقب است؛ فقط برای سنجش سطح قیمت.",
+             "• برای فلفل ۳ میلی‌متری، شکسته، گرد، پوسته و سبک منبع رایگان روزانه نداریم؛ از تأمین‌کننده استعلام بگیرید.",
+             "• معادل تومانی با نرخ دلار و ارز همین گزارش محاسبه شده و تقریبی است."]
+    return [m for m in msgs if m] + ["\n".join(notes)]
 
 
 def stale_alert(data: dict, log_path: str, now: datetime | None = None) -> str | None:
@@ -223,6 +251,7 @@ def chunks(text: str) -> list[str]:
 def send(text: str) -> None:
     jobs = []
     for part in chunks(text):
+        part = "\n".join("\u200f" + l if l.strip() else l for l in part.split("\n"))
         if os.environ.get("TELEGRAM_BOT_TOKEN"):
             jobs.append((f"https://api.telegram.org/bot{os.environ['TELEGRAM_BOT_TOKEN']}/sendMessage",
                          {"chat_id": os.environ["TELEGRAM_CHAT_ID"], "text": part}))
@@ -260,7 +289,7 @@ if __name__ == "__main__":
             send(msg)
         raise SystemExit(0)
     cfg = json.load(open("config.json", encoding="utf-8"))
-    texts = [t for t in (build_message(data, cfg), build_fx_message(data), build_world_message(data), build_alert_message(data)) if t]  # separate messages
+    texts = [t for t in (build_message(data, cfg), build_fx_message(data), *build_world_messages(data, cfg), build_alert_message(data)) if t]  # separate messages
     if "--dry" in sys.argv:
         print("\n\n=====\n\n".join(texts))
         raise SystemExit

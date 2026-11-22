@@ -131,7 +131,7 @@ with mock.patch.dict(os.environ, {"TELEGRAM_BOT_TOKEN": "t", "TELEGRAM_CHAT_ID":
         assert post.call_count >= 2
         sent = [c.kwargs["json"]["text"] for c in post.call_args_list]
         assert all(len(t) <= notify.MSG_LIMIT for t in sent)
-        assert "\n".join(sent) == long
+        assert "\n".join(sent).replace("\u200f", "") == long
 # world prices: IPC daily table (the % change cell must not be taken as the price)
 import world_prices
 ipc = ('<h3>DAILY PRICES 20-11-2026</h3><table>'
@@ -172,12 +172,14 @@ with mock.patch.object(world_prices, "get", side_effect=lambda u: ipc if "ipcnet
         mock.patch.object(world_prices, "fetch_spices_weekly", side_effect=OSError("down")):
     d = {"inr_to_usd": 0.0105}
     assert world_prices.run(d, {}) == [] and list(d["world"]) == ["updated", "ipc"]
-# world message: Persian equivalent + toman + notes, one chunk-safe text; nothing to say without data["world"]
-import notify
-wm = notify.build_world_message({"usd_toman": 268000, "world": {"ipc": {"date": "2026-11-20", "items": [
-    {"name": "Brazil Black - Pepper ASTA 570", "name_fa": "برزیل", "usd_ton": 5000}]}}})
-assert "برزیل" in wm and "۱٬۳۴۰٬۰۰۰ تومان" in wm and "نکته" in wm and all(len(c) <= notify.MSG_LIMIT for c in notify.chunks(wm))
-assert notify.build_world_message({"usd_toman": 1}) is None
+# world messages: owner's report format per item, Persian equivalent, notes last; every line right-aligned on send
+import json as _json, notify
+cfg = _json.load(open("config.json", encoding="utf-8"))
+wm = notify.build_world_messages({"usd_toman": 268000, "world": {"ipc": {"date": "2026-11-20", "items": [
+    {"name": "Brazil Black - Pepper ASTA 570", "name_fa": "برزیل", "usd_ton": 5000}]}}}, cfg)
+assert len(wm) == 2 and "برزیل" in wm[0] and "۱٬۳۴۰٬۰۰۰ تومان" in wm[0] and "درصد مصارف" in wm[0] and "نکته" in wm[1]
+assert all(len(c) <= notify.MSG_LIMIT for m in wm for c in notify.chunks(m)) and notify.build_world_messages({"usd_toman": 1}, cfg) == []
+
 # Govi Saviya / Comtrade / manual prices
 g = world_prices.parse_govi({"data": [{"item": "Ginger", "latestDate": "2026-11-20", "latestPrice": 205, "latestMin": 200, "latestMax": 210,
                                        "previousPrice": 190, "bestMarket": "Dambulla", "unit": "kg"}, {"item": "Beans", "latestPrice": 5, "unit": "kg"}]})
@@ -189,8 +191,8 @@ import tempfile, pathlib
 mp = pathlib.Path(tempfile.mkdtemp()) / "m.json"
 mp.write_text('{"items":[{"source":"VPSA","name":"Viet Nam Black Pepper","price":6000,"unit":"USD/ton","date":"2026-11-20"},{"name":"x"}]}', encoding="utf-8")
 assert len(world_prices.read_manual(str(mp))["items"]) == 1 and world_prices.read_manual("/nonexistent.json") is None
-wm = notify.build_world_message({"usd_toman": 268000, "world": {"comtrade": {"date": "2024", "items": [
+wm = "\n".join(notify.build_world_messages({"usd_toman": 268000, "world": {"comtrade": {"date": "2024", "items": [
     {"reporter": "India", "reporter_fa": "هند", "flow_fa": "صادرات", "period": "2024", "product_fa": "زردچوبه", "usd_kg": 1.85}]},
-    "govi": g, "manual": {"date": "2026-11-20", "items": [{"source": "VPSA", "name": "Pepper", "name_fa": "فلفل", "price": 6000, "unit": "USD/ton", "date": "2026-11-20"}]}}})
-assert "۱٬۸۵۰ دلار/تن" in wm and "دامبولا" in wm and "VPSA" in wm
+    "govi": g, "manual": {"date": "2026-11-20", "items": [{"source": "VPSA", "name": "Pepper", "name_fa": "فلفل", "price": 6000, "unit": "USD/ton", "date": "2026-11-20"}]}}}, cfg))
+assert "۱٬۸۵۰ دلار" in wm and "دامبولا" in wm and "VPSA" in wm
 print("ok")
