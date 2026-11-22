@@ -26,6 +26,5 @@ jobs:
           done
           echo "== comtrade"
           for rc in 704 699 360 76 364 586; do for fl in X M; do for cmd in 090411 091030; do
-            curl -sS -m 60 -H "Ocp-Apim-Subscription-Key: $K" "https://comtradeapi.un.org/data/v1/get/C/A/HS?reporterCode=$rc&period=2023,2024&cmdCode=$cmd&flowCode=$fl&partnerCode=0&includeDesc=false" -o /tmp/x.json -w "$rc $fl $cmd HTTP %{http_code} "; python3 -c "
-import json;d=json.load(open('/tmp/x.json'));print(d.get('count'),[(r['period'],r['primaryValue'],r['netWgt']) for r in d.get('data',[])][:3],d.get('error') or d.get('message',''))" ; sleep 1.2
+            curl -sS -m 60 -H "Ocp-Apim-Subscription-Key: $K" "https://comtradeapi.un.org/data/v1/get/C/A/HS?reporterCode=$rc&period=2023,2024&cmdCode=$cmd&flowCode=$fl&partnerCode=0&includeDesc=false" -o /tmp/x.json -w "$rc $fl $cmd HTTP %{http_code} "; python3 -c "import json;d=json.load(open('/tmp/x.json'));print(d.get('count'),[(r['period'],r['primaryValue'],r['netWgt']) for r in d.get('data',[])][:3],d.get('error') or d.get('message',''))"; sleep 1.2
           done; done; done
