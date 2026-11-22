@@ -8,6 +8,7 @@ from fetch_prices import trim_history, expiry_key, _candidate_rows
 from fx_prices import aggregate, find_price, extract
 from notify import build_alert_message, build_fx_message, build_message, stale_alert
 from fx_prices import update_health
+import fx_prices
 
 cfg = json.load(open("config.json", encoding="utf-8"))["products"]["t"]  # 25 t, 10% origin cost
 # rate 1000 makes the world price per ton exactly the owner's example: 761,899,030 toman
@@ -51,7 +52,8 @@ with mock.patch.object(fx_prices.requests, "get", return_value=fake("999")):
 h = {}
 assert [update_health(h, "a", "x", False) for _ in range(5)] == [[]] * 5
 assert update_health(h, "b", "src", True) == []
-assert [bool(update_health(h, "b", "src", False)) for _ in range(4)] == [False, False, True, False]
+N = fx_prices.FAIL_ALERT  # the alert fires on exactly the Nth consecutive miss
+assert [bool(update_health(h, "b", "src", False)) for _ in range(N + 1)] == [False] * (N - 1) + [True, False]
 assert update_health(h, "b", "src", True) == ["✅ src: دوباره جواب داد"]
 assert build_alert_message({}) is None and "x" in build_alert_message({"alerts": ["x"]})
 # stale alert fires only when the last good data is 40-55 min old
