@@ -6,25 +6,8 @@ jobs:
     steps:
       - name: probe
         shell: bash {0}
-        env:
-          K: ${{ secrets.COMTRADE_API_KEY }}
         run: |
           UA="Mozilla/5.0 (compatible; BazarbanBot/1.0; +https://github.com/alirezahasheminezhad/Bazarban)"
-          echo "key set: ${K:+yes}"
-          curl -sS -m 20 -A "$UA" https://govisaviya.lk/assets/index-zt1uGtMp.js -o /tmp/i.js
-          grep -oE '(mainWorld|LivePrices|Prices|Market)[A-Za-z0-9_-]*\.js' /tmp/i.js | sort -u | head -20
-          for n in $(grep -oE '(mainWorld|LivePrices)-[A-Za-z0-9_-]+\.js' /tmp/i.js | sort -u); do
-            curl -sS -m 20 -A "$UA" "https://govisaviya.lk/assets/$n" -o /tmp/c.js; echo "== $n $(wc -c </tmp/c.js)"
-            grep -oE '.{120}(markets\?more|homepage\?more|/summary|/status).{120}' /tmp/c.js | head -6
-            grep -oE '(baseURL|BASE_URL|API_URL)[^,;]{0,80}' /tmp/c.js | head -5
-          done
-          grep -oE '.{100}(baseURL|VITE_API)[^,;]{0,100}' /tmp/i.js | head -5
-          for p in markets?more=1 homepage?more=1 summary status; do
-            for b in /api/prices /api/market /api; do
-              c=$(curl -sS -m 20 -A "$UA" -o /tmp/r.json -w "%{http_code} %{content_type}" "https://govisaviya.lk$b/$p"); echo "$b/$p -> $c $(head -c 120 /tmp/r.json | tr '\n' ' ')"
-            done
-          done
-          echo "== comtrade"
-          for rc in 704 699 360 76 364 586; do for fl in X M; do for cmd in 090411 091030; do
-            curl -sS -m 60 -H "Ocp-Apim-Subscription-Key: $K" "https://comtradeapi.un.org/data/v1/get/C/A/HS?reporterCode=$rc&period=2023,2024&cmdCode=$cmd&flowCode=$fl&partnerCode=0&includeDesc=false" -o /tmp/x.json -w "$rc $fl $cmd HTTP %{http_code} "; python3 -c "import json;d=json.load(open('/tmp/x.json'));print(d.get('count'),[(r['period'],r['primaryValue'],r['netWgt']) for r in d.get('data',[])][:3],d.get('error') or d.get('message',''))"; sleep 1.2
-          done; done; done
+          curl -sS -m 20 -A "$UA" "https://govisaviya.lk/api/prices/homepage?more=1" -o /tmp/h.json
+          python3 -c "import json;d=json.load(open('/tmp/h.json'));r=d['data'];print(len(r),list(d.keys()));print(json.dumps(r[0]));print([x['item'] for x in r])"
+          python3 -c "import json;d=json.load(open('/tmp/h.json'))['data'];print([json.dumps(x) for x in d if any(k in x['item'].lower() for k in ('pepper','ginger','turmeric','chill','cinnamon','cardamom','clove','nutmeg','capsicum'))])"
