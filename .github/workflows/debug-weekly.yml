@@ -15,19 +15,26 @@ jobs:
       - run: |
           python - <<'PY'
           from io import BytesIO
-          import requests
+          import re, requests
           from bs4 import BeautifulSoup
           from urllib.parse import urljoin
           from pypdf import PdfReader
           import world_prices as w
-          html = w.get(w.WEEKLY_PAGE)
-          links = sorted({urljoin(w.WEEKLY_PAGE, a["href"]) for a in BeautifulSoup(html, "html.parser").find_all("a", href=True) if a["href"].lower().endswith(".pdf")}, key=w._pdf_day, reverse=True)
-          print("LINKS", links)
-          for url in links[:3]:
+          def text_of(url):
               r = requests.get(url, headers=w.HEADERS, timeout=60)
-              text = "\n".join(p.extract_text() or "" for p in PdfReader(BytesIO(r.content)).pages)
-              print("PDF", url, len(text))
-              for i, line in enumerate(text.splitlines()):
-                  if any(k in line for k in ("Turmeric", "Ginger", "Chilli", "Week Ending", "ERODE", "Nizamabad", "Guntur")) or "Wholesale" in line:
-                      print("LINE", i, repr(line))
+              return "\n".join(p.extract_text() or "" for p in PdfReader(BytesIO(r.content)).pages)
+          dm = "https://www.indianspices.com/admin/international_weekly_price/upload/07.11.2026%20dmfmt.pdf"
+          print("=== DMFMT FULL TEXT"); print(text_of(dm))
+          page = "https://www.indianspices.com/magazines/english/sm-weekly.html"
+          html = w.get(page)
+          soup = BeautifulSoup(html, "html.parser")
+          links = [(a.get_text(" ", strip=True), urljoin(page, a["href"])) for a in soup.find_all("a", href=True) if ".pdf" in a["href"].lower()]
+          print("=== SM LINKS", len(links))
+          for t, u in links[:8]: print("SMLINK", repr(t), u)
+          if links:
+              u = sorted(links, key=lambda x: w._pdf_day(x[1]), reverse=True)[0][1]
+              print("=== NEWEST", u)
+              txt = text_of(u)
+              print("LEN", len(txt))
+              for i, line in enumerate(txt.splitlines()[:80]): print("L", i, repr(line))
           PY
