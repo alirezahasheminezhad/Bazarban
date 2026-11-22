@@ -157,13 +157,14 @@ a = world_prices.parse_arm(arm, "c")
 assert [(i["market"], i["date"], i["kg_min"], i["kg_max"], i["outlier"]) for i in a] == [
     ("Multan", "2026-11-17", 300, 325, False), ("Rawalpindi", "2026-11-17", 350, 575, True), ("Layyah", "2026-11-16", 90, 90, False)]
 assert world_prices.parse_arm("<p>nothing</p>", "c") == []
-# Spices Board weekly PDF text: blank (-) cells stay None, rows without any current price are dropped, other spices ignored
-pdf = ("Wholesale Price of Different Spices ... for the Week Ending 17.10.2026\n"
-       "Turmeric Nizamabad FINGER 110 243 97 131\nTurmeric Chennai ERODE 180 200 150 165\n"
-       "Ginger Chennai MERUTH 365 385 360 430\nChilli Chennai RAMNAD NEW A/C 220 240 140 160\n"
-       "Chilli Guntur COLD STORAGE - - 100 153\nPepper Cochin GARBLED 770 780 700 710\n")
+# Spices Board weekly PDF text (real layout): this week, last week, last month, last year; only labelled markets are read
+pdf = ("AVERAGE DOMESTIC PRICES OF MAJOR SPICES FOR THE WEEK ENDING 07.11.2026 (PRICE IN RS./KG.)\n"
+       "CHILLI GUNTUR 202.50 205.00 205.00 127.00\nERODE 235.00 200.00 190.00 165.00\nSALEM 290.00 225.00 192.50 175.00\n"
+       "FINGER NIZAMABAD 194.50 202.50 151.00 120.50\nNO.1 CHENNAI 372.50 370.00 360.00 300.00\nSALEM - 1 2 3\n")
 wk = world_prices.parse_spices_weekly(pdf)
-assert wk["date"] == "2026-10-17" and len(wk["items"]) == 4 and wk["items"][3]["grade"] == "RAMNAD NEW A/C" and wk["items"][0]["min_ly"] == 97
+assert wk["date"] == "2026-11-07" and len(wk["items"]) == 4 and wk["items"][0]["spice"] == "فلفل قرمز"
+assert wk["items"][1]["inr_kg"] == 235 and wk["items"][1]["prev_week"] == 200 and wk["items"][1]["last_year"] == 165 and wk["items"][1]["market_fa"] == "ایرود"
+assert world_prices.to_fa("Cochin Garbled") == "کوچین گاربلد (پاک‌شده)" and world_prices.to_fa("Zzz") == "Zzz"
 assert world_prices.parse_spices_weekly("no table here") is None
 assert world_prices._pdf_day("https://x/07.11.2026%20dmfmt.pdf") > world_prices._pdf_day("https://x/17.10.2026%20Spicemarket.pdf")
 # one source down must not drop the other, and a never-working source stays quiet
@@ -171,4 +172,10 @@ with mock.patch.object(world_prices, "get", side_effect=lambda u: ipc if "ipcnet
         mock.patch.object(world_prices, "fetch_spices_weekly", side_effect=OSError("down")):
     d = {"inr_to_usd": 0.0105}
     assert world_prices.run(d, {}) == [] and list(d["world"]) == ["updated", "ipc"]
+# world message: Persian equivalent + toman + notes, one chunk-safe text; nothing to say without data["world"]
+import notify
+wm = notify.build_world_message({"usd_toman": 268000, "world": {"ipc": {"date": "2026-11-20", "items": [
+    {"name": "Brazil Black - Pepper ASTA 570", "name_fa": "برزیل", "usd_ton": 5000}]}}})
+assert "برزیل" in wm and "۱٬۳۴۰٬۰۰۰ تومان" in wm and "نکته" in wm and all(len(c) <= notify.MSG_LIMIT for c in notify.chunks(wm))
+assert notify.build_world_message({"usd_toman": 1}) is None
 print("ok")

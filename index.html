@@ -762,20 +762,20 @@ function renderWorld(w){
   const cards = [];
   if(w && w.ipc && Array.isArray(w.ipc.items) && w.ipc.items.length){
     cards.push(`<div class="fxi"><h4><span>IPC · فلفل (دلار/تن)</span><span class="tag" dir="ltr">${esc(w.ipc.date)}</span></h4>
-      ${w.ipc.items.map(i=>`<div class="fxs"><span>${fa(i.usd_ton)}</span><span dir="ltr">${esc(i.name)}</span></div>`).join('')}</div>`);
+      ${w.ipc.items.map(i=>`<div class="fxs"><span>${fa(i.usd_ton)}</span><span><span dir="ltr">${esc(i.name)}</span>${i.name_fa&&i.name_fa!==i.name?`<small> · ${esc(i.name_fa)}</small>`:''}</span></div>`).join('')}</div>`);
   }
   if(w && w.spices_board && Array.isArray(w.spices_board.items) && w.spices_board.items.length){
     cards.push(`<div class="fxi"><h4><span>Spices Board هند · بازار مبدأ</span><span class="tag" dir="ltr">${esc(w.spices_board.date)}</span></h4>
-      ${w.spices_board.items.map(i=>`<div class="fxs"><span>${fa(i.inr_kg,2)} ₹/kg · ${fa(i.usd_ton)} $/t</span><span dir="ltr">${esc(i.market)} · ${esc(i.grade)}</span></div>`).join('')}</div>`);
+      ${w.spices_board.items.map(i=>`<div class="fxs"><span>${fa(i.inr_kg,2)} ₹/kg · ${fa(i.usd_ton)} $/t</span><span>${esc(i.spice)} · ${esc(i.market_fa||i.market)} <small dir="ltr">(${esc(i.market)} · ${esc(i.grade)})</small>${i.grade_fa&&i.grade_fa!==i.grade?`<small> · ${esc(i.grade_fa)}</small>`:''}</span></div>`).join('')}</div>`);
   }
   if(w && w.spices_weekly && Array.isArray(w.spices_weekly.items) && w.spices_weekly.items.length){
-    cards.push(`<div class="fxi"><h4><span>Spices Board · هفتگی (₹/kg)</span><span class="tag" dir="ltr">${esc(w.spices_weekly.date)}</span></h4>
-      ${w.spices_weekly.items.map(i=>`<div class="fxs"><span>${i.min==null?'—':fa(i.min)} – ${i.max==null?'—':fa(i.max)} <small>(پارسال ${i.min_ly==null?'—':fa(i.min_ly)} – ${i.max_ly==null?'—':fa(i.max_ly)})</small></span><span dir="ltr">${esc(i.spice)} · ${esc(i.market)} · ${esc(i.grade)}</span></div>`).join('')}</div>`);
+    cards.push(`<div class="fxi"><h4><span>Spices Board · میانگین هفتگی هند (₹/kg)</span><span class="tag" dir="ltr">${esc(w.spices_weekly.date)}</span></h4>
+      ${w.spices_weekly.items.map(i=>`<div class="fxs"><span>${fa(i.inr_kg,2)} <small>(هفته قبل ${fa(i.prev_week,2)} · ماه قبل ${fa(i.prev_month,2)} · پارسال ${fa(i.last_year,2)})</small></span><span>${esc(i.spice)} · ${esc(i.market_fa||i.market)}</span></div>`).join('')}</div>`);
   }
   if(w && w.arm_pk && Array.isArray(w.arm_pk.items) && w.arm_pk.items.length){
     const old = d => (Date.now()-new Date(d))/864e5 > 3;  // ARM می‌تواند نرخ چند روز پیش را نگه دارد
     cards.push(`<div class="fxi"><h4><span>ARM پاکستان · مندی (روپیه/kg)</span><span class="tag" dir="ltr">${esc(w.arm_pk.date)}</span></h4>
-      ${w.arm_pk.items.map(i=>`<div class="fxs${i.outlier||old(i.date)?' bad':''}"><span>${fa(i.kg_min)} – ${fa(i.kg_max)}${i.outlier?' · دورافتاده':''}${old(i.date)?' · قدیمی':''}</span><span dir="ltr">${esc(i.commodity)} · ${esc(i.market)} · ${esc(i.date)}</span></div>`).join('')}</div>`);
+      ${w.arm_pk.items.map(i=>`<div class="fxs${i.outlier||old(i.date)?' bad':''}"><span>${fa(i.kg_min)} – ${fa(i.kg_max)}${i.outlier?' · دورافتاده':''}${old(i.date)?' · قدیمی':''}</span><span>${esc(i.commodity)} · ${esc(i.market_fa||i.market)} <small dir="ltr">(${esc(i.market)}) ${esc(i.date)}</small></span></div>`).join('')}</div>`);
   }
   box.innerHTML = cards.join('');
   box.hidden = !cards.length;

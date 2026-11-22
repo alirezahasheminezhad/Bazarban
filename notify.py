@@ -12,7 +12,7 @@ import time
 import sys
 
 import requests
-from datetime import datetime
+from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 PRICE_FIELD = {"t": "usd_per_ton", "b": "pepper_usd_per_ton"}
@@ -114,6 +114,56 @@ def build_alert_message(data: dict) -> str | None:
     return "🔧 هشدار فنی بازاربان\n" + "\n".join(alerts) if alerts else None
 
 
+def build_world_message(data: dict) -> str | None:
+    """Fourth message: free world spice price sources, Persian equivalents, toman equivalents and the notes needed to read them."""
+    w = data.get("world")
+    if not w:
+        return None
+    rate = data.get("usd_toman") or 0
+    pkr = next((i["avg"] for i in data.get("fx", {}).get("items", []) if i["id"] == "pkr"), 0)
+    line = "━" * 20
+    tk = lambda v: f"≈ {fa(v)} تومان" if rate and v else ""  # noqa: E731
+    out = ["🌍 گزارش قیمت جهانی ادویه (منابع رایگان)", line]
+    if ipc := w.get("ipc"):
+        out += [f"🔹 IPC | شورای بین‌المللی فلفل ({ipc['date']})", "قیمت صادراتی FOB فلفل سیاه، دلار بر تن:"]
+        for i in ipc["items"]:
+            out += [f"• {i.get('name_fa') or i['name']}", f"  {i['name']}", f"  💵 {fa(i['usd_ton'])} دلار/تن  {tk(i['usd_ton'] * rate / 1000)}/کیلو"]
+        out.append(line)
+    if sb := w.get("spices_board"):
+        out += [f"🔹 Spices Board هند | بازار داخلی ({sb['date']})", "روپیه بر کیلو (قیمت بازار داخلی، نه FOB):"]
+        for i in sb["items"]:
+            out += [f"• {i['spice']} | {i.get('market_fa') or i['market']} ({i['market']}) | درجه: {i.get('grade_fa') or i['grade']}",
+                    f"  {num(i['inr_kg'])} روپیه/کیلو = {fa(i['usd_ton'])} دلار/تن  {tk(i['usd_ton'] * rate / 1000)}/کیلو"]
+        out.append(line)
+    if wk := w.get("spices_weekly"):
+        out += [f"🔹 Spices Board | میانگین هفتگی بازارهای داخلی هند (هفته منتهی به {wk['date']})", "روپیه بر کیلو: این هفته | هفته قبل | ماه قبل | پارسال"]
+        for i in wk["items"]:
+            out += [f"• {i['spice']} | {i['market_fa']} ({i['market']})",
+                    f"  {num(i['inr_kg'])} | {num(i['prev_week'])} | {num(i['prev_month'])} | {num(i['last_year'])}  "
+                    + (tk(i["inr_kg"] * float(data.get("inr_to_usd") or 0) * rate) + "/کیلو")]
+        out.append(line)
+    if arm := w.get("arm_pk"):
+        out.append(f"🔹 ARM پاکستان | قیمت منڈی (بازار عمده) تا {arm['date']}")
+        for com in dict.fromkeys(i["commodity"] for i in arm["items"]):
+            out.append(f"{com} — روپیه پاکستان بر کیلو:")
+            for i in sorted((x for x in arm["items"] if x["commodity"] == com), key=lambda x: x["date"], reverse=True)[:6]:
+                mark = " ⚠️ پرت" if i["outlier"] else ""
+                old = " 🕓 قدیمی" if (date.fromisoformat(arm["date"]) - date.fromisoformat(i["date"])).days > 3 else ""
+                out.append(f"• {i.get('market_fa') or i['market']} ({i['market']}) {i['date']}: {num(i['kg_min'])}–{num(i['kg_max'])}{mark}{old}"
+                           + (f"  {tk((i['kg_min'] + i['kg_max']) / 2 * pkr)}" if pkr else ""))
+        out.append(line)
+    out += ["📝 نکته‌ها",
+            "• سه قیمت را هرگز با هم قاطی نکنید: قیمت بازار مبدأ (داخلی) ≠ قیمت FOB صادراتی ≠ ارزش گمرکی واردات.",
+            "• قیمت‌های هند و پاکستان قیمت بازار داخلی‌اند؛ برای قیمت تمام‌شده باید هزینهٔ بسته‌بندی، حمل و سود صادرکننده را اضافه کرد.",
+            "• فلفل: ۵۰۰ گرم/لیتر با ۵۵۰ گرم/لیتر و ASTA فرق دارد و قیمت‌شان یکی نیست؛ درجه را حتماً مقایسه کنید.",
+            "• گاربلد = فلفل تمیزشده (جداسازی سبک و ناخالصی)؛ آن‌گاربلد = تمیزنشده و ارزان‌تر.",
+            "• ردیف ⚠️ پرت یعنی منبع آن را نامعتبر/غیرعادی علامت زده؛ 🕓 یعنی تاریخ آن ردیف قدیمی‌تر از بقیه است.",
+            "• ARM به‌صورت دستی و غیررسمی به‌روز می‌شود و ممکن است عقب باشد؛ تاریخ هر ردیف را ببینید.",
+            "• برای فلفل ۳ میلی‌متری، شکسته، گرد، پوسته و سبک (Light Berries/Screenings) منبع رایگان روزانه نداریم؛ استعلام مستقیم از تأمین‌کننده لازم است.",
+            "• معادل تومانی با نرخ دلار و ارز همین گزارش محاسبه شده و تقریبی است."]
+    return "\n".join(out)
+
+
 def stale_alert(data: dict, log_path: str, now: datetime | None = None) -> str | None:
     """Run after a failed price update. Fires in one run only (data 40-55 min old, runs are 15 min apart)."""
     updated = datetime.fromisoformat(data["updated"].replace("Z", "+00:00"))
@@ -192,7 +242,7 @@ if __name__ == "__main__":
             send(msg)
         raise SystemExit(0)
     cfg = json.load(open("config.json", encoding="utf-8"))
-    texts = [t for t in (build_message(data, cfg), build_fx_message(data), build_alert_message(data)) if t]  # separate messages
+    texts = [t for t in (build_message(data, cfg), build_fx_message(data), build_world_message(data), build_alert_message(data)) if t]  # separate messages
     if "--dry" in sys.argv:
         print("\n\n=====\n\n".join(texts))
         raise SystemExit

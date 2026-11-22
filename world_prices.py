@@ -56,7 +56,7 @@ def parse_ipc(html: str) -> dict | None:
             continue
         price = next((v for v in map(_num, cells[1:]) if v and 500 <= v <= 50_000), None)  # skips the "% change" cell
         if price:
-            items.append({"name": cells[0], "usd_ton": price})
+            items.append({"name": cells[0], "name_fa": to_fa(cells[0]), "usd_ton": price})
     if not d or not items:
         return None
     return {"date": f"{d.group(3)}-{d.group(2)}-{d.group(1)}", "items": items}
@@ -74,7 +74,7 @@ def parse_spices_board(html: str, usd_per_inr: float) -> dict | None:
         if not (date_m and spice and avg and 1 <= avg <= 100_000):
             continue
         dates.append(datetime.strptime(cells[0][:11], "%d-%b-%Y").date())
-        items.append({"spice": spice, "market": cells[2], "grade": cells[4], "source": cells[5],
+        items.append({"spice": spice, "market": cells[2], "market_fa": to_fa(cells[2]), "grade": cells[4], "grade_fa": to_fa(cells[4]), "source": cells[5],
                       "inr_kg": avg, "usd_ton": round(avg * 1000 * usd_per_inr, 1)})
     if not items:
         return None
@@ -101,28 +101,54 @@ def parse_arm(html: str, commodity: str) -> list[dict]:
         hi = float(m.group(2) or m.group(1))
         if not (1 <= lo <= hi <= 100_000):
             continue
-        items.append({"commodity": commodity, "market": cells[0].rstrip("* ").strip(), "date": day.isoformat(),
+        items.append({"commodity": commodity, "market": cells[0].rstrip("* ").strip(), "market_fa": to_fa(cells[0].rstrip("* ").strip()), "date": day.isoformat(),
                       "kg_min": lo, "kg_max": hi, "outlier": "*" in cells[0]})
     return items
 
 
-WEEKLY_ROW = re.compile(r"^(Turmeric|Ginger|Chilli)\s+(\S+)\s+(.+?)" + r"\s+(-|\d+(?:\.\d+)?)" * 4 + r"\s*$", re.I)
+# Persian equivalents of the terms the sources publish (longest first; matched case-insensitively as whole words)
+GLOSSARY = (
+    ("black pepper", "فلفل سیاه"), ("white pepper", "فلفل سفید"), ("pepper", "فلفل"), ("garbled", "گاربلد (پاک‌شده)"),
+    ("ungarbled", "آن‌گاربلد (پاک‌نشده)"), ("viet nam", "ویتنام"), ("vietnam", "ویتنام"), ("indonesia", "اندونزی"),
+    ("brazil", "برزیل"), ("malaysia", "مالزی"), ("sri lanka", "سریلانکا"), ("india", "هند"), ("lampung", "لامپونگ"),
+    ("muntok", "مونتوک"), ("sarawak", "ساراواک"), ("cochin", "کوچین"), ("kochi", "کوچی"), ("erode", "ایرود"),
+    ("salem", "سیلم"), ("finger", "انگشتی (فینگر)"), ("nizamabad", "نظام‌آباد"), ("guntur", "گونتور"),
+    ("malabar", "مالابار"), ("chennai", "چنای"), ("multan", "مولتان"), ("lahore", "لاهور"), ("karachi", "کراچی"),
+    ("hyderabad", "حیدرآباد"), ("sukkur", "سکهر"), ("quetta", "کویته"), ("turmeric", "زردچوبه"),
+    ("red chilli", "فلفل قرمز"), ("chilli", "فلفل قرمز"), ("ginger", "زنجبیل"), ("asta", "کیفیت ASTA"),
+    ("mandi", "منڈی (بازار عمده)"), ("ordinary", "معمولی"), ("whole", "کامل"), ("dry", "خشک"),
+)
+
+
+def to_fa(text: str) -> str:
+    """'Brazil Black - Pepper ASTA 570' -> Persian words where known; unknown words stay as published."""
+    out = text
+    for en, fa in GLOSSARY:
+        out = re.sub(rf"(?<![A-Za-z]){re.escape(en)}(?![A-Za-z])", fa, out, flags=re.I)
+    return out
+
+
+# weekly PDF rows carry no spice column in the extracted text, only a market label: only unambiguous labels are mapped
+WEEKLY_MARKETS = {"CHILLI GUNTUR": ("فلفل قرمز", "Guntur"), "ERODE": ("زردچوبه", "Erode"), "SALEM": ("زردچوبه", "Salem"),
+                  "FINGER NIZAMABAD": ("زردچوبه", "Nizamabad (Finger)")}
+WEEKLY_ROW = re.compile(r"^(" + "|".join(WEEKLY_MARKETS) + r")" + r"\s+(-|\d+(?:\.\d+)?)" * 4 + r"\s*$", re.I)
 
 
 def parse_spices_weekly(text: str) -> dict | None:
-    """Text of the weekly PDF: 'Turmeric Nizamabad FINGER 110 243 97 131' = spice, market, grade, min, max, last-year min/max (INR/kg).
-    shortcut: only lines that repeat the spice name are read; if the PDF stops repeating it, rows are missed (none -> source skipped)."""
-    d = re.search(r"Week Ending\s*(\d{2})\.(\d{2})\.(\d{4})", text, re.I)
+    """Spices Board weekly PDF, INR/kg: 'ERODE 235.00 200.00 190.00 165.00' = this week, last week, last month, same week last year.
+    shortcut: only the 4 labels in WEEKLY_MARKETS are read (the text has no spice column); add a label there to read more."""
+    d = re.search(r"WEEK ENDING\s*(\d{2})\.(\d{2})\.(\d{4})", text, re.I)
     items = []
     for line in text.splitlines():
-        m = WEEKLY_ROW.match(line.strip())
+        m = WEEKLY_ROW.match(re.sub(r"\s+", " ", line.strip()))
         if not m:
             continue
-        v = [None if x == "-" else float(x) for x in m.groups()[3:]]
-        if v[0] is None and v[1] is None:
+        spice, market = WEEKLY_MARKETS[m.group(1).upper()]
+        v = [None if x == "-" else float(x) for x in m.groups()[1:]]
+        if v[0] is None:
             continue
-        items.append({"spice": SPICES[m.group(1).lower()], "market": m.group(2), "grade": m.group(3).strip(),
-                      "min": v[0], "max": v[1], "min_ly": v[2], "max_ly": v[3]})
+        items.append({"spice": spice, "market": market, "market_fa": to_fa(market), "inr_kg": v[0],
+                      "prev_week": v[1], "prev_month": v[2], "last_year": v[3]})
     if not d or not items:
         return None
     return {"date": f"{d.group(3)}-{d.group(2)}-{d.group(1)}", "items": items}
