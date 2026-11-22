@@ -1,0 +1,4 @@
+{
+  "_help": "قیمت‌هایی که خودتان از منابعی مثل VPSA (vpsaspice.org/market-price) می‌خوانید. هر ردیف: source, name, price, unit, date (YYYY-MM-DD), note. بعد از ذخیره در اجرای بعدی (حداکثر ۱۵ دقیقه) در سایت و پیام می‌آید.",
+  "items": []
+}

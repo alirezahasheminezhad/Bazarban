@@ -772,6 +772,18 @@ function renderWorld(w){
     cards.push(`<div class="fxi"><h4><span>Spices Board · میانگین هفتگی هند (₹/kg)</span><span class="tag" dir="ltr">${esc(w.spices_weekly.date)}</span></h4>
       ${w.spices_weekly.items.map(i=>`<div class="fxs"><span>${fa(i.inr_kg,2)} <small>(هفته قبل ${fa(i.prev_week,2)} · ماه قبل ${fa(i.prev_month,2)} · پارسال ${fa(i.last_year,2)})</small></span><span>${esc(i.spice)} · ${esc(i.market_fa||i.market)}</span></div>`).join('')}</div>`);
   }
+  if(w && w.govi && Array.isArray(w.govi.items) && w.govi.items.length){
+    cards.push(`<div class="fxi"><h4><span>Govi Saviya سری‌لانکا (LKR/kg)</span><span class="tag" dir="ltr">${esc(w.govi.date)}</span></h4>
+      ${w.govi.items.map(i=>`<div class="fxs"><span>${fa(i.lkr_kg)} <small>(روز قبل ${fa(i.prev||0)} · ${esc(i.market_fa||i.market)})</small></span><span>${esc(i.spice)}</span></div>`).join('')}</div>`);
+  }
+  if(w && w.comtrade && Array.isArray(w.comtrade.items) && w.comtrade.items.length){
+    cards.push(`<div class="fxi"><h4><span>Comtrade · ارزش واحد گمرکی سالانه ($/ton)</span><span class="tag" dir="ltr">${esc(w.comtrade.date)}</span></h4>
+      ${w.comtrade.items.map(i=>`<div class="fxs"><span>${fa(i.usd_kg*1000)} <small dir="ltr">${esc(i.period)}</small></span><span>${esc(i.product_fa)} · ${esc(i.reporter_fa)} ${esc(i.flow_fa)}</span></div>`).join('')}</div>`);
+  }
+  if(w && w.manual && Array.isArray(w.manual.items) && w.manual.items.length){
+    cards.push(`<div class="fxi"><h4><span>واردشده دستی (VPSA و …)</span><span class="tag" dir="ltr">${esc(w.manual.date)}</span></h4>
+      ${w.manual.items.map(i=>`<div class="fxs"><span>${fa(i.price,2)} ${esc(i.unit||'')} <small dir="ltr">${esc(i.date)}</small></span><span>${esc(i.source||'')} · ${esc(i.name_fa||i.name)}</span></div>`).join('')}</div>`);
+  }
   if(w && w.arm_pk && Array.isArray(w.arm_pk.items) && w.arm_pk.items.length){
     const old = d => (Date.now()-new Date(d))/864e5 > 3;  // ARM می‌تواند نرخ چند روز پیش را نگه دارد
     cards.push(`<div class="fxi"><h4><span>ARM پاکستان · مندی (روپیه/kg)</span><span class="tag" dir="ltr">${esc(w.arm_pk.date)}</span></h4>

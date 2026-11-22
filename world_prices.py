@@ -5,6 +5,9 @@ Free machine-readable sources, each independent (a failure only drops that sourc
   * IPC (International Pepper Community): daily FOB-style pepper prices, USD per tonne.
   * Spices Board of India: "Current Market Price" table (pepper), INR per kg (also shown as USD/t).
   * Spices Board weekly "Spice Market" PDF: wholesale turmeric / ginger / chilli, INR per kg.
+  * Govi Saviya (Sri Lanka): the public JSON the site itself uses, LKR per kg (ginger, turmeric, dried chilli).
+  * UN Comtrade (free key, env COMTRADE_API_KEY): annual customs unit values; refreshed weekly, not every run.
+  * manual_prices.json: prices typed by the owner from sources that forbid bots (e.g. VPSA).
   * armpk.pk: Pakistani mandi rates for dry red chilli and turmeric, PKR per kg (every row has its own date).
 Prices stay in separate groups on purpose: an origin-market price, an export (FOB) price
 and a customs unit value are three different numbers and must never be averaged together.
@@ -12,8 +15,10 @@ and a customs unit value are three different numbers and must never be averaged 
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
+import time
 from datetime import date, datetime, timezone
 from io import BytesIO
 from pathlib import Path
@@ -116,7 +121,7 @@ GLOSSARY = (
     ("malabar", "مالابار"), ("chennai", "چنای"), ("multan", "مولتان"), ("lahore", "لاهور"), ("karachi", "کراچی"),
     ("hyderabad", "حیدرآباد"), ("sukkur", "سکهر"), ("quetta", "کویته"), ("turmeric", "زردچوبه"),
     ("red chilli", "فلفل قرمز"), ("chilli", "فلفل قرمز"), ("ginger", "زنجبیل"), ("asta", "کیفیت ASTA"),
-    ("mandi", "منڈی (بازار عمده)"), ("ordinary", "معمولی"), ("whole", "کامل"), ("dry", "خشک"),
+    ("mandi", "منڈی (بازار عمده)"), ("ordinary", "معمولی"), ("dambulla", "دامبولا"), ("pettah", "پتاه"), ("kandy", "کندی"), ("keppetipola", "کپتیپولا"), ("peliyagoda", "پلیاگودا"), ("dried chillies", "فلفل قرمز خشک"), ("imported", "وارداتی"), ("whole", "کامل"), ("dry", "خشک"),
 )
 
 
@@ -152,6 +157,80 @@ def parse_spices_weekly(text: str) -> dict | None:
     if not d or not items:
         return None
     return {"date": f"{d.group(3)}-{d.group(2)}-{d.group(1)}", "items": items}
+
+
+GOVI_URL = "https://govisaviya.lk/api/prices/homepage?more=1"  # robots.txt allows it; it is the JSON the site's own pages load
+GOVI_ITEMS = {"Ginger": "زنجبیل", "Turmeric": "زردچوبه", "Dried Chillies (Imported)": "فلفل قرمز خشک (وارداتی)"}
+
+
+def parse_govi(js: dict) -> dict | None:
+    """-> items with lkr_kg (wholesale, Sri Lankan rupees per kg), min/max, previous day's price and the best market."""
+    items = []
+    for r in js.get("data", []):
+        if r.get("item") in GOVI_ITEMS and r.get("latestPrice") and r.get("unit") == "kg":
+            items.append({"spice": GOVI_ITEMS[r["item"]], "name": r["item"], "lkr_kg": r["latestPrice"], "min": r.get("latestMin"),
+                          "max": r.get("latestMax"), "prev": r.get("previousPrice"), "market": r.get("bestMarket", ""),
+                          "market_fa": to_fa(r.get("bestMarket", "")), "date": r["latestDate"]})
+    return {"date": max(i["date"] for i in items), "items": items} if items else None
+
+
+# (reporter code, English, Persian, flow): exporters are read on export, importers on import
+COMTRADE_SETS = ((704, "Viet Nam", "ویتنام", "X"), (699, "India", "هند", "X"), (699, "India", "هند", "M"), (360, "Indonesia", "اندونزی", "X"),
+                 (76, "Brazil", "برزیل", "X"), (364, "Iran", "ایران", "M"), (586, "Pakistan", "پاکستان", "M"))
+COMTRADE_CMDS = (("090411", "فلفل سیاه (کامل)"), ("091030", "زردچوبه"))
+COMTRADE_REFRESH_DAYS = 7  # annual data: no need to spend the free quota (500 calls/day) every 15 minutes
+
+
+def parse_comtrade(js: dict) -> dict | None:
+    """Latest period of one reporter/flow/product; the total row is the biggest one (the API also returns per-transport rows)."""
+    best: dict = {}
+    for r in js.get("data", []):
+        if (r.get("netWgt") or 0) > 0 and (r.get("primaryValue") or 0) > 0:
+            p = str(r["period"])
+            if p not in best or r["primaryValue"] > best[p]["primaryValue"]:
+                best[p] = r
+    if not best:
+        return None
+    r = best[max(best)]
+    return {"period": str(r["period"]), "value_usd": r["primaryValue"], "kg": r["netWgt"], "usd_kg": round(r["primaryValue"] / r["netWgt"], 3)}
+
+
+def fetch_comtrade(prev: dict | None) -> dict | None:
+    key = os.environ.get("COMTRADE_API_KEY")
+    if prev and (datetime.now(timezone.utc) - datetime.fromisoformat(prev["fetched"].replace("Z", "+00:00"))).days < COMTRADE_REFRESH_DAYS:
+        return prev
+    if not key:
+        return prev  # not configured: keep whatever was fetched before, otherwise the source stays quiet
+    y = date.today().year
+    items = []
+    for rc, en, fa, flow in COMTRADE_SETS:
+        for cmd, cmd_fa in COMTRADE_CMDS:
+            try:
+                r = requests.get("https://comtradeapi.un.org/data/v1/get/C/A/HS", headers={"Ocp-Apim-Subscription-Key": key}, timeout=60,
+                                 params={"reporterCode": rc, "period": f"{y - 2},{y - 1}", "cmdCode": cmd, "flowCode": flow, "partnerCode": 0})
+                r.raise_for_status()
+                got = parse_comtrade(r.json())
+            except Exception as e:  # never print the request: it carries no key in the URL, but stay quiet anyway
+                print(f"world comtrade {rc} {flow} {cmd}: {type(e).__name__}", file=sys.stderr)
+                got = None
+            if got:
+                items.append({"reporter": en, "reporter_fa": fa, "flow": flow, "flow_fa": "صادرات" if flow == "X" else "واردات",
+                              "hs": cmd, "product_fa": cmd_fa, **got})
+            time.sleep(1.2)  # free tier is rate limited
+    if not items:
+        return prev
+    return {"date": max(i["period"] for i in items), "fetched": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+            "items": items}
+
+
+def read_manual(path: str = "manual_prices.json") -> dict | None:
+    """Prices the owner types in from sources that forbid bots: {"items":[{"source","name","price","unit","date","note"}]}."""
+    try:
+        items = json.loads(Path(path).read_text(encoding="utf-8")).get("items", [])
+    except (OSError, ValueError):
+        return None
+    items = [{**i, "name_fa": to_fa(i["name"])} for i in items if i.get("name") and i.get("price") and i.get("date")]
+    return {"date": max(i["date"] for i in items), "items": items} if items else None
 
 
 def _pdf_day(url: str) -> date:
@@ -197,6 +276,9 @@ def run(data: dict, health: dict) -> list[str]:
         ("spices_board", "Spices Board هند", lambda: parse_spices_board(get(SPICES_BOARD_URL), usd_per_inr) if usd_per_inr else None),
         ("spices_weekly", "Spices Board (PDF هفتگی)", fetch_spices_weekly),
         ("arm_pk", "ARM پاکستان", fetch_arm),
+        ("govi", "Govi Saviya سریلانکا", lambda: parse_govi(requests.get(GOVI_URL, headers=HEADERS, timeout=30).json())),
+        ("comtrade", "Comtrade (سازمان ملل)", lambda: fetch_comtrade((data.get("world") or {}).get("comtrade"))),
+        ("manual", "قیمت‌های دستی", read_manual),
     ):
         try:
             got = fn()
@@ -206,7 +288,8 @@ def run(data: dict, health: dict) -> list[str]:
         print(f"world {key}: {len(got['items']) if got else 'none'} items, date {got['date'] if got else '-'}")
         if got:
             world[key] = got
-        alerts += update_health(health, f"world|{key}", label, bool(got))
+        if key != "manual":  # a file typed by hand is not a source that can "go down"
+            alerts += update_health(health, f"world|{key}", label, bool(got))
     if world:
         data["world"] = {"updated": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"), **world}
     return alerts

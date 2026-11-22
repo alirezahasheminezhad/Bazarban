@@ -142,6 +142,23 @@ def build_world_message(data: dict) -> str | None:
                     f"  {num(i['inr_kg'])} | {num(i['prev_week'])} | {num(i['prev_month'])} | {num(i['last_year'])}  "
                     + (tk(i["inr_kg"] * float(data.get("inr_to_usd") or 0) * rate) + "/کیلو")]
         out.append(line)
+    if gv := w.get("govi"):
+        out += [f"🔹 Govi Saviya | بازار عمده سری‌لانکا ({gv['date']})", "روپیه سری‌لانکا بر کیلو (قیمت بازار داخلی؛ نرخ تبدیل ندارد):"]
+        for i in gv["items"]:
+            out.append(f"• {i['spice']} ({i['name']}): {num(i['lkr_kg'])} (بازهٔ {num(i['min'] or 0)}–{num(i['max'] or 0)}) | روز قبل {num(i['prev'] or 0)} | بهترین بازار: {i['market_fa']} ({i['market']})")
+        out.append(line)
+    if ct := w.get("comtrade"):
+        out += [f"🔹 Comtrade سازمان ملل | ارزش گمرکی سالانه (آخرین سال: {ct['date']})", "ارزش واحد گمرکی = ارزش کل ÷ وزن؛ قیمت روز و FOB نیست:"]
+        for prod in dict.fromkeys(i["product_fa"] for i in ct["items"]):
+            out.append(f"{prod}:")
+            for i in (x for x in ct["items"] if x["product_fa"] == prod):
+                out.append(f"• {i['reporter_fa']} ({i['reporter']}) {i['flow_fa']} {i['period']}: {fa(i['usd_kg'] * 1000)} دلار/تن  {tk(i['usd_kg'] * rate)}/کیلو")
+        out.append(line)
+    if mn := w.get("manual"):
+        out += [f"🔹 قیمت‌های واردشده دستی ({mn['date']})"]
+        for i in mn["items"]:
+            out.append(f"• {i.get('source', '')} | {i.get('name_fa') or i['name']} ({i['name']}): {num(i['price'])} {i.get('unit', '')} | {i['date']}" + (f" | {i['note']}" if i.get("note") else ""))
+        out.append(line)
     if arm := w.get("arm_pk"):
         out.append(f"🔹 ARM پاکستان | قیمت منڈی (بازار عمده) تا {arm['date']}")
         for com in dict.fromkeys(i["commodity"] for i in arm["items"]):
@@ -158,6 +175,7 @@ def build_world_message(data: dict) -> str | None:
             "• فلفل: ۵۰۰ گرم/لیتر با ۵۵۰ گرم/لیتر و ASTA فرق دارد و قیمت‌شان یکی نیست؛ درجه را حتماً مقایسه کنید.",
             "• گاربلد = فلفل تمیزشده (جداسازی سبک و ناخالصی)؛ آن‌گاربلد = تمیزنشده و ارزان‌تر.",
             "• ردیف ⚠️ پرت یعنی منبع آن را نامعتبر/غیرعادی علامت زده؛ 🕓 یعنی تاریخ آن ردیف قدیمی‌تر از بقیه است.",
+            "• ارزش گمرکی Comtrade سالانه و چند ماه عقب است؛ فقط برای مقایسهٔ سطح قیمت‌ها مناسب است، نه قیمت روز.",
             "• ARM به‌صورت دستی و غیررسمی به‌روز می‌شود و ممکن است عقب باشد؛ تاریخ هر ردیف را ببینید.",
             "• برای فلفل ۳ میلی‌متری، شکسته، گرد، پوسته و سبک (Light Berries/Screenings) منبع رایگان روزانه نداریم؛ استعلام مستقیم از تأمین‌کننده لازم است.",
             "• معادل تومانی با نرخ دلار و ارز همین گزارش محاسبه شده و تقریبی است."]
