@@ -5,14 +5,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: probe
+        shell: bash {0}
         run: |
           UA="Mozilla/5.0 (compatible; BazarbanBot/1.0; +https://github.com/alirezahasheminezhad/Bazarban)"
-          echo "== vpsa robots"; curl -sS -m 30 -A "$UA" -w "\nHTTP %{http_code}\n" https://vpsaspice.org/robots.txt | head -40
-          echo "== vpsa home"; curl -sS -m 30 -A "$UA" -o /tmp/v.html -w "HTTP %{http_code} %{size_download}\n" https://vpsaspice.org/; grep -oiE 'href="[^"]*(price|market)[^"]*"' /tmp/v.html | sort -u | head -20
-          echo "== govi home"; curl -sS -m 30 -A "$UA" -o /tmp/g.html -w "HTTP %{http_code}\n" https://govisaviya.lk/; grep -oE 'src="[^"]+\.js"' /tmp/g.html | head
-          echo "== govi robots"; curl -sS -m 30 -A "$UA" https://govisaviya.lk/robots.txt | head -20
+          echo "== vpsa robots"; curl -sS -m 15 -A "$UA" -w "\nHTTP %{http_code}\n" https://vpsaspice.org/robots.txt | head -40
+          echo "== vpsa home"; curl -sS -m 15 -A "$UA" -o /tmp/v.html -w "HTTP %{http_code} %{size_download}\n" https://vpsaspice.org/; grep -oiE 'href="[^"]*(price|market)[^"]*"' /tmp/v.html | sort -u | head -20
+          echo "== govi home"; curl -sS -m 15 -A "$UA" -o /tmp/g.html -w "HTTP %{http_code}\n" https://govisaviya.lk/; grep -oE 'src="[^"]+\.js"' /tmp/g.html | head
+          echo "== govi robots"; curl -sS -m 15 -A "$UA" https://govisaviya.lk/robots.txt | head -20
           for js in $(grep -oE '/assets/index-[A-Za-z0-9_-]+\.js' /tmp/g.html | sort -u); do
-            curl -sS -m 30 -A "$UA" "https://govisaviya.lk$js" -o /tmp/i.js
+            curl -sS -m 15 -A "$UA" "https://govisaviya.lk$js" -o /tmp/i.js
             echo "== bundle $js $(wc -c </tmp/i.js)"
             grep -oE '.{80}markets\?more.{80}' /tmp/i.js | head -3
             grep -oE 'https?://[A-Za-z0-9./_-]*(api|govisaviya)[A-Za-z0-9./_-]*' /tmp/i.js | sort -u | head -15
