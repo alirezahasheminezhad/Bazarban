@@ -15,26 +15,15 @@ jobs:
       - run: |
           python - <<'PY'
           from io import BytesIO
-          import re, requests
-          from bs4 import BeautifulSoup
-          from urllib.parse import urljoin
+          import requests
           from pypdf import PdfReader
           import world_prices as w
-          def text_of(url):
-              r = requests.get(url, headers=w.HEADERS, timeout=60)
-              return "\n".join(p.extract_text() or "" for p in PdfReader(BytesIO(r.content)).pages)
-          dm = "https://www.indianspices.com/admin/international_weekly_price/upload/07.11.2026%20dmfmt.pdf"
-          print("=== DMFMT FULL TEXT"); print(text_of(dm))
-          page = "https://www.indianspices.com/magazines/english/sm-weekly.html"
-          html = w.get(page)
-          soup = BeautifulSoup(html, "html.parser")
-          links = [(a.get_text(" ", strip=True), urljoin(page, a["href"])) for a in soup.find_all("a", href=True) if ".pdf" in a["href"].lower()]
-          print("=== SM LINKS", len(links))
-          for t, u in links[:8]: print("SMLINK", repr(t), u)
-          if links:
-              u = sorted(links, key=lambda x: w._pdf_day(x[1]), reverse=True)[0][1]
-              print("=== NEWEST", u)
-              txt = text_of(u)
-              print("LEN", len(txt))
-              for i, line in enumerate(txt.splitlines()[:80]): print("L", i, repr(line))
+          url = "https://www.indianspices.com/admin/international_weekly_price/upload/07.11.2026%20dmfmt.pdf"
+          r = requests.get(url, headers=w.HEADERS, timeout=60)
+          rd = PdfReader(BytesIO(r.content))
+          print("PAGES", len(rd.pages))
+          for pg in rd.pages:
+              print("=== LAYOUT")
+              for l in pg.extract_text(extraction_mode="layout").splitlines():
+                  if l.strip(): print("LY", repr(l))
           PY
