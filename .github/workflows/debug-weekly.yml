@@ -1,0 +1,33 @@
+name: Debug weekly PDF (temporary)
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  dbg:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check requests beautifulsoup4 tzdata pypdf
+      - run: |
+          python - <<'PY'
+          from io import BytesIO
+          import requests
+          from bs4 import BeautifulSoup
+          from urllib.parse import urljoin
+          from pypdf import PdfReader
+          import world_prices as w
+          html = w.get(w.WEEKLY_PAGE)
+          links = sorted({urljoin(w.WEEKLY_PAGE, a["href"]) for a in BeautifulSoup(html, "html.parser").find_all("a", href=True) if a["href"].lower().endswith(".pdf")}, key=w._pdf_day, reverse=True)
+          print("LINKS", links)
+          for url in links[:3]:
+              r = requests.get(url, headers=w.HEADERS, timeout=60)
+              text = "\n".join(p.extract_text() or "" for p in PdfReader(BytesIO(r.content)).pages)
+              print("PDF", url, len(text))
+              for i, line in enumerate(text.splitlines()):
+                  if any(k in line for k in ("Turmeric", "Ginger", "Chilli", "Week Ending", "ERODE", "Nizamabad", "Guntur")) or "Wholesale" in line:
+                      print("LINE", i, repr(line))
+          PY
