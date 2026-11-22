@@ -726,18 +726,20 @@ function renderFx(fx){
 /* قیمت مرجع جهانی: data.world (IPC و Spices Board) + فهرست ثابت منابع رایگان */
 const SOURCES = [
   ['IPC','https://www.ipcnet.org/','فلفل · FOB گزارش‌شده','روزانه','فلفل سیاه ویتنام ۵۰۰/۵۵۰ g/L، برزیل ASTA 570، اندونزی، مالزی و فلفل سفید. IPC قیمت تعیین نمی‌کند و فقط قیمت‌های گزارش‌شده را نشان می‌دهد.'],
-  ['Spices Board India','https://www.indianspices.com/marketing/price/domestic/current-market-price.html','هند · بازار مبدأ','روزانه','قیمت روز با ستون گرید و منبع. ستون Min/Max اغلب خالی است و فقط میانگین می‌آید.'],
-  ['AGMARKNET','https://agmarknet.gov.in/','هند · بازار مبدأ','روزانه','حداقل/حداکثر/قیمت غالب هر بازار برای زردچوبه، زنجبیل، فلفل قرمز. آرشیو بلندمدت تضمین نیست؛ برای تاریخچه باید خودمان ذخیره کنیم.'],
-  ['VPSA','https://vpsaspice.org/','ویتنام · بازار داخلی','روزانه / هفتگی','نرخ خرید فلفل از کشاورز به دونگ و گزارش بازار. بعضی گزارش‌ها فقط برای اعضاست و نرخ داخلی با FOB فرق دارد.'],
-  ['Dept. of Export Agriculture','https://www.doea.gov.lk/','سریلانکا · قیمت کشاورز','هفتگی','دارچین سیلان، فلفل، زنجبیل، زردچوبه به تفکیک گرید و منطقه. Farm-gate است و معادل FOB نیست.'],
+  ['Spices Board · قیمت روز','https://www.indianspices.com/marketing/price/domestic/current-market-price.html','هند · بازار مبدأ','روزانه','فعلاً فقط فلفل (Cochin) با ستون گرید و منبع. ستون Min/Max اغلب خالی است و فقط میانگین می‌آید.'],
+  ['Spices Board · PDF هفتگی','https://www.indianspices.com/weekly-price-domestic.html','هند · عمده‌فروشی','هفتگی','زردچوبه (Nizamabad، Erode، Salem)، زنجبیل و فلفل قرمز (Chennai، Guntur) با حداقل/حداکثر و مقایسه با هفته‌ی مشابه سال قبل.'],
+  ['AGMARKNET','https://agmarknet.gov.in/','هند · بازار مبدأ','روزانه','حداقل/حداکثر/قیمت غالب هر بازار (روپیه بر کوینتال). API رسمی data.gov.in کلید رایگان می‌خواهد و هنوز خودکار نشده؛ آرشیو بلندمدت تضمین نیست.'],
+  ['VPSA','https://vpsaspice.org/market-price/vietnam/','ویتنام · بازار داخلی','روزانه / هفتگی','نرخ خرید فلفل از کشاورز به دونگ و گزارش بازار. بعضی گزارش‌ها فقط برای اعضاست و نرخ داخلی با FOB فرق دارد.'],
+  ['Dept. of Export Agriculture','https://deasrilanka.com/market-information-and-downloads/','سریلانکا · قیمت کشاورز','هفتگی','دارچین سیلان، فلفل، زنجبیل، زردچوبه به تفکیک گرید و منطقه. Farm-gate است و معادل FOB نیست.'],
+  ['Govi Saviya','https://govisaviya.lk/spice-prices','سریلانکا · قیمت کشاورز','هفتگی','فلفل، دارچین (به تفکیک گرید)، هل، میخک؛ جدول با جاوااسکریپت پر می‌شود و هنوز خودکار نیست.'],
   ['Sri Lanka Census & Statistics','https://www.statistics.gov.lk/','سریلانکا · عمده‌فروشی کلمبو','هفتگی / ماهانه','تاریخچه و میانگین ماهانه؛ بیشتر برای بازار داخلی مناسب است تا قیمت صادراتی.'],
-  ['ARM Pakistan','','پاکستان · نرخ مندی','روزانه','فلفل قرمز خشک کامل و زردچوبه در مولتان، فیصل‌آباد و ... سایت دولتی نیست، نرخ‌ها دستی وارد می‌شوند؛ تاریخ تک‌تک نرخ‌ها را کنترل کن. (نشانی را با جست‌وجوی «ARM Pakistan mandi rates» پیدا کن.)'],
+  ['ARM Pakistan','https://armpk.pk/mandi-rates/red-chilli-whole-dry-rate-today/','پاکستان · نرخ مندی','روزانه','فلفل قرمز خشک کامل (و صفحه‌ی زردچوبه‌ی کامل) به تفکیک مندی، با تاریخ هر ردیف. سایت دولتی نیست؛ نرخ قدیمی را «نرخ امروز» حساب نکن.'],
   ['Pakistan Bureau of Statistics','https://www.pbs.gov.pk/','پاکستان · شاخص رسمی','هفتگی / ماهانه','شاخص SPI و WPI. برای قیمت روز یک گرید فلفل مناسب نیست، فقط روند کلی.'],
-  ['DAM Bangladesh','https://market.dam.gov.bd/','بنگلادش · عمده و خرده','روزانه','زنجبیل و فلفل سبز دیده شد؛ بقیه اقلام را داخل انتخابگر کالا تست کن.'],
-  ['Comex Stat','https://comexstat.mdic.gov.br/','برزیل · آمار صادرات','ماهانه','وزن و ارزش FOB صادرات فلفل از ۱۹۹۷؛ ارزش واحد واقعی صادرات، مستقل از قیمت‌های تبلیغاتی فروشندگان.'],
-  ['BPS Indonesia','https://www.bps.go.id/','اندونزی · آمار تجارت','ماهانه','صادرات/واردات با کد HS و کشور مقصد.'],
+  ['DAM Bangladesh','https://market.dam.gov.bd/market_daily_price_report/damweb/PublicPortal/index.php','بنگلادش · عمده و خرده','روزانه','زنجبیل و فلفل سبز دیده شد؛ بقیه اقلام را داخل انتخابگر کالا تست کن.'],
+  ['Comex Stat','https://comexstat.mdic.gov.br/en/geral','برزیل · آمار صادرات','ماهانه','وزن و ارزش FOB صادرات فلفل از ۱۹۹۷؛ ارزش واحد واقعی صادرات، مستقل از قیمت‌های تبلیغاتی فروشندگان.'],
+  ['BPS Indonesia','https://www.bps.go.id/en/exim','اندونزی · آمار تجارت','ماهانه','صادرات/واردات با کد HS و کشور مقصد.'],
   ['China Customs','http://stats.customs.gov.cn/','چین · آمار گمرکی','ماهانه','استعلام رایگان واردات/صادرات با کد کالا از ۲۰۱۵. قیمت روز گرید ندارد.'],
-  ['UN Comtrade','https://comtradeplus.un.org/','همه کشورها · ارزش واحد','ماهانه / سالانه','آمار رسمی تجارت بین‌المللی. نسخه بدون ثبت‌نام تا ۵۰۰ ردیف پیش‌نمایش می‌دهد.'],
+  ['UN Comtrade','https://comtradeplus.un.org/','همه کشورها · ارزش واحد','ماهانه / سالانه','آمار رسمی تجارت بین‌المللی. برای API کامل کلید رایگان لازم است (My Comtrade → API Portal)؛ هنوز خودکار نشده.'],
   ['Husfarm','https://www.husfarm.com/','مقایسه چندکشوری','بسته به بازار','بخش رایگان قیمت زردچوبه، دارچین، زنجبیل، فلفل و پاپریکا در ده‌ها بازار (یورو/کیلو).'],
   ['Tridge (سطح رایگان)','https://www.tridge.com/','معاملات و صادرکنندگان','محدود','سطح رایگان ماهانه فقط ۱۰ اعتبار دارد؛ برای شناسایی صادرکننده و دیدن قیمت‌های ثبت‌شده کافی است.'],
 ];
@@ -765,6 +767,15 @@ function renderWorld(w){
   if(w && w.spices_board && Array.isArray(w.spices_board.items) && w.spices_board.items.length){
     cards.push(`<div class="fxi"><h4><span>Spices Board هند · بازار مبدأ</span><span class="tag" dir="ltr">${esc(w.spices_board.date)}</span></h4>
       ${w.spices_board.items.map(i=>`<div class="fxs"><span>${fa(i.inr_kg,2)} ₹/kg · ${fa(i.usd_ton)} $/t</span><span dir="ltr">${esc(i.market)} · ${esc(i.grade)}</span></div>`).join('')}</div>`);
+  }
+  if(w && w.spices_weekly && Array.isArray(w.spices_weekly.items) && w.spices_weekly.items.length){
+    cards.push(`<div class="fxi"><h4><span>Spices Board · هفتگی (₹/kg)</span><span class="tag" dir="ltr">${esc(w.spices_weekly.date)}</span></h4>
+      ${w.spices_weekly.items.map(i=>`<div class="fxs"><span>${i.min==null?'—':fa(i.min)} – ${i.max==null?'—':fa(i.max)} <small>(پارسال ${i.min_ly==null?'—':fa(i.min_ly)} – ${i.max_ly==null?'—':fa(i.max_ly)})</small></span><span dir="ltr">${esc(i.spice)} · ${esc(i.market)} · ${esc(i.grade)}</span></div>`).join('')}</div>`);
+  }
+  if(w && w.arm_pk && Array.isArray(w.arm_pk.items) && w.arm_pk.items.length){
+    const old = d => (Date.now()-new Date(d))/864e5 > 3;  // ARM می‌تواند نرخ چند روز پیش را نگه دارد
+    cards.push(`<div class="fxi"><h4><span>ARM پاکستان · مندی (روپیه/kg)</span><span class="tag" dir="ltr">${esc(w.arm_pk.date)}</span></h4>
+      ${w.arm_pk.items.map(i=>`<div class="fxs${i.outlier||old(i.date)?' bad':''}"><span>${fa(i.kg_min)} – ${fa(i.kg_max)}${i.outlier?' · دورافتاده':''}${old(i.date)?' · قدیمی':''}</span><span dir="ltr">${esc(i.commodity)} · ${esc(i.market)} · ${esc(i.date)}</span></div>`).join('')}</div>`);
   }
   box.innerHTML = cards.join('');
   box.hidden = !cards.length;

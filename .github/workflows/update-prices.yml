@@ -43,7 +43,7 @@ jobs:
         run: python fx_prices.py
         env:
           NABZESH_API_KEY: ${{ secrets.NABZESH_API_KEY }} # optional
-      - name: Fetch free world spice prices (IPC, Spices Board; a failure here must not stop the spice update)
+      - name: Fetch free world spice prices (IPC, Spices Board, ARM Pakistan; a failure here must not stop the spice update)
         if: ${{ steps.fetch.outcome == 'success' }}
         continue-on-error: true
         run: python world_prices.py

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Free world spice reference prices -> data["world"] in data.json (same job as fx_prices.py).
 
-Two machine-readable free sources, each independent (a failure only drops that source):
+Free machine-readable sources, each independent (a failure only drops that source):
   * IPC (International Pepper Community): daily FOB-style pepper prices, USD per tonne.
-  * Spices Board of India: "Current Market Price" table, INR per kg (also shown as USD/t).
+  * Spices Board of India: "Current Market Price" table (pepper), INR per kg (also shown as USD/t).
+  * Spices Board weekly "Spice Market" PDF: wholesale turmeric / ginger / chilli, INR per kg.
+  * armpk.pk: Pakistani mandi rates for dry red chilli and turmeric, PKR per kg (every row has its own date).
 Prices stay in separate groups on purpose: an origin-market price, an export (FOB) price
 and a customs unit value are three different numbers and must never be averaged together.
 """
@@ -12,8 +14,10 @@ from __future__ import annotations
 import json
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
+from io import BytesIO
 from pathlib import Path
+from urllib.parse import unquote, urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -24,6 +28,9 @@ from fx_prices import update_health
 OUTPUT = Path("data.json")
 IPC_URL = "https://www.ipcnet.org/"
 SPICES_BOARD_URL = "https://www.indianspices.com/marketing/price/domestic/current-market-price.html"
+WEEKLY_PAGE = "https://www.indianspices.com/weekly-price-domestic.html"
+ARM_PAGES = (("فلفل قرمز خشک (کامل)", "https://armpk.pk/mandi-rates/red-chilli-whole-dry-rate-today/"),
+             ("زردچوبه (کامل)", "https://armpk.pk/mandi-rates/turmeric-whole-rate-today/"))
 SPICES = {"turmeric": "زردچوبه", "ginger": "زنجبیل", "pepper": "فلفل سیاه", "chilli": "فلفل قرمز", "chili": "فلفل قرمز"}
 NUM = re.compile(r"\d[\d,]*(?:\.\d+)?")
 
@@ -74,6 +81,82 @@ def parse_spices_board(html: str, usd_per_inr: float) -> dict | None:
     return {"date": max(dates).isoformat(), "items": items}
 
 
+ARM_RANGE = re.compile(r"(\d[\d,]*(?:\.\d+)?)(?:\s*[–-]\s*(\d[\d,]*(?:\.\d+)?))?")
+
+
+def parse_arm(html: str, commodity: str) -> list[dict]:
+    """Rows: Mandi | Date | Per 100 kg | Per 40 kg | Per kg ("Per kg300 – 325"). Mandi with a trailing * is an outlier."""
+    items = []
+    for cells in _rows(html):
+        if len(cells) < 5:
+            continue
+        try:
+            day = datetime.strptime(re.sub(r"\s+", " ", cells[1]).strip(), "%d %B %Y").date()
+        except ValueError:
+            continue  # header row or a non-data row
+        m = ARM_RANGE.search(digits_to_ascii(cells[-1]).replace("Per kg", "").replace(",", ""))
+        if not m:
+            continue
+        lo = float(m.group(1))
+        hi = float(m.group(2) or m.group(1))
+        if not (1 <= lo <= hi <= 100_000):
+            continue
+        items.append({"commodity": commodity, "market": cells[0].rstrip("* ").strip(), "date": day.isoformat(),
+                      "kg_min": lo, "kg_max": hi, "outlier": "*" in cells[0]})
+    return items
+
+
+WEEKLY_ROW = re.compile(r"^(Turmeric|Ginger|Chilli)\s+(\S+)\s+(.+?)" + r"\s+(-|\d+(?:\.\d+)?)" * 4 + r"\s*$", re.I)
+
+
+def parse_spices_weekly(text: str) -> dict | None:
+    """Text of the weekly PDF: 'Turmeric Nizamabad FINGER 110 243 97 131' = spice, market, grade, min, max, last-year min/max (INR/kg).
+    shortcut: only lines that repeat the spice name are read; if the PDF stops repeating it, rows are missed (none -> source skipped)."""
+    d = re.search(r"Week Ending\s*(\d{2})\.(\d{2})\.(\d{4})", text, re.I)
+    items = []
+    for line in text.splitlines():
+        m = WEEKLY_ROW.match(line.strip())
+        if not m:
+            continue
+        v = [None if x == "-" else float(x) for x in m.groups()[3:]]
+        if v[0] is None and v[1] is None:
+            continue
+        items.append({"spice": SPICES[m.group(1).lower()], "market": m.group(2), "grade": m.group(3).strip(),
+                      "min": v[0], "max": v[1], "min_ly": v[2], "max_ly": v[3]})
+    if not d or not items:
+        return None
+    return {"date": f"{d.group(3)}-{d.group(2)}-{d.group(1)}", "items": items}
+
+
+def _pdf_day(url: str) -> date:
+    m = re.search(r"(\d{2})\.(\d{2})\.(\d{4})", unquote(url))
+    return date(int(m.group(3)), int(m.group(2)), int(m.group(1))) if m else date.min
+
+
+def fetch_spices_weekly() -> dict | None:
+    from pypdf import PdfReader  # imported here so the CI test job (no pypdf) can still import this module
+
+    links = {urljoin(WEEKLY_PAGE, a["href"]) for a in BeautifulSoup(get(WEEKLY_PAGE), "html.parser").find_all("a", href=True)
+             if a["href"].lower().endswith(".pdf")}
+    for url in sorted(links, key=_pdf_day, reverse=True)[:3]:  # newest first; the first PDF that holds the table wins
+        r = requests.get(url, headers=HEADERS, timeout=60)
+        r.raise_for_status()
+        got = parse_spices_weekly("\n".join(p.extract_text() or "" for p in PdfReader(BytesIO(r.content)).pages))
+        if got:
+            return {**got, "url": url}
+    return None
+
+
+def fetch_arm() -> dict | None:
+    items = []
+    for name, url in ARM_PAGES:
+        try:
+            items += parse_arm(get(url), name)
+        except Exception as e:  # one page down must not drop the other
+            print(f"world arm {url}: {type(e).__name__}", file=sys.stderr)
+    return {"date": max(i["date"] for i in items), "items": items} if items else None
+
+
 def get(url: str) -> str:
     r = requests.get(url, headers=HEADERS, timeout=30)
     r.raise_for_status()
@@ -86,6 +169,8 @@ def run(data: dict, health: dict) -> list[str]:
     for key, label, fn in (
         ("ipc", "IPC (قیمت جهانی فلفل)", lambda: parse_ipc(get(IPC_URL))),
         ("spices_board", "Spices Board هند", lambda: parse_spices_board(get(SPICES_BOARD_URL), usd_per_inr) if usd_per_inr else None),
+        ("spices_weekly", "Spices Board (PDF هفتگی)", fetch_spices_weekly),
+        ("arm_pk", "ARM پاکستان", fetch_arm),
     ):
         try:
             got = fn()

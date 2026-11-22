@@ -146,8 +146,27 @@ sb = ('<table><tr><th>Date</th><th>Spice</th><th>Market Centre</th><th>State</th
       '<tr><td>18-Nov-2026</td><td>Cardamom</td><td>X</td><td>Y</td><td>Z</td><td>W</td><td>-</td><td>-</td><td>2000</td></tr></table>')
 s = world_prices.parse_spices_board(sb, 0.0105)
 assert s["date"] == "2026-11-18" and len(s["items"]) == 1 and s["items"][0]["spice"] == "فلفل سیاه" and s["items"][0]["usd_ton"] == 8127.0
+# ARM Pakistan: every row has its own date; "Per kg300 – 325" range, single value, and the * outlier flag
+arm = ('<table><tr><th>Mandi</th><th>Date</th><th>Per 100 kg</th><th>Per 40 kg (mun)</th><th>Per kg</th></tr>'
+       '<tr><td>Multan</td><td>17 November 2026</td><td>Per 100 kg30,000 – 32,500</td><td>Per 40 kg (mun)12,000 – 13,000</td><td>Per kg300 – 325</td></tr>'
+       '<tr><td>Rawalpindi *</td><td>17 November 2026</td><td>x</td><td>y</td><td>Per kg350 – 575</td></tr>'
+       '<tr><td>Layyah</td><td>16 November 2026</td><td>x</td><td>y</td><td>Per kg90</td></tr></table>')
+a = world_prices.parse_arm(arm, "c")
+assert [(i["market"], i["date"], i["kg_min"], i["kg_max"], i["outlier"]) for i in a] == [
+    ("Multan", "2026-11-17", 300, 325, False), ("Rawalpindi", "2026-11-17", 350, 575, True), ("Layyah", "2026-11-16", 90, 90, False)]
+assert world_prices.parse_arm("<p>nothing</p>", "c") == []
+# Spices Board weekly PDF text: blank (-) cells stay None, rows without any current price are dropped, other spices ignored
+pdf = ("Wholesale Price of Different Spices ... for the Week Ending 17.10.2026\n"
+       "Turmeric Nizamabad FINGER 110 243 97 131\nTurmeric Chennai ERODE 180 200 150 165\n"
+       "Ginger Chennai MERUTH 365 385 360 430\nChilli Chennai RAMNAD NEW A/C 220 240 140 160\n"
+       "Chilli Guntur COLD STORAGE - - 100 153\nPepper Cochin GARBLED 770 780 700 710\n")
+wk = world_prices.parse_spices_weekly(pdf)
+assert wk["date"] == "2026-10-17" and len(wk["items"]) == 4 and wk["items"][3]["grade"] == "RAMNAD NEW A/C" and wk["items"][0]["min_ly"] == 97
+assert world_prices.parse_spices_weekly("no table here") is None
+assert world_prices._pdf_day("https://x/07.11.2026%20dmfmt.pdf") > world_prices._pdf_day("https://x/17.10.2026%20Spicemarket.pdf")
 # one source down must not drop the other, and a never-working source stays quiet
-with mock.patch.object(world_prices, "get", side_effect=lambda u: ipc if "ipcnet" in u else (_ for _ in ()).throw(OSError("down"))):
+with mock.patch.object(world_prices, "get", side_effect=lambda u: ipc if "ipcnet" in u else (_ for _ in ()).throw(OSError("down"))), \
+        mock.patch.object(world_prices, "fetch_spices_weekly", side_effect=OSError("down")):
     d = {"inr_to_usd": 0.0105}
     assert world_prices.run(d, {}) == [] and list(d["world"]) == ["updated", "ipc"]
 print("ok")
