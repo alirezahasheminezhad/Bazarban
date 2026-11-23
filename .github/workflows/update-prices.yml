@@ -47,8 +47,6 @@ jobs:
         if: ${{ steps.fetch.outcome == 'success' }}
         continue-on-error: true
         run: python world_prices.py
-        env:
-          COMTRADE_API_KEY: ${{ secrets.COMTRADE_API_KEY }} # free key; Comtrade is skipped without it
       - name: Publish data.json to the data branch (single commit, no history growth)
         run: |
           d=$(mktemp -d)

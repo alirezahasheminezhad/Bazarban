@@ -159,7 +159,7 @@ body.lock #lock{display:grid}
       <details class="src">
         <summary>فهرست منابع رایگان برای کنترل قیمت (<span id="srcCount"></span> منبع)</summary>
         <div class="srcg" id="srcList"></div>
-        <div class="sub">کد تعرفه (HS) برای جست‌وجو در UN Comtrade و آمار گمرکی کشورها — در آمار تفصیلی، زیرردیف کشور گزارش‌دهنده را هم کنترل کن:</div>
+        <div class="sub">کد تعرفه (HS) برای جست‌وجو در آمار گمرکی کشورها — در آمار تفصیلی، زیرردیف کشور گزارش‌دهنده را هم کنترل کن:</div>
         <div class="hs" id="hsList"></div>
         <div class="sub" dir="ltr" style="text-align:left">ارزش واحد = Export value (USD) ÷ Net weight (kg)</div>
         <div class="sub" style="margin-top:8px">عبارت‌های جست‌وجوی فلفل قرمز پاکستان/هند: <b dir="ltr">Lal Mirch · Dried Red Chilli · Stemless · Dandi Cut · Kunri · Longi · Kashmiri · Byadgi · Teja</b>. «Morich» بیشتر نام بنگالی است؛ بدون بررسی گرید آن را معادل قطعی فلفل عنابی پاکستان نگیر.</div>
@@ -739,7 +739,6 @@ const SOURCES = [
   ['Comex Stat','https://comexstat.mdic.gov.br/en/geral','برزیل · آمار صادرات','ماهانه','وزن و ارزش FOB صادرات فلفل از ۱۹۹۷؛ ارزش واحد واقعی صادرات، مستقل از قیمت‌های تبلیغاتی فروشندگان.'],
   ['BPS Indonesia','https://www.bps.go.id/en/exim','اندونزی · آمار تجارت','ماهانه','صادرات/واردات با کد HS و کشور مقصد.'],
   ['China Customs','http://stats.customs.gov.cn/','چین · آمار گمرکی','ماهانه','استعلام رایگان واردات/صادرات با کد کالا از ۲۰۱۵. قیمت روز گرید ندارد.'],
-  ['UN Comtrade','https://comtradeplus.un.org/','همه کشورها · ارزش واحد','ماهانه / سالانه','آمار رسمی تجارت بین‌المللی. برای API کامل کلید رایگان لازم است (My Comtrade → API Portal)؛ هنوز خودکار نشده.'],
   ['Husfarm','https://www.husfarm.com/','مقایسه چندکشوری','بسته به بازار','بخش رایگان قیمت زردچوبه، دارچین، زنجبیل، فلفل و پاپریکا در ده‌ها بازار (یورو/کیلو).'],
   ['Tridge (سطح رایگان)','https://www.tridge.com/','معاملات و صادرکنندگان','محدود','سطح رایگان ماهانه فقط ۱۰ اعتبار دارد؛ برای شناسایی صادرکننده و دیدن قیمت‌های ثبت‌شده کافی است.'],
 ];
@@ -775,10 +774,6 @@ function renderWorld(w){
   if(w && w.govi && Array.isArray(w.govi.items) && w.govi.items.length){
     cards.push(`<div class="fxi"><h4><span>Govi Saviya سری‌لانکا (LKR/kg)</span><span class="tag" dir="ltr">${esc(w.govi.date)}</span></h4>
       ${w.govi.items.map(i=>`<div class="fxs"><span>${fa(i.lkr_kg)} <small>(روز قبل ${fa(i.prev||0)} · ${esc(i.market_fa||i.market)})</small></span><span>${esc(i.spice)}</span></div>`).join('')}</div>`);
-  }
-  if(w && w.comtrade && Array.isArray(w.comtrade.items) && w.comtrade.items.length){
-    cards.push(`<div class="fxi"><h4><span>Comtrade · ارزش واحد گمرکی سالانه ($/ton)</span><span class="tag" dir="ltr">${esc(w.comtrade.date)}</span></h4>
-      ${w.comtrade.items.map(i=>`<div class="fxs"><span>${fa(i.usd_kg*1000)} <small dir="ltr">${esc(i.period)}</small></span><span>${esc(i.product_fa)} · ${esc(i.reporter_fa)} ${esc(i.flow_fa)}</span></div>`).join('')}</div>`);
   }
   if(w && w.manual && Array.isArray(w.manual.items) && w.manual.items.length){
     cards.push(`<div class="fxi"><h4><span>واردشده دستی (VPSA و …)</span><span class="tag" dir="ltr">${esc(w.manual.date)}</span></h4>

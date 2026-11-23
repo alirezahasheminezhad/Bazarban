@@ -146,13 +146,13 @@ def build_world_messages(data: dict, cfg: dict) -> list[str]:
 
     msgs = []
     if ipc := w.get("ipc"):
-        msgs.append("\n\n".join(usd_block(f"گزارش قیمت {i.get('name_fa') or i['name']} | IPC", "فلفل سیاه", i["usd_ton"],
-                                          [f"🏷️ {i['name']}", f"📅 تاریخ: {fad(ipc['date'])}", "🧭 نوع قیمت: صادراتی (FOB) | منبع: شورای بین‌المللی فلفل", LINE])
+        msgs.append("\n\n".join(usd_block(f"گزارش قیمت {fad(i.get('name_fa') or i['name'])} | شورای بین‌المللی فلفل", "فلفل سیاه", i["usd_ton"],
+                                          [f"🏷️ {i['name']}", f"📅 تاریخ: {fad(ipc['date'])}", "🧭 نوع قیمت: صادراتی تحویل روی کشتی (FOB) | منبع: شورای بین‌المللی فلفل (IPC)", LINE])
                                 for i in ipc["items"] if rate))
     if sb := w.get("spices_board"):
         msgs.append("\n\n".join(usd_block(f"گزارش قیمت {i['spice']} | بازار {i.get('market_fa') or i['market']}", i["spice"], i["usd_ton"],
                                           [f"🏷️ {i['market']} | درجه: {i.get('grade_fa') or i['grade']}", f"📅 تاریخ: {fad(sb['date'])}",
-                                           f"🇮🇳 قیمت بازار داخلی هند: {num(i['inr_kg'])} روپیه/کیلو", "🧭 نوع قیمت: بازار مبدأ (نه FOB) | منبع: Spices Board", LINE])
+                                           f"🇮🇳 قیمت بازار داخلی هند: {num(i['inr_kg'])} روپیه/کیلو", "🧭 نوع قیمت: بازار مبدأ (نه FOB) | منبع: هیئت ادویهٔ هند (Spices Board)", LINE])
                                 for i in sb["items"] if rate))
     if wk := w.get("spices_weekly"):
         blocks = []
@@ -162,22 +162,13 @@ def build_world_messages(data: dict, cfg: dict) -> list[str]:
             blocks.append(usd_block(f"گزارش قیمت {i['spice']} | بازار {i['market_fa']}", i["spice"], i["inr_kg"] * inr * 1000,
                                     [f"🏷️ {i['market']}", f"📅 هفتهٔ منتهی به: {fad(wk['date'])}",
                                      f"🇮🇳 این هفته: {num(i['inr_kg'])} | هفتهٔ قبل: {num(i['prev_week'])} | ماه قبل: {num(i['prev_month'])} | پارسال: {num(i['last_year'])} روپیه/کیلو",
-                                     "🧭 نوع قیمت: میانگین هفتگی بازار مبدأ (نه FOB) | منبع: Spices Board", LINE]))
+                                     "🧭 نوع قیمت: میانگین هفتگی بازار مبدأ (نه FOB) | منبع: هیئت ادویهٔ هند (Spices Board)", LINE]))
         msgs.append("\n\n".join(blocks))
     if gv := w.get("govi"):
         msgs.append("\n\n".join("\n".join([
             f"🌿 گزارش قیمت {i['spice']} | سری‌لانکا", LINE, f"🏷️ {i['name']}", f"📅 تاریخ: {fad(i['date'])}",
             f"🇱🇰 قیمت عمده: {num(i['lkr_kg'])} روپیه سری‌لانکا/کیلو (بازه {num(i['min'] or 0)}–{num(i['max'] or 0)})",
-            f"↩️ روز قبل: {num(i['prev'] or 0)} | بهترین بازار: {i['market_fa']}", "🧭 نوع قیمت: بازار مبدأ | منبع: Govi Saviya", LINE]) for i in gv["items"]))
-    if ct := w.get("comtrade"):
-        blocks = []
-        for i in ct["items"]:
-            if not rate:
-                continue
-            blocks.append(usd_block(f"گزارش ارزش گمرکی {i['product_fa']} | {i['reporter_fa']}", i["product_fa"], i["usd_kg"] * 1000,
-                                    [f"🏷️ {i['reporter']} | {i['flow_fa']}", f"📅 سال: {fad(i['period'])}",
-                                     "🧭 نوع قیمت: ارزش واحد گمرکی سالانه (نه قیمت روز و نه FOB) | منبع: Comtrade", LINE]))
-        msgs.append("\n\n".join(blocks))
+            f"↩️ روز قبل: {num(i['prev'] or 0)} | بهترین بازار: {i['market_fa']}", "🧭 نوع قیمت: بازار مبدأ | منبع: گووی‌ساویا سری‌لانکا (Govi Saviya)", LINE]) for i in gv["items"]))
     if mn := w.get("manual"):
         blocks = []
         for i in mn["items"]:
@@ -201,10 +192,10 @@ def build_world_messages(data: dict, cfg: dict) -> list[str]:
              "• سه قیمت را هرگز با هم قاطی نکنید: قیمت بازار مبدأ (داخلی) ≠ قیمت FOB صادراتی ≠ ارزش گمرکی واردات.",
              "• قیمت‌های هند، پاکستان و سری‌لانکا قیمت بازار داخلی‌اند؛ برای قیمت تمام‌شده، بسته‌بندی، حمل و سود صادرکننده را هم باید اضافه کرد.",
              "• درصد مصارف و وزن محموله همان تنظیمات سایت است و برای قیمت داخلی هم صرفاً برای مقایسه محاسبه شده.",
-             "• فلفل: ۵۰۰ گرم/لیتر با ۵۵۰ گرم/لیتر و ASTA فرق دارد؛ درجه را حتماً مقایسه کنید.",
-             "• گاربلد = فلفل تمیزشده؛ آن‌گاربلد = تمیزنشده و ارزان‌تر.",
-             "• ⚠️ پرت = منبع آن ردیف را غیرعادی علامت زده؛ 🕓 قدیمی = تاریخ آن ردیف از بقیه عقب‌تر است. ARM دستی و غیررسمی است.",
-             "• ارزش گمرکی Comtrade سالانه و چند ماه عقب است؛ فقط برای سنجش سطح قیمت.",
+             "• فلفل: ۵۰۰ گرم بر لیتر با ۵۵۰ گرم بر لیتر و استاندارد آستا (ASTA) فرق دارد؛ درجه را حتماً مقایسه کنید.",
+             "• پاک‌شده (گاربلد) = فلفل تمیزشده؛ پاک‌نشده (آن‌گاربلد) = تمیزنشده و ارزان‌تر.",
+             "• ⚠️ پرت = منبع آن ردیف را غیرعادی علامت زده است. منبع ARM دستی و غیررسمی است.",
+             "• فقط قیمت‌های تازه (حداکثر ۳ روز قبل) نمایش داده می‌شود؛ قیمت‌های قدیمی‌تر حذف می‌شوند.",
              "• برای فلفل ۳ میلی‌متری، شکسته، گرد، پوسته و سبک منبع رایگان روزانه نداریم؛ از تأمین‌کننده استعلام بگیرید.",
              "• معادل تومانی با نرخ دلار و ارز همین گزارش محاسبه شده و تقریبی است."]
     return [m for m in msgs if m] + ["\n".join(notes)]

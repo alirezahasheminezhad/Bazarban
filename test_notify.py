@@ -1,3 +1,4 @@
+import re
 import json
 import os
 import tempfile
@@ -164,14 +165,16 @@ pdf = ("AVERAGE DOMESTIC PRICES OF MAJOR SPICES FOR THE WEEK ENDING 07.11.2026 (
 wk = world_prices.parse_spices_weekly(pdf)
 assert wk["date"] == "2026-11-07" and len(wk["items"]) == 4 and wk["items"][0]["spice"] == "فلفل قرمز"
 assert wk["items"][1]["inr_kg"] == 235 and wk["items"][1]["prev_week"] == 200 and wk["items"][1]["last_year"] == 165 and wk["items"][1]["market_fa"] == "ایرود"
-assert world_prices.to_fa("Cochin Garbled") == "کوچین گاربلد (پاک‌شده)" and world_prices.to_fa("Zzz") == "Zzz"
+assert world_prices.to_fa("Cochin Garbled") == "کوچین پاک‌شده (گاربلد)" and world_prices.to_fa("Zzz") == "Zzz"
 assert world_prices.parse_spices_weekly("no table here") is None
 assert world_prices._pdf_day("https://x/07.11.2026%20dmfmt.pdf") > world_prices._pdf_day("https://x/17.10.2026%20Spicemarket.pdf")
 # one source down must not drop the other, and a never-working source stays quiet
 with mock.patch.object(world_prices, "get", side_effect=lambda u: ipc if "ipcnet" in u else (_ for _ in ()).throw(OSError("down"))), \
         mock.patch.object(world_prices, "fetch_spices_weekly", side_effect=OSError("down")):
     d = {"inr_to_usd": 0.0105}
-    assert world_prices.run(d, {}) == [] and list(d["world"]) == ["updated", "ipc"]
+    with mock.patch.object(world_prices, "MAX_AGE_DAYS", 10**6):  # the fixture's date must not age out of the test
+        assert world_prices.run(d, {}) == []
+    assert list(d["world"]) == ["updated", "ipc"]
 # world messages: owner's report format per item, Persian equivalent, notes last; every line right-aligned on send
 import json as _json, notify
 cfg = _json.load(open("config.json", encoding="utf-8"))
@@ -180,19 +183,22 @@ wm = notify.build_world_messages({"usd_toman": 268000, "world": {"ipc": {"date":
 assert len(wm) == 2 and "برزیل" in wm[0] and "۱٬۳۴۰٬۰۰۰ تومان" in wm[0] and "درصد مصارف" in wm[0] and "نکته" in wm[1]
 assert all(len(c) <= notify.MSG_LIMIT for m in wm for c in notify.chunks(m)) and notify.build_world_messages({"usd_toman": 1}, cfg) == []
 
-# Govi Saviya / Comtrade / manual prices
+# Govi Saviya / manual prices / freshness / Persian names
 g = world_prices.parse_govi({"data": [{"item": "Ginger", "latestDate": "2026-11-20", "latestPrice": 205, "latestMin": 200, "latestMax": 210,
                                        "previousPrice": 190, "bestMarket": "Dambulla", "unit": "kg"}, {"item": "Beans", "latestPrice": 5, "unit": "kg"}]})
 assert g["date"] == "2026-11-20" and len(g["items"]) == 1 and g["items"][0]["market_fa"] == "دامبولا" and world_prices.parse_govi({"data": []}) is None
-c = world_prices.parse_comtrade({"data": [{"period": 2023, "primaryValue": 100, "netWgt": 50}, {"period": 2024, "primaryValue": 10, "netWgt": 5},
-                                          {"period": 2024, "primaryValue": 300, "netWgt": 100}, {"period": 2024, "primaryValue": 1, "netWgt": 0}]})
-assert c["period"] == "2024" and c["usd_kg"] == 3 and world_prices.parse_comtrade({"data": []}) is None
 import tempfile, pathlib
 mp = pathlib.Path(tempfile.mkdtemp()) / "m.json"
 mp.write_text('{"items":[{"source":"VPSA","name":"Viet Nam Black Pepper","price":6000,"unit":"USD/ton","date":"2026-11-20"},{"name":"x"}]}', encoding="utf-8")
 assert len(world_prices.read_manual(str(mp))["items"]) == 1 and world_prices.read_manual("/nonexistent.json") is None
-wm = "\n".join(notify.build_world_messages({"usd_toman": 268000, "world": {"comtrade": {"date": "2024", "items": [
-    {"reporter": "India", "reporter_fa": "هند", "flow_fa": "صادرات", "period": "2024", "product_fa": "زردچوبه", "usd_kg": 1.85}]},
+wm = "\n".join(notify.build_world_messages({"usd_toman": 268000, "world": {
     "govi": g, "manual": {"date": "2026-11-20", "items": [{"source": "VPSA", "name": "Pepper", "name_fa": "فلفل", "price": 6000, "unit": "USD/ton", "date": "2026-11-20"}]}}}, cfg))
-assert "۱٬۸۵۰ دلار" in wm and "دامبولا" in wm and "VPSA" in wm
+assert "دامبولا" in wm and "VPSA" in wm and "قیمت نهایی" in wm
+# only fresh prices survive; the Persian names carry no Latin letters
+fr = world_prices.fresh_only({"date": "2026-11-20", "items": [{"date": "2026-11-20"}, {"date": "2026-11-10"}]}, date(2026, 11, 22))
+assert len(fr["items"]) == 1 and world_prices.fresh_only({"date": "2026-11-01", "items": [{}]}, date(2026, 11, 22)) is None
+for en in ("Viet Nam - Black Pepper 500 g/l", "Brazil Black - Pepper ASTA 570", "Malaysia - White Pepper ASTA", "Indonesia - Black Pepper"):
+    assert not re.search("[A-Za-z]", world_prices.ipc_fa(en)), en
+assert world_prices.ipc_fa("Viet Nam - Black Pepper 500 g/l") == "فلفل سیاه ویتنام | 500 گرم بر لیتر"
+assert not re.search("[A-Za-z]", world_prices.to_fa("Dera Ghazi Khan")) and not re.search("[A-Za-z]", world_prices.to_fa("Cochin Ungarbled"))
 print("ok")
