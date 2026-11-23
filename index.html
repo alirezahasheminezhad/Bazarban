@@ -756,33 +756,42 @@ function renderSources(){
 }
 renderSources();
 
+/* تاریخ شمسی + چند روز پیش: «۱۴۰۵/۰۸/۳۰ (۳ روز قبل)» (روز تهران) */
+function jd(iso){
+  const t = s => new Date(s+'T00:00:00Z'), day = d => d.toISOString().slice(0,10);
+  const today = new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Tehran'});
+  const n = Math.round((t(today)-t(iso))/864e5);
+  const j = new Intl.DateTimeFormat('fa-IR-u-ca-persian-nu-arab'.replace('arab','latn'),{year:'numeric',month:'2-digit',day:'2-digit',timeZone:'UTC'}).format(t(iso)).replace(/-/g,'/');
+  return `${j.replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d])} (${n===0?'امروز':n===1?'دیروز':n>1?fa(n)+' روز قبل':'آینده'})`;
+}
+
 function renderWorld(w){
   const box = $('worldLive');
   const cards = [];
   if(w && w.ipc && Array.isArray(w.ipc.items) && w.ipc.items.length){
-    cards.push(`<div class="fxi"><h4><span>IPC · فلفل (دلار/تن)</span><span class="tag" dir="ltr">${esc(w.ipc.date)}</span></h4>
+    cards.push(`<div class="fxi"><h4><span>IPC · فلفل (دلار/تن)</span><span class="tag">${jd(w.ipc.date)}</span></h4>
       ${w.ipc.items.map(i=>`<div class="fxs"><span>${fa(i.usd_ton)}</span><span><span dir="ltr">${esc(i.name)}</span>${i.name_fa&&i.name_fa!==i.name?`<small> · ${esc(i.name_fa)}</small>`:''}</span></div>`).join('')}</div>`);
   }
   if(w && w.spices_board && Array.isArray(w.spices_board.items) && w.spices_board.items.length){
-    cards.push(`<div class="fxi"><h4><span>Spices Board هند · بازار مبدأ</span><span class="tag" dir="ltr">${esc(w.spices_board.date)}</span></h4>
+    cards.push(`<div class="fxi"><h4><span>Spices Board هند · بازار مبدأ</span><span class="tag">${jd(w.spices_board.date)}</span></h4>
       ${w.spices_board.items.map(i=>`<div class="fxs"><span>${fa(i.inr_kg,2)} ₹/kg · ${fa(i.usd_ton)} $/t</span><span>${esc(i.spice)} · ${esc(i.market_fa||i.market)} <small dir="ltr">(${esc(i.market)} · ${esc(i.grade)})</small>${i.grade_fa&&i.grade_fa!==i.grade?`<small> · ${esc(i.grade_fa)}</small>`:''}</span></div>`).join('')}</div>`);
   }
   if(w && w.spices_weekly && Array.isArray(w.spices_weekly.items) && w.spices_weekly.items.length){
-    cards.push(`<div class="fxi"><h4><span>Spices Board · میانگین هفتگی هند (₹/kg)</span><span class="tag" dir="ltr">${esc(w.spices_weekly.date)}</span></h4>
+    cards.push(`<div class="fxi"><h4><span>Spices Board · میانگین هفتگی هند (₹/kg)</span><span class="tag">${jd(w.spices_weekly.date)}</span></h4>
       ${w.spices_weekly.items.map(i=>`<div class="fxs"><span>${fa(i.inr_kg,2)} <small>(هفته قبل ${fa(i.prev_week,2)} · ماه قبل ${fa(i.prev_month,2)} · پارسال ${fa(i.last_year,2)})</small></span><span>${esc(i.spice)} · ${esc(i.market_fa||i.market)}</span></div>`).join('')}</div>`);
   }
   if(w && w.govi && Array.isArray(w.govi.items) && w.govi.items.length){
-    cards.push(`<div class="fxi"><h4><span>Govi Saviya سری‌لانکا (LKR/kg)</span><span class="tag" dir="ltr">${esc(w.govi.date)}</span></h4>
+    cards.push(`<div class="fxi"><h4><span>Govi Saviya سری‌لانکا (LKR/kg)</span><span class="tag">${jd(w.govi.date)}</span></h4>
       ${w.govi.items.map(i=>`<div class="fxs"><span>${fa(i.lkr_kg)} <small>(روز قبل ${fa(i.prev||0)} · ${esc(i.market_fa||i.market)})</small></span><span>${esc(i.spice)}</span></div>`).join('')}</div>`);
   }
   if(w && w.manual && Array.isArray(w.manual.items) && w.manual.items.length){
-    cards.push(`<div class="fxi"><h4><span>واردشده دستی (VPSA و …)</span><span class="tag" dir="ltr">${esc(w.manual.date)}</span></h4>
-      ${w.manual.items.map(i=>`<div class="fxs"><span>${fa(i.price,2)} ${esc(i.unit||'')} <small dir="ltr">${esc(i.date)}</small></span><span>${esc(i.source||'')} · ${esc(i.name_fa||i.name)}</span></div>`).join('')}</div>`);
+    cards.push(`<div class="fxi"><h4><span>واردشده دستی (VPSA و …)</span><span class="tag">${jd(w.manual.date)}</span></h4>
+      ${w.manual.items.map(i=>`<div class="fxs"><span>${fa(i.price,2)} ${esc(i.unit||'')} <small>${jd(i.date)}</small></span><span>${esc(i.source||'')} · ${esc(i.name_fa||i.name)}</span></div>`).join('')}</div>`);
   }
   if(w && w.arm_pk && Array.isArray(w.arm_pk.items) && w.arm_pk.items.length){
     const old = d => (Date.now()-new Date(d))/864e5 > 3;  // ARM می‌تواند نرخ چند روز پیش را نگه دارد
-    cards.push(`<div class="fxi"><h4><span>ARM پاکستان · مندی (روپیه/kg)</span><span class="tag" dir="ltr">${esc(w.arm_pk.date)}</span></h4>
-      ${w.arm_pk.items.map(i=>`<div class="fxs${i.outlier||old(i.date)?' bad':''}"><span>${fa(i.kg_min)} – ${fa(i.kg_max)}${i.outlier?' · دورافتاده':''}${old(i.date)?' · قدیمی':''}</span><span>${esc(i.commodity)} · ${esc(i.market_fa||i.market)} <small dir="ltr">(${esc(i.market)}) ${esc(i.date)}</small></span></div>`).join('')}</div>`);
+    cards.push(`<div class="fxi"><h4><span>ARM پاکستان · مندی (روپیه/kg)</span><span class="tag">${jd(w.arm_pk.date)}</span></h4>
+      ${w.arm_pk.items.map(i=>`<div class="fxs${i.outlier||old(i.date)?' bad':''}"><span>${fa(i.kg_min)} – ${fa(i.kg_max)}${i.outlier?' · دورافتاده':''}${old(i.date)?' · قدیمی':''}</span><span>${esc(i.commodity)} · ${esc(i.market_fa||i.market)} <small>(${esc(i.market)}) ${jd(i.date)}</small></span></div>`).join('')}</div>`);
   }
   box.innerHTML = cards.join('');
   box.hidden = !cards.length;

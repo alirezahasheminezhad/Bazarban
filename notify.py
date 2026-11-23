@@ -127,6 +127,30 @@ def fad(text: str) -> str:
     return str(text).translate(FA)
 
 
+def to_jalali(d: date) -> str:
+    """Gregorian -> Jalali (Solar Hijri) as 1405/09/02."""
+    gy, gm, gd = d.year, d.month, d.day
+    days = 355666 + 365 * gy + ((gy + (gm > 2)) + 3) // 4 - ((gy + (gm > 2)) + 99) // 100 + ((gy + (gm > 2)) + 399) // 400 + gd \
+        + (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334)[gm - 1]
+    jy = -1595 + 33 * (days // 12053)
+    days %= 12053
+    jy += 4 * (days // 1461)
+    days %= 1461
+    if days > 365:
+        jy += (days - 1) // 365
+        days = (days - 1) % 365
+    jm, jd = (1 + days // 31, 1 + days % 31) if days < 186 else (7 + (days - 186) // 30, 1 + (days - 186) % 30)
+    return f"{jy}/{jm:02d}/{jd:02d}"
+
+
+def when(iso: str, today: date | None = None) -> str:
+    """'2026-11-20' -> '۱۴۰۵/۰۸/۳۰ (۳ روز قبل)'; today and yesterday are spelled out."""
+    d = date.fromisoformat(iso)
+    n = ((today or datetime.now(ZoneInfo("Asia/Tehran")).date()) - d).days
+    ago = "امروز" if n == 0 else "دیروز" if n == 1 else f"{n} روز قبل" if n > 1 else "آینده"
+    return fad(f"{to_jalali(d)} ({ago})")
+
+
 def build_world_messages(data: dict, cfg: dict) -> list[str]:
     """Free world spice prices, one message per source, each item in the owner's report format (world price, then price with costs)."""
     w = data.get("world")
@@ -147,11 +171,11 @@ def build_world_messages(data: dict, cfg: dict) -> list[str]:
     msgs = []
     if ipc := w.get("ipc"):
         msgs.append("\n\n".join(usd_block(f"گزارش قیمت {fad(i.get('name_fa') or i['name'])} | شورای بین‌المللی فلفل", "فلفل سیاه", i["usd_ton"],
-                                          [f"🏷️ {i['name']}", f"📅 تاریخ: {fad(ipc['date'])}", "🧭 نوع قیمت: صادراتی تحویل روی کشتی (FOB) | منبع: شورای بین‌المللی فلفل (IPC)", LINE])
+                                          [f"🏷️ {i['name']}", f"📅 تاریخ: {when(ipc['date'])}", "🧭 نوع قیمت: صادراتی تحویل روی کشتی (FOB) | منبع: شورای بین‌المللی فلفل (IPC)", LINE])
                                 for i in ipc["items"] if rate))
     if sb := w.get("spices_board"):
         msgs.append("\n\n".join(usd_block(f"گزارش قیمت {i['spice']} | بازار {i.get('market_fa') or i['market']}", i["spice"], i["usd_ton"],
-                                          [f"🏷️ {i['market']} | درجه: {i.get('grade_fa') or i['grade']}", f"📅 تاریخ: {fad(sb['date'])}",
+                                          [f"🏷️ {i['market']} | درجه: {i.get('grade_fa') or i['grade']}", f"📅 تاریخ: {when(sb['date'])}",
                                            f"🇮🇳 قیمت بازار داخلی هند: {num(i['inr_kg'])} روپیه/کیلو", "🧭 نوع قیمت: بازار مبدأ (نه FOB) | منبع: هیئت ادویهٔ هند (Spices Board)", LINE])
                                 for i in sb["items"] if rate))
     if wk := w.get("spices_weekly"):
@@ -160,20 +184,20 @@ def build_world_messages(data: dict, cfg: dict) -> list[str]:
             if not (rate and inr):
                 continue
             blocks.append(usd_block(f"گزارش قیمت {i['spice']} | بازار {i['market_fa']}", i["spice"], i["inr_kg"] * inr * 1000,
-                                    [f"🏷️ {i['market']}", f"📅 هفتهٔ منتهی به: {fad(wk['date'])}",
+                                    [f"🏷️ {i['market']}", f"📅 هفتهٔ منتهی به: {when(wk['date'])}",
                                      f"🇮🇳 این هفته: {num(i['inr_kg'])} | هفتهٔ قبل: {num(i['prev_week'])} | ماه قبل: {num(i['prev_month'])} | پارسال: {num(i['last_year'])} روپیه/کیلو",
                                      "🧭 نوع قیمت: میانگین هفتگی بازار مبدأ (نه FOB) | منبع: هیئت ادویهٔ هند (Spices Board)", LINE]))
         msgs.append("\n\n".join(blocks))
     if gv := w.get("govi"):
         msgs.append("\n\n".join("\n".join([
-            f"🌿 گزارش قیمت {i['spice']} | سری‌لانکا", LINE, f"🏷️ {i['name']}", f"📅 تاریخ: {fad(i['date'])}",
+            f"🌿 گزارش قیمت {i['spice']} | سری‌لانکا", LINE, f"🏷️ {i['name']}", f"📅 تاریخ: {when(i['date'])}",
             f"🇱🇰 قیمت عمده: {num(i['lkr_kg'])} روپیه سری‌لانکا/کیلو (بازه {num(i['min'] or 0)}–{num(i['max'] or 0)})",
             f"↩️ روز قبل: {num(i['prev'] or 0)} | بهترین بازار: {i['market_fa']}", "🧭 نوع قیمت: بازار مبدأ | منبع: گووی‌ساویا سری‌لانکا (Govi Saviya)", LINE]) for i in gv["items"]))
     if mn := w.get("manual"):
         blocks = []
         for i in mn["items"]:
             usd = i["price"] if "ton" in i.get("unit", "").lower() and "usd" in i.get("unit", "").lower() else None
-            extra = [f"🏷️ {i['name']}", f"📅 تاریخ: {fad(i['date'])}", f"✍️ واردشده دستی از {i.get('source', '')}: {num(i['price'])} {i.get('unit', '')}"] + ([f"📝 {i['note']}"] if i.get("note") else []) + [LINE]
+            extra = [f"🏷️ {i['name']}", f"📅 تاریخ: {when(i['date'])}", f"✍️ واردشده دستی از {i.get('source', '')}: {num(i['price'])} {i.get('unit', '')}"] + ([f"📝 {i['note']}"] if i.get("note") else []) + [LINE]
             spice = "فلفل سیاه" if "pepper" in i["name"].lower() else "زردچوبه" if "turmeric" in i["name"].lower() else ""
             blocks.append(usd_block(f"گزارش قیمت {i.get('name_fa') or i['name']}", spice, usd, extra) if usd and rate else "\n".join([f"🌿 گزارش قیمت {i.get('name_fa') or i['name']}", LINE, *extra]))
         msgs.append("\n\n".join(blocks))
@@ -184,7 +208,7 @@ def build_world_messages(data: dict, cfg: dict) -> list[str]:
             for i in sorted((x for x in arm["items"] if x["commodity"] == com), key=lambda x: x["date"], reverse=True)[:6]:
                 flag = (" ⚠️ پرت" if i["outlier"] else "") + (" 🕓 قدیمی" if (date.fromisoformat(arm["date"]) - date.fromisoformat(i["date"])).days > 3 else "")
                 mid = (i["kg_min"] + i["kg_max"]) / 2
-                rows += [f"🏷️ {i.get('market_fa') or i['market']} ({i['market']}) | 📅 {fad(i['date'])}{flag}",
+                rows += [f"🏷️ {i.get('market_fa') or i['market']} ({i['market']}) | 📅 {when(i['date'])}{flag}",
                          f"🇵🇰 قیمت: {num(i['kg_min'])}–{num(i['kg_max'])} روپیه پاکستان/کیلو" + (f" ≈ {fa(mid * pkr)} تومان/کیلو" if pkr else ""), LINE]
             blocks.append("\n".join([f"🌿 گزارش قیمت {com} | منڈی‌های پاکستان", *rows]))
         msgs.append("\n\n".join(blocks))

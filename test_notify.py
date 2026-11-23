@@ -201,5 +201,7 @@ for en in ("Viet Nam - Black Pepper 500 g/l", "Brazil Black - Pepper ASTA 570", 
     assert not re.search("[A-Za-z]", world_prices.ipc_fa(en)), en
 assert world_prices.ipc_fa("Viet Nam - Black Pepper 500 g/l") == "فلفل سیاه ویتنام | 500 گرم بر لیتر"
 assert not re.search("[A-Za-z]", world_prices.to_fa("Dera Ghazi Khan")) and not re.search("[A-Za-z]", world_prices.to_fa("Cochin Ungarbled"))
+assert notify.to_jalali(date(2026, 3, 21)) == "1405/01/01" and notify.to_jalali(date(2026, 11, 23)) == "1405/09/02"
+assert notify.when("2026-11-20", date(2026, 11, 23)) == "۱۴۰۵/۰۸/۲۹ (۳ روز قبل)" and "دیروز" in notify.when("2026-11-22", date(2026, 11, 23))
 assert all(c.count("\n") < 128 and len(c) <= notify.MSG_LIMIT for c in notify.chunks("\n".join(["x"] * 300)))  # Rubika: max 128 lines
 print("ok")
