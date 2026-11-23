@@ -201,4 +201,5 @@ for en in ("Viet Nam - Black Pepper 500 g/l", "Brazil Black - Pepper ASTA 570", 
     assert not re.search("[A-Za-z]", world_prices.ipc_fa(en)), en
 assert world_prices.ipc_fa("Viet Nam - Black Pepper 500 g/l") == "فلفل سیاه ویتنام | 500 گرم بر لیتر"
 assert not re.search("[A-Za-z]", world_prices.to_fa("Dera Ghazi Khan")) and not re.search("[A-Za-z]", world_prices.to_fa("Cochin Ungarbled"))
+assert all(c.count("\n") < 128 and len(c) <= notify.MSG_LIMIT for c in notify.chunks("\n".join(["x"] * 300)))  # Rubika: max 128 lines
 print("ok")

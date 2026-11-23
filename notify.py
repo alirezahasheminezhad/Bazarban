@@ -218,18 +218,19 @@ def stale_alert(data: dict, log_path: str, now: datetime | None = None) -> str |
 
 
 MSG_LIMIT = 3900  # Telegram caps a message at 4096 chars; stay below it
+MSG_LINES = 120  # Rubika rejects more than 128 lines ("INVALID_INPUT"); Telegram has no such cap
 
 
 def chunks(text: str) -> list[str]:
     """Split a long message on line boundaries so no part exceeds MSG_LIMIT."""
-    if len(text) <= MSG_LIMIT:
+    if len(text) <= MSG_LIMIT and text.count("\n") < MSG_LINES:
         return [text]
     parts, cur = [], ""
     for line in text.split("\n"):
         while len(line) > MSG_LIMIT:  # a single huge line: hard split
             parts.append(line[:MSG_LIMIT])
             line = line[MSG_LIMIT:]
-        if cur and len(cur) + len(line) + 1 > MSG_LIMIT:
+        if cur and (len(cur) + len(line) + 1 > MSG_LIMIT or cur.count("\n") + 1 >= MSG_LINES):
             parts.append(cur)
             cur = line
         else:
