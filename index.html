@@ -128,7 +128,7 @@ dialog::backdrop{background:#0006}
       <h1>بازاربان<span>هزینه تمام‌شده بار</span></h1>
       <div class="sp"></div>
       <button class="x" type="button" data-act="src">تنظیمات منابع</button>
-      <button class="x" type="button" data-act="cfg">کپی تنظیمات ربات</button>
+      <button class="x" type="button" data-act="cfg">ذخیره برای ربات</button>
       <button class="x" type="button" data-act="pw">تغییر رمز</button>
       <div class="pill"><i class="dot" id="dot"></i><span id="upd">در حال دریافت اطلاعات...</span></div>
     </div>
@@ -182,10 +182,11 @@ dialog::backdrop{background:#0006}
 
 <dialog id="setDlg" aria-labelledby="setTitle">
   <h2 id="setTitle" style="font-size:18px">تنظیمات منابع</h2>
-  <div class="sub">منبع خاموش در صفحه نمایش داده نمی‌شود و در میانگین ارز و طلا حساب نمی‌شود. این تنظیم فقط روی همین مرورگر است و پیام تلگرام/روبیکا را تغییر نمی‌دهد.</div>
+  <div class="sub">منبع خاموش در صفحه نمایش داده نمی‌شود و در میانگین ارز و طلا حساب نمی‌شود. برای اعمال روی پیام تلگرام/روبیکا «ذخیره برای ربات» را بزنید.</div>
   <div id="setList"></div>
   <div style="display:flex;gap:10px;flex-wrap:wrap">
-    <button class="btn" type="button" id="setClose">بستن</button>
+    <button class="btn" type="button" data-act="cfg">ذخیره برای ربات</button>
+    <button class="x" type="button" id="setClose" style="width:auto;border-radius:99px;padding:8px 16px">بستن</button>
     <button class="x" type="button" id="setAll" style="border-radius:99px;padding:8px 16px">روشن کردن همه</button>
   </div>
 </dialog>
@@ -688,18 +689,7 @@ document.addEventListener('click',e=>{
     if(n) sha(n).then(h=>prompt('این متن را در index.html جلوی PASS_HASH بگذارید و ذخیره کنید:',h));
   }
 
-  if(d.act==='cfg'){
-    const cfg = {products:Object.fromEntries(KEYS.map(k=>[k,{
-      name:P[k].name,
-      tons:num(g('tons',k).value), cnt:num(g('cnt',k).value),
-      oon:g('oon',k).checked?1:0, opct:num(g('opct',k).value), ofix:num(g('ofix',k).value),
-      costs:P[k].costs
-    }]))};
-    const txt = JSON.stringify(cfg,null,2);
-    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(
-      ()=>alert('کپی شد. در گیت‌هاب محتوای config.json را با آن جایگزین کنید.'),
-      ()=>prompt('این متن را در config.json بگذارید:',txt));
-  }
+  if(d.act==='cfg') saveForBot();
 
   if(d.act==='save'){
     saveLocal([
@@ -723,6 +713,41 @@ document.addEventListener('click',e=>{
     saveState();
   }
 });
+
+/* ذخیره تنظیمات برای ربات: config.json را با توکن گیت‌هاب خود کاربر روی main می‌نویسد؛ ربات در اجرای بعدی می‌خواند.
+   shortcut: توکن در localStorage همین دامنه می‌ماند؛ اگر سایت دیگری روی همین github.io اضافه شد، به Worker منتقل شود. */
+const TOKEN_KEY = 'bazarban_gh_token';
+const CFG_API = 'https://api.github.com/repos/alirezahasheminezhad/Bazarban/contents/config.json';
+const botConfig = () => JSON.stringify({products:Object.fromEntries(KEYS.map(k=>[k,{
+  name:P[k].name,
+  tons:num(g('tons',k).value), cnt:num(g('cnt',k).value),
+  oon:g('oon',k).checked?1:0, opct:num(g('opct',k).value), ofix:num(g('ofix',k).value),
+  costs:P[k].costs
+}])), off:[...off]},null,2)+'\n';
+
+async function saveForBot(){
+  let token;
+  try{ token = localStorage.getItem(TOKEN_KEY); }catch{}
+  token = token || (prompt('توکن گیت‌هاب را وارد کنید (Fine-grained، فقط مخزن Bazarban، دسترسی Contents: Read and write). فقط در همین مرورگر ذخیره می‌شود.')||'').trim();
+  if(!token) return;
+  if(!confirm('هزینه‌ها و منابع روشن/خاموشِ همین مرورگر جایگزین تنظیمات ربات شود؟')) return;
+  const headers = {Authorization:'Bearer '+token, Accept:'application/vnd.github+json'};
+  const call = async opt => {
+    const r = await fetch(CFG_API+(opt?'':'?ref=main'),{headers,cache:'no-store',...opt});
+    if(!r.ok) throw Object.assign(new Error('HTTP '+r.status),{status:r.status});
+    return r.json();
+  };
+  try{
+    const {sha} = await call();
+    const content = btoa(String.fromCharCode(...new TextEncoder().encode(botConfig())));
+    await call({method:'PUT', body:JSON.stringify({message:'Bot settings from the site', content, sha, branch:'main'})});
+    try{ localStorage.setItem(TOKEN_KEY,token); }catch{}
+    alert('ذخیره شد. ربات از اجرای بعدی (حداکثر ۱۵ دقیقه) با همین تنظیمات پیام می‌فرستد.');
+  }catch(e){
+    if([401,403,404].includes(e.status)){ try{ localStorage.removeItem(TOKEN_KEY); }catch{} }
+    alert('ذخیره نشد ('+e.message+'). توکن و دسترسی آن و اتصال اینترنت را بررسی کنید.');
+  }
+}
 
 /* تاریخ روز */
 function updateDate(){

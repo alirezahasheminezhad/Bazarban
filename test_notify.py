@@ -11,7 +11,8 @@ from notify import build_alert_message, build_fx_message, build_message, stale_a
 from fx_prices import update_health
 import fx_prices
 
-cfg = json.load(open("config.json", encoding="utf-8"))["products"]["t"]  # 25 t, 10% origin cost
+cfg = json.load(open("config.json", encoding="utf-8"))["products"]["t"]
+cfg.update(tons=25, cnt=1, oon=1, opct=10, ofix=0, costs=[])  # the site rewrites config.json, so pin the values
 # rate 1000 makes the world price per ton exactly the owner's example: 761,899,030 toman
 text = build_message({"usd_toman": 1000, "usd_per_ton": 761899.03}, {"products": {"t": cfg}})
 for expected in ("۷۶۱٬۸۹۹٬۰۳۰ تومان", "۱۹٬۰۴۷٬۴۷۵٬۷۵۰ تومان", "با احتساب ۱۰٪ مصارف",
@@ -204,4 +205,11 @@ assert not re.search("[A-Za-z]", world_prices.to_fa("Dera Ghazi Khan")) and not 
 assert notify.to_jalali(date(2026, 3, 21)) == "1405/01/01" and notify.to_jalali(date(2026, 11, 23)) == "1405/09/02"
 assert notify.when("2026-11-20", date(2026, 11, 23)) == "۱۴۰۵/۰۸/۲۹ (۳ روز قبل)" and "دیروز" in notify.when("2026-11-22", date(2026, 11, 23))
 assert all(c.count("\n") < 128 and len(c) <= notify.MSG_LIMIT for c in notify.chunks("\n".join(["x"] * 300)))  # Rubika: max 128 lines
+# sources switched off on the site are left out of the bot messages and the fx average
+od = {"fx": {"items": [{"id": "usd", "name": "d", **aggregate([("a", 100), ("b", 200)])}]},
+      "world": {"updated": "x", "ipc": {"date": "2026-11-20", "items": [{"name": "Indonesia - Black Pepper"}, {"name": "V"}]}}}
+r = notify.apply_off(od, ["fx|usd|b", "w|ipc|Indonesia - Black Pepper"])
+assert r["fx"]["items"][0]["avg"] == 100 and r["fx"]["items"][0]["n"] == 1 and r["world"]["ipc"]["items"] == [{"name": "V"}]
+r = notify.apply_off(od, ["fx|usd|a", "fx|usd|b", "w|ipc"])
+assert r["fx"]["items"] == [] and r["world"] is None and len(od["world"]["ipc"]["items"]) == 2
 print("ok")

@@ -225,6 +225,37 @@ def build_world_messages(data: dict, cfg: dict) -> list[str]:
     return [m for m in msgs if m] + ["\n".join(notes)]
 
 
+def apply_off(data: dict, off: list[str]) -> dict:
+    """Drop the sources switched off on the site (config.json "off"); keys match index.html."""
+    off = set(off)
+    if not off:
+        return data
+    data = dict(data)
+    if fx := data.get("fx"):
+        from fx_prices import aggregate  # lazy: news_test.py imports this module without bs4
+        items = []
+        for it in fx["items"]:
+            src = [x for x in it["sources"] if f"fx|{it['id']}|{x['s']}" not in off]
+            if len(src) == len(it["sources"]):
+                items.append(it)
+            elif src:
+                items.append({**it, **aggregate([(x["s"], x["v"]) for x in src])})
+        data["fx"] = {**fx, "items": items}
+    if w := data.get("world"):
+        out = {}
+        for k, v in w.items():
+            if not isinstance(v, dict):
+                out[k] = v
+                continue
+            items = [] if f"w|{k}" in off else [
+                i for i in v["items"]
+                if f"w|{k}|" + " · ".join(str(i[f]) for f in ("source", "name", "spice", "commodity", "market", "grade") if i.get(f)) not in off]
+            if items:
+                out[k] = {**v, "items": items}
+        data["world"] = out if any(isinstance(v, dict) for v in out.values()) else None
+    return data
+
+
 def stale_alert(data: dict, log_path: str, now: datetime | None = None) -> str | None:
     """Run after a failed price update. Fires in one run only (data 40-55 min old, runs are 15 min apart)."""
     updated = datetime.fromisoformat(data["updated"].replace("Z", "+00:00"))
@@ -305,6 +336,7 @@ if __name__ == "__main__":
             send(msg)
         raise SystemExit(0)
     cfg = json.load(open("config.json", encoding="utf-8"))
+    data = apply_off(data, cfg.get("off", []))
     texts = [t for t in (build_message(data, cfg), build_fx_message(data), *build_world_messages(data, cfg), build_alert_message(data)) if t]  # separate messages
     if "--dry" in sys.argv:
         print("\n\n=====\n\n".join(texts))
