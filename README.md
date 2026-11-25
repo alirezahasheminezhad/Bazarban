@@ -37,7 +37,7 @@ index.html (GitHub Pages)
 | `notify.py` | ساخت و ارسال پیام‌ها به تلگرام/روبیکا (پیام‌های بلند خودکار تکه می‌شوند) |
 | `index.html` | رابط وب (تک‌فایل، بدون build) |
 | `worker/` | Cloudflare Worker تتر لایو از کانال تلگرام (بدون KV/اکانت) |
-| `config.json` | تنظیمات ربات: تناژ، تعداد کانتینر، هزینه‌ها + منابع خاموش (`off`)؛ از دکمه «ذخیره برای ربات» در سایت (توکن Fine-grained با Contents: Read and write فقط روی همین مخزن) |
+| `config.json` | تنظیمات ربات: تناژ، تعداد کانتینر، هزینه‌ها + منابع خاموش (`off`)؛ از دکمه «ذخیره برای ربات» در سایت (رمز مدیر؛ بخش «دروازهٔ امن» پایین) |
 | `test_notify.py` | تست‌های پایتون (قیمت، ارز، پیام‌ها، هشدارها) |
 | `worker/test.mjs` | تست پارسر Worker |
 | `.github/workflows/` | به‌روزرسانی قیمت، ارسال دستی، تست خبری، تست‌های CI |
@@ -66,6 +66,16 @@ index.html (GitHub Pages)
    ```
    آدرس Worker را در `index.html` جلوی `LIVE_USDT_URL` بگذارید.
 
+## دروازهٔ امن (`gate/`)
+
+توکن گیت‌هاب در مرورگر یا کد نیست؛ در Worker کلودفلر به نام `github-gate` (https://github-gate.ezaccess14ea188.workers.dev/) می‌ماند و سایت‌های بازاربان و شرکت‌یاب فقط رمز مدیر را می‌فرستند.
+
+1. داشبورد Cloudflare → Workers → Create → نام `github-gate` → Deploy، سپس Edit code و محتوای `gate/index.mjs` را جایگزین کنید.
+2. Settings → Variables and Secrets، هر دو از نوع **Secret**:
+   - `GH_TOKEN`: توکن Fine-grained فقط برای مخزن‌های `Bazarban` (Contents: Read and write) و `sherkatyab` (Actions: Read and write)
+   - `ADMIN_PASSWORD`: رمز تصادفی حداقل ۲۰ نویسه (از مدیر رمز)
+3. اگر آدرس Worker فرق داشت، `GATE_URL` را در `index.html` هر دو سایت عوض کنید.
+
 ## اجرا و تست محلی
 
 ```bash
@@ -76,6 +86,7 @@ python fx_prices.py
 python notify.py --dry                  # پیش‌نمایش پیام‌ها بدون ارسال
 python test_notify.py                   # تست‌ها
 node worker/test.mjs
+node gate/test.mjs
 ```
 
 `BAZARBAN_DEBUG=1` لاگ تشخیصی صفحه‌های رندرشده را چاپ می‌کند.

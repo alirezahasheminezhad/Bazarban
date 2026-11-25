@@ -24,4 +24,4 @@ jobs:
         with:
           node-version: '22'
       - name: Worker parser tests
-        run: node worker/test.mjs
+        run: node worker/test.mjs && node gate/test.mjs

@@ -714,10 +714,10 @@ document.addEventListener('click',e=>{
   }
 });
 
-/* ذخیره تنظیمات برای ربات: config.json را با توکن گیت‌هاب خود کاربر روی main می‌نویسد؛ ربات در اجرای بعدی می‌خواند.
-   shortcut: توکن در localStorage همین دامنه می‌ماند؛ اگر سایت دیگری روی همین github.io اضافه شد، به Worker منتقل شود. */
-const TOKEN_KEY = 'bazarban_gh_token';
-const CFG_API = 'https://api.github.com/repos/alirezahasheminezhad/Bazarban/contents/config.json';
+/* ذخیره تنظیمات برای ربات: Worker (gate/) با توکن مخفی config.json را روی main می‌نویسد؛ این‌جا فقط رمز مدیر وارد می‌شود. */
+const GATE_URL = 'https://github-gate.ezaccess14ea188.workers.dev/';
+const PASS_KEY = 'gate_password';
+try{ localStorage.removeItem('bazarban_gh_token'); }catch{}  // توکن قدیمی نباید در مرورگر بماند
 const botConfig = () => JSON.stringify({products:Object.fromEntries(KEYS.map(k=>[k,{
   name:P[k].name,
   tons:num(g('tons',k).value), cnt:num(g('cnt',k).value),
@@ -726,26 +726,20 @@ const botConfig = () => JSON.stringify({products:Object.fromEntries(KEYS.map(k=>
 }])), off:[...off]},null,2)+'\n';
 
 async function saveForBot(){
-  let token;
-  try{ token = localStorage.getItem(TOKEN_KEY); }catch{}
-  token = token || (prompt('توکن گیت‌هاب را وارد کنید (Fine-grained، فقط مخزن Bazarban، دسترسی Contents: Read and write). فقط در همین مرورگر ذخیره می‌شود.')||'').trim();
-  if(!token) return;
+  let pass;
+  try{ pass = localStorage.getItem(PASS_KEY); }catch{}
+  pass = pass || (prompt('رمز مدیر را وارد کنید')||'').trim();
+  if(!pass) return;
   if(!confirm('هزینه‌ها و منابع روشن/خاموشِ همین مرورگر جایگزین تنظیمات ربات شود؟')) return;
-  const headers = {Authorization:'Bearer '+token, Accept:'application/vnd.github+json'};
-  const call = async opt => {
-    const r = await fetch(CFG_API+(opt?'':'?ref=main'),{headers,cache:'no-store',...opt});
-    if(!r.ok) throw Object.assign(new Error('HTTP '+r.status),{status:r.status});
-    return r.json();
-  };
   try{
-    const {sha} = await call();
-    const content = btoa(String.fromCharCode(...new TextEncoder().encode(botConfig())));
-    await call({method:'PUT', body:JSON.stringify({message:'Bot settings from the site', content, sha, branch:'main'})});
-    try{ localStorage.setItem(TOKEN_KEY,token); }catch{}
+    const r = await fetch(GATE_URL,{method:'POST',headers:{Authorization:'Bearer '+pass,'Content-Type':'application/json'},
+      body:JSON.stringify({action:'bazarban-config',config:JSON.parse(botConfig())})});
+    if(!r.ok) throw Object.assign(new Error((await r.json().catch(()=>({}))).error || 'HTTP '+r.status),{status:r.status});
+    try{ localStorage.setItem(PASS_KEY,pass); }catch{}
     alert('ذخیره شد. ربات از اجرای بعدی (حداکثر ۱۵ دقیقه) با همین تنظیمات پیام می‌فرستد.');
   }catch(e){
-    if([401,403,404].includes(e.status)){ try{ localStorage.removeItem(TOKEN_KEY); }catch{} }
-    alert('ذخیره نشد ('+e.message+'). توکن و دسترسی آن و اتصال اینترنت را بررسی کنید.');
+    if(e.status===401){ try{ localStorage.removeItem(PASS_KEY); }catch{} }
+    alert(e.status===401 ? 'رمز مدیر اشتباه است.' : 'ذخیره نشد ('+e.message+').');
   }
 }
 
