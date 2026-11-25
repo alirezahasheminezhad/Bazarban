@@ -105,6 +105,13 @@ body.lock #lock{display:grid}
 .hs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;font-size:12px;margin:8px 0 14px}
 .hs span{background:var(--card);border-radius:12px;padding:6px 12px;display:flex;justify-content:space-between;gap:8px}
 .hs b{direction:ltr;font-weight:500}
+dialog{font:inherit;color:var(--ink);border:0;border-radius:28px;padding:22px;width:min(560px,calc(100% - 32px));max-height:85vh;margin:auto}
+dialog::backdrop{background:#0006}
+#setList{display:grid;gap:10px;margin:12px 0}
+#setList fieldset{border:1px solid var(--line);border-radius:18px;padding:8px 14px 12px;display:grid;gap:6px;min-width:0}
+#setList label{display:flex;gap:8px;align-items:center;font-size:12px;cursor:pointer}
+#setList legend{padding:0 6px}#setList legend label{font-size:13px;font-weight:600}
+#setList fieldset.off>label{opacity:.4}
 </style>
 </head>
 <body class="lock">
@@ -120,6 +127,7 @@ body.lock #lock{display:grid}
       <div class="logo" aria-hidden="true">ب</div>
       <h1>بازاربان<span>هزینه تمام‌شده بار</span></h1>
       <div class="sp"></div>
+      <button class="x" type="button" data-act="src">تنظیمات منابع</button>
       <button class="x" type="button" data-act="cfg">کپی تنظیمات ربات</button>
       <button class="x" type="button" data-act="pw">تغییر رمز</button>
       <div class="pill"><i class="dot" id="dot"></i><span id="upd">در حال دریافت اطلاعات...</span></div>
@@ -171,6 +179,16 @@ body.lock #lock{display:grid}
 
   <p class="note">قیمت‌ها از فایل خودکار گیت‌هاب خوانده می‌شوند. محاسبات بر اساس قیمت ثبت‌شده در منبع و هزینه‌های واردشده است؛ پیش از تصمیم تجاری، واحد و مشخصات قرارداد آتی NCDEX را بررسی کنید.</p>
 </main>
+
+<dialog id="setDlg" aria-labelledby="setTitle">
+  <h2 id="setTitle" style="font-size:18px">تنظیمات منابع</h2>
+  <div class="sub">منبع خاموش در صفحه نمایش داده نمی‌شود و در میانگین ارز و طلا حساب نمی‌شود. این تنظیم فقط روی همین مرورگر است و پیام تلگرام/روبیکا را تغییر نمی‌دهد.</div>
+  <div id="setList"></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn" type="button" id="setClose">بستن</button>
+    <button class="x" type="button" id="setAll" style="border-radius:99px;padding:8px 16px">روشن کردن همه</button>
+  </div>
+</dialog>
 
 <script>
 const $ = id => document.getElementById(id);
@@ -660,6 +678,11 @@ document.addEventListener('click',e=>{
     saveState();
   }
 
+  if(d.act==='src'){
+    renderSettings();
+    $('setDlg').showModal();
+  }
+
   if(d.act==='pw'){
     const n = prompt('رمز جدید را وارد کنید');
     if(n) sha(n).then(h=>prompt('این متن را در index.html جلوی PASS_HASH بگذارید و ذخیره کنید:',h));
@@ -709,11 +732,69 @@ function updateDate(){
 }
 updateDate();
 
+/* روشن/خاموش منابع: فقط خاموش‌ها ذخیره می‌شوند، پس منبع تازه خودبه‌خود روشن است */
+const OFF_KEY = 'bazarban_off_v1';
+let off = new Set();
+try{ off = new Set(JSON.parse(localStorage.getItem(OFF_KEY)) || []); }catch{}
+let lastFx, lastWorld;
+
+const WORLD = {ipc:'IPC · فلفل', spices_board:'Spices Board هند · روزانه', spices_weekly:'Spices Board هند · هفتگی', govi:'Govi Saviya سری‌لانکا', manual:'واردشده دستی (VPSA و …)', arm_pk:'ARM پاکستان'};
+const itemId = i => [i.source,i.name,i.spice,i.commodity,i.market,i.grade].filter(Boolean).join(' · ');
+const itemLabel = i => [i.source,i.name_fa||i.name,i.spice||i.commodity,i.market_fa||i.market,i.grade_fa||i.grade].filter(Boolean).join(' · ');
+
+// همان aggregate در fx_prices.py: میانگین منابع + درصد منابعی که تا ۲٪ هم‌نظرند
+function aggregate(src, tol=0.02){
+  const v = src.map(x=>x.v), n = v.length;
+  const best = v.map(a=>v.filter(w=>Math.abs(w/a-1)<=tol)).reduce((x,y)=>y.length>x.length?y:x);
+  const s = [...best].sort((a,b)=>a-b), med = (s[(s.length-1)>>1]+s[s.length>>1])/2;
+  const sources = src.map(x=>({...x, ok: n===1 || best.length===1 || Math.abs(x.v/med-1)<=tol}));
+  return {
+    avg: Math.round(v.reduce((a,b)=>a+b,0)/n),
+    conf: n===1 ? null : Math.round(100*(best.length===1 ? 1 : best.length)/n),
+    n, k: sources.filter(x=>x.ok).length, sources
+  };
+}
+
+const fxOn = it => {
+  const src = it.sources.filter(x=>!off.has(`fx|${it.id}|${x.s}`));
+  if(src.length===it.sources.length) return [it];
+  return src.length ? [{...it, ...aggregate(src)}] : [];
+};
+
+const worldOn = w => w && {...w, ...Object.fromEntries(Object.keys(WORLD).filter(k=>w[k] && Array.isArray(w[k].items)).map(k=>[k,
+  {...w[k], items: off.has('w|'+k) ? [] : w[k].items.filter(i=>!off.has(`w|${k}|${itemId(i)}`))}]))};
+
+function renderSettings(){
+  const box = (key,label) => `<label><input type="checkbox" data-off="${esc(key)}"${off.has(key)?'':' checked'}><span>${esc(label)}</span></label>`;
+  const world = Object.entries(WORLD).map(([k,title])=>
+    `<fieldset class="${off.has('w|'+k)?'off':''}"><legend>${box('w|'+k,title)}</legend>${(lastWorld?.[k]?.items||[]).map(i=>box(`w|${k}|${itemId(i)}`,itemLabel(i))).join('') || '<div class="sub">فعلاً قیمتی از این منبع نرسیده است.</div>'}</fieldset>`);
+  const fx = (lastFx?.items||[]).map(it=>
+    `<fieldset><legend><b style="font-size:13px">${esc(it.name)}</b></legend>${[...new Set(it.sources.map(x=>x.s))].map(s=>box(`fx|${it.id}|${s}`,s)).join('')}</fieldset>`);
+  $('setList').innerHTML = [...world,...fx].join('');
+}
+
+function applyOff(){
+  try{ localStorage.setItem(OFF_KEY, JSON.stringify([...off])); }catch{}
+  renderFx(lastFx);
+  renderWorld(lastWorld);
+  loadLiveUsdt();
+}
+
+$('setList').addEventListener('change',e=>{
+  const key = e.target.dataset.off;
+  if(!key) return;
+  off[e.target.checked?'delete':'add'](key);
+  if(e.target.closest('legend')) e.target.closest('fieldset').classList.toggle('off',!e.target.checked);
+  applyOff();
+});
+$('setAll').addEventListener('click',()=>{ off.clear(); applyOff(); renderSettings(); });
+$('setClose').addEventListener('click',()=>$('setDlg').close());
+
 /* نرخ ارز و طلا: data.fx از فایل خودکار */
 function renderFx(fx){
   const box = $('fx');
   if(!fx || !Array.isArray(fx.items) || !fx.items.length){ box.hidden = true; return; }
-  $('fxList').innerHTML = fx.items.map(it=>`
+  $('fxList').innerHTML = fx.items.flatMap(fxOn).map(it=>`
     <div class="fxi">
       <h4><span>${esc(it.name)}</span><span class="tag">${it.conf==null ? 'تک‌منبع' : 'اطمینان '+fa(it.conf)+'٪ · '+fa(it.k)+' از '+fa(it.n)}</span></h4>
       <div class="big">${fa(it.avg)}<small>تومان</small></div>
@@ -765,7 +846,8 @@ function jd(iso){
   return `${j.replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d])} (${n===0?'امروز':n===1?'دیروز':n>1?fa(n)+' روز قبل':'آینده'})`;
 }
 
-function renderWorld(w){
+function renderWorld(all){
+  const w = worldOn(all);
   const box = $('worldLive');
   const cards = [];
   if(w && w.ipc && Array.isArray(w.ipc.items) && w.ipc.items.length){
@@ -829,8 +911,10 @@ async function loadMarketData(){
       throw new Error('قیمت یا نرخ ارز معتبر نیست');
     }
 
-    renderFx(data.fx);
-    renderWorld(data.world);
+    lastFx = data.fx;
+    lastWorld = data.world;
+    renderFx(lastFx);
+    renderWorld(lastWorld);
     lastMarket = {price, pepper: hasB ? pepper : null, rate};
 
     // تاریخچه هم در تشخیص تغییرات لحاظ می‌شود
@@ -950,6 +1034,7 @@ const LIVE_USDT_URL = 'https://weathered-mode-6253.ezaccess14ea188.workers.dev/'
 async function loadLiveUsdt(){
   if(!LIVE_USDT_URL) return;
   const el = $('fxLive');
+  if(off.has('fx|usdt|t.me/tetherpriceFa')){ el.hidden = true; return; }
   try{
     const d = await (await fetch(LIVE_USDT_URL,{cache:'no-store'})).json();
     if(!d || d.error || d.stale || !(d.price>0)) throw new Error('no fresh price');
