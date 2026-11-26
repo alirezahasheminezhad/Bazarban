@@ -49,7 +49,10 @@ with mock.patch.object(fx_prices, "jget", return_value=hm):
     got = {e[0]: fx_prices.fetch_api(e, 294000) for e in fx_prices.API if e[1] == "hamedsaghafi.com"}
 assert got["usd"] == 293890 and got["brent"] == 95.001 and got["pkr"] == 1054.2 and got["gold"] is None
 oil = {"id": "brent", "name": "نفت برنت", "unit": "دلار", **aggregate([("a", 94.67), ("b", 95.001)], digits=2)}
-assert oil["avg"] == 94.84 and "میانگین: ۹۴٫۸۴ دلار" in build_fx_message({"fx": {"items": [oil]}})
+oil_message = build_fx_message({"fx": {"items": [oil]}})
+assert oil["avg"] == 94.84 and "میانگین: ۹۴٫۸۴ دلار" in oil_message
+assert "مرجع نمودار زنده TradingView" in oil_message
+assert "https://www.tradingview.com/symbols/UKOIL/" in oil_message
 assert notify.apply_off({"fx": {"items": [oil]}}, ["fx|brent|b"])["fx"]["items"][0]["avg"] == 94.67
 fx = build_fx_message({"fx": {"items": [{"id": "usd", "name": "دلار آمریکا", **r}]}})
 assert "اطمینان: ۸۰٪ (۴ از ۵ منبع)" in fx and "⚠️ e: ۲۶۲٬۰۰۰" in fx and build_fx_message({}) is None
