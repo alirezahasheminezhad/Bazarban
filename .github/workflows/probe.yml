@@ -1,0 +1,19 @@
+name: probe-sources (temporary)
+on:
+  push:
+    branches: [probe-sources]
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install -q -r requirements.txt && python -m playwright install --with-deps chromium
+      - run: python probe.py > probe.txt 2>&1
+      - run: |
+          git config user.name bot && git config user.email bot@users.noreply.github.com
+          git add probe.txt && git commit -qm "probe result" && git push -q
