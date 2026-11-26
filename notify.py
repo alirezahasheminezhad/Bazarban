@@ -95,7 +95,7 @@ def build_message(data: dict, cfg: dict) -> str:
     return "\n\n".join(blocks)
 
 
-FX_EMOJI = {"usd": "💵", "usdt": "🪙", "gold": "🥇", "coin": "🏅", "afn": "🇦🇫", "pkr": "🇵🇰", "aed": "🇦🇪"}
+FX_EMOJI = {"usd": "💵", "usdt": "🪙", "gold": "🥇", "coin": "🏅", "afn": "🇦🇫", "pkr": "🇵🇰", "aed": "🇦🇪", "brent": "🛢️"}
 
 
 def build_fx_message(data: dict) -> str | None:
@@ -107,10 +107,11 @@ def build_fx_message(data: dict) -> str | None:
     out = ["💱 گزارش نرخ ارز و طلا", line]
     for it in items:
         conf = f"{fa(it['conf'])}٪ ({fa(it['k'])} از {fa(it['n'])} منبع)" if it["conf"] is not None else "فقط یک منبع"
+        unit, d = it.get("unit", "تومان"), 2 if "unit" in it else 0
         out += [f"{FX_EMOJI.get(it['id'], '•')} {it['name']}",
-                f"💰 میانگین: {fa(it['avg'])} تومان",
+                f"💰 میانگین: {fa(it['avg'], d)} {unit}",
                 f"🎯 اطمینان: {conf}",
-                *[f"{'📌' if x['ok'] else '⚠️'} {x['s']}: {fa(x['v'])}" for x in it["sources"]], line]
+                *[f"{'📌' if x['ok'] else '⚠️'} {x['s']}: {fa(x['v'], d)}" for x in it["sources"]], line]
     return "\n".join(out)
 
 
@@ -239,7 +240,7 @@ def apply_off(data: dict, off: list[str]) -> dict:
             if len(src) == len(it["sources"]):
                 items.append(it)
             elif src:
-                items.append({**it, **aggregate([(x["s"], x["v"]) for x in src])})
+                items.append({**it, **aggregate([(x["s"], x["v"]) for x in src], digits=2 if "unit" in it else None)})
         data["fx"] = {**fx, "items": items}
     if w := data.get("world"):
         out = {}

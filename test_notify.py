@@ -35,6 +35,22 @@ assert extract("pkr", "tgju.org", "روپیه پاکستان قیمت 9,960 ری
 assert extract("aed", "ok-ex.io", "درهم امارات 75,010 تومان +1.34%", usd) == 75010
 assert extract("gold", "tgju.org", "قیمت طلای 18 عیار 265,000,000 ریال", usd) == 26500000
 assert find_price("دلار 1.32 درصد", r"دلار", 1e5, 1e6) is None
+import fx_prices, notify
+from unittest import mock
+# new sources: snippets as the pages served them on 2026-11-26
+pk = "دلار آمریکا (بازار آزاد) 294٬065 تومان +0.40% سکه امامی (طرح جدید) 264٬945٬000 تومان نفت خام برنت (Brent) 94٫67 دلار +0.17%"
+pk = fx_prices.digits_to_ascii(pk)
+assert extract("brent", "pishkhanak.com", pk, 294000) == 94.67 and extract("coin", "pishkhanak.com", pk, 294000) == 264945000
+assert extract("brent", "tradingeconomics.com", "Brent oil - Price Summary Actual 95.107 Daily Change 0.50 0.52%", 294000) == 95.107
+yr = "دلار آمریکا 294,300 ▲ +0.17% درهم امارات 80,150 ▲ افغانی افغانستان 4,525 ▲ +0.11% روپیه هند 3,180"
+assert [extract(c, "yekrial.com", yr, 294000) for c in ("usd", "aed", "afn", "pkr")] == [294300, 80150, 4525, None]
+hm = {"q": {"price_dollar_rl": {"v": 2938900}, "oil_brent": {"v": 95.001}, "price_pkr": {"v": 10542.0}}}
+with mock.patch.object(fx_prices, "jget", return_value=hm):
+    got = {e[0]: fx_prices.fetch_api(e, 294000) for e in fx_prices.API if e[1] == "hamedsaghafi.com"}
+assert got["usd"] == 293890 and got["brent"] == 95.001 and got["pkr"] == 1054.2 and got["gold"] is None
+oil = {"id": "brent", "name": "نفت برنت", "unit": "دلار", **aggregate([("a", 94.67), ("b", 95.001)], digits=2)}
+assert oil["avg"] == 94.84 and "میانگین: ۹۴٫۸۴ دلار" in build_fx_message({"fx": {"items": [oil]}})
+assert notify.apply_off({"fx": {"items": [oil]}}, ["fx|brent|b"])["fx"]["items"][0]["avg"] == 94.67
 fx = build_fx_message({"fx": {"items": [{"id": "usd", "name": "دلار آمریکا", **r}]}})
 assert "اطمینان: ۸۰٪ (۴ از ۵ منبع)" in fx and "⚠️ e: ۲۶۲٬۰۰۰" in fx and build_fx_message({}) is None
 # nabzesh API: parses price.price; gold comes per milligram (x1000); stale prices are skipped

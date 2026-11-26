@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fetch USD, USDT, gold, AFN, PKR, AED prices (toman) from several sources and add
+"""Fetch USD, USDT, gold, AFN, PKR, AED (toman) and Brent oil (USD) prices from several sources and add
 data["fx"] to data.json: per currency the average of the sources that agree, plus a
 confidence % (agreeing sources / all sources). Runs in the same job as fetch_prices.py.
 Each source is independent: one that fails or changes layout is just skipped.
@@ -40,7 +40,9 @@ SPEC = {
     "afn": ("افغانی افغانستان", r"افغانی", lambda u: u / 70, 0.25),
     "pkr": ("روپیه پاکستان", r"روپیه", lambda u: u / 280, 0.15),
     "aed": ("درهم امارات", r"درهم", lambda u: u / 3.6725, 0.08),
+    "brent": ("نفت برنت (هر بشکه)", r"برنت", None, None),
 }
+USD_UNIT = {"brent": "دلار"}  # priced in dollars with decimals; everything else is whole toman
 OK, KIF = "https://ok-ex.io/live/currency/", "https://kifpool.me/live/currency"
 BIT, TAB = "https://bitpin.ir/academy/live/currency/", "https://tabdeal.org/convert/"
 TGJU, ALAN, ARZ = "https://www.tgju.org/profile/", "https://alanchand.com/currencies-price/", "https://arzdigital.com/"
@@ -65,7 +67,11 @@ PLAN = [
     ("usd", "arzdigital.com", ARZ + "convert/united-states-dollar/ir-toman/"),
     ("afn", "arzdigital.com", ARZ + "convert/afghan-afghani/ir-toman/"),
     ("aed", "arzdigital.com", ARZ + "convert/united-arab-emirates-dirham/ir-toman/"),
+    *[(c, "pishkhanak.com", "https://pishkhanak.com/economy") for c in ("usd", "usdt", "gold", "coin", "brent")],
+    *[(c, "yekrial.com", "https://yekrial.com/") for c in ("usd", "aed", "afn")],  # no PKR, gold or coin there
+    ("brent", "tradingeconomics.com", "https://tradingeconomics.com/commodity/brent-crude-oil"),
 ]
+KEYWORD = {("brent", "tradingeconomics.com"): r"Actual"}  # the page header: "Actual 95.107"
 NUM = re.compile(r"\d[\d,٬]*(?:[.٫]\d+)?")
 
 
@@ -84,8 +90,8 @@ def find_price(text: str, kw: str, lo: float, hi: float, divisors=(1, 10)) -> fl
     return None
 
 
-def aggregate(vals: list[tuple[str, float]], tol: float = TOL) -> dict:
-    """vals: [(source, toman)]. Average of all sources; confidence % = share of sources agreeing within tol."""
+def aggregate(vals: list[tuple[str, float]], tol: float = TOL, digits: int | None = None) -> dict:
+    """vals: [(source, price)]; digits=None rounds to whole numbers. Average of all sources; confidence % = share of sources agreeing within tol."""
     n = len(vals)
     best = max(([w for _, w in vals if abs(w / v - 1) <= tol] for _, v in vals), key=len)  # largest agreeing group
     if n == 1:
@@ -95,12 +101,14 @@ def aggregate(vals: list[tuple[str, float]], tol: float = TOL) -> dict:
     else:
         med = statistics.median(best)
         conf, ok = round(100 * len(best) / n), [abs(w / med - 1) <= tol for _, w in vals]
-    return {"avg": round(statistics.mean(w for _, w in vals)), "conf": conf, "n": n, "k": sum(ok),
-            "sources": [{"s": s, "v": round(w), "ok": o} for (s, w), o in zip(vals, ok)]}
+    return {"avg": round(statistics.mean(w for _, w in vals), digits), "conf": conf, "n": n, "k": sum(ok),
+            "sources": [{"s": s, "v": round(w, digits), "ok": o} for (s, w), o in zip(vals, ok)]}
 
 
 def bounds(cur: str, usd: float):
     _, _, exp, tol = SPEC[cur]
+    if cur == "brent":
+        return 20, 300  # dollars per barrel
     if cur == "coin":
         return 5e7, 1e10  # a full Emami coin is ~10x a gram of 18k gold plus the market bubble
     return (exp(usd) * (1 - tol), exp(usd) * (1 + tol)) if exp else (1e6, 1e9)  # gold: wide
@@ -108,9 +116,9 @@ def bounds(cur: str, usd: float):
 
 def extract(cur: str, label: str, text: str, usd: float) -> float | None:
     lo, hi = bounds(cur, usd)
-    wide = cur in ("gold", "coin")  # bounds too wide to tell rial from toman, so the unit is fixed per site
+    wide = cur in ("gold", "coin", "brent")  # never /10 by guess: the unit is fixed per site
     div = (10,) if wide and label == "tgju.org" else (1,) if wide else (1, 10)
-    return find_price(text, SPEC[cur][1], lo, hi, div)
+    return find_price(text, KEYWORD.get((cur, label), SPEC[cur][1]), lo, hi, div)
 
 
 NABZESH = {"usd": "USD", "usdt": "USDT", "afn": "AFN", "pkr": "PKR", "aed": "AED", "gold": "GOLD18_MG", "coin": None}
@@ -120,6 +128,8 @@ def fetch_nabzesh(cur: str, usd: float) -> float | None:
     """nabzesh.ir public API (docs: api.nabzesh.ir); the key is optional. GOLD18_MG is per milligram."""
     key = os.environ.get("NABZESH_API_KEY")
     ticker = NABZESH.get(cur)
+    if cur not in NABZESH:
+        return None
     try:
         if cur == "coin":  # find the Emami coin ticker by its Persian name
             rows = requests.get("https://api.nabzesh.ir/v1/currencies", params={"search": "امامی"}, headers=HEADERS, timeout=20).json()["data"]
@@ -236,6 +246,16 @@ def _guard_usdt(js):
     return next((_num(i["price_toman"]) for i in js["data"]["crypto_prices"]["items"] if i.get("symbol") == "USDT"), None)
 
 
+HAMED = "https://market.hamedsaghafi.com/market.json"  # robots.txt allows it (only /api/ is closed)
+
+
+def _hamed(key, div):  # rial quotes need div=10
+    def parse(js):
+        v = _num((js["q"].get(key) or {}).get("v"))
+        return v / div if v else None
+    return parse
+
+
 GUARD = "https://app.guardnet.qzz.io/api/prices"  # the JSON behind app.guardnet.qzz.io (toman)
 # (currency, label, url, site, params, parser): public endpoints taken from the iran-crypto-mcp / iran-gold-mcp sources
 API = [
@@ -254,6 +274,9 @@ API = [
     ("gold", "wallgold.ir", "https://api.wallgold.ir/api/v1/prices", "https://wallgold.ir", None, _wallgold),
     ("gold", "melligold.com", "https://melligold.com/api/v1/exchange/buy-sell-price/", "https://melligold.com",
      {"symbol": "XAU18", "format": "json"}, _melligold),
+    *[(c, "hamedsaghafi.com", HAMED, None, None, _hamed(k, d)) for c, k, d in (
+        ("usd", "price_dollar_rl", 10), ("usdt", "crypto-tether-irr", 10), ("gold", "geram18", 10), ("coin", "sekee", 10),
+        ("afn", "price_afn", 10), ("pkr", "price_pkr", 10), ("aed", "price_aed", 10), ("brent", "oil_brent", 1))],
     ("gold", "daric.gold", "https://apisc.daric.gold/loan/api/v1/User/Collateral/GetGoldlPrice", "https://daric.gold", None, _daric),
 ]
 
@@ -302,7 +325,7 @@ def fetch_api(entry, usd: float) -> float | None:
         print(f"fx api {cur} {label}: {type(e).__name__} {getattr(getattr(e, 'response', None), 'status_code', '')}", file=sys.stderr)
         return None
     lo, hi = bounds(cur, usd)
-    return next((v / d for d in ((1,) if cur in ("gold", "coin") else (1, 10)) if v and lo <= v / d <= hi), None)  # USDT: rial feeds /10
+    return next((v / d for d in ((1,) if cur in ("gold", "coin", "brent") or label == "hamedsaghafi.com" else (1, 10)) if v and lo <= v / d <= hi), None)  # USDT: rial feeds /10
 
 
 DEAD: set[str] = set()  # urls answering 404: no point rendering them in a browser
@@ -378,10 +401,11 @@ def run(data: dict, health: dict) -> list[str]:
             v = extract(c, s, texts.get(u, ""), usd)
             if v:
                 found[(c, s)] = v
-    try:
-        jget(GUARD)  # one shared reply for 7 entries: fetch it once before the parallel calls
-    except Exception:
-        pass  # each entry reports its own failure below
+    for shared in (GUARD, HAMED):  # one reply serves many entries: fetch it once before the parallel calls
+        try:
+            jget(shared)
+        except Exception:
+            pass  # each entry reports its own failure below
     with ThreadPoolExecutor(8) as ex:
         api_vals = list(ex.map(lambda e: fetch_api(e, usd), API))
     tg_vals = [fetch_tg(e, usd) for e in TG]
@@ -399,7 +423,8 @@ def run(data: dict, health: dict) -> list[str]:
         for e in API + TG:
             if e[0] == cur:
                 alerts += update_health(health, f"{cur}|{e[1]}", f"{e[1]} برای {name}", (e[0], e[1]) in api_found)
-        alerts += update_health(health, f"{cur}|nabzesh.ir", f"nabzesh.ir برای {name}", bool(nab))
+        if cur in NABZESH:
+            alerts += update_health(health, f"{cur}|nabzesh.ir", f"nabzesh.ir برای {name}", bool(nab))
         for c, s_, _ in PLAN:
             if c == cur:
                 alerts += update_health(health, f"{cur}|{s_}", f"{s_} برای {name}", (c, s_) in found)
@@ -407,7 +432,9 @@ def run(data: dict, health: dict) -> list[str]:
             if c == cur:
                 print(f"fx {cur} {s}: {found.get((c, s), 'none')}")
         if vals:
-            items.append({"id": cur, "name": name, **aggregate(vals)})
+            unit = USD_UNIT.get(cur)
+            items.append({"id": cur, "name": name, **({"unit": unit} if unit else {}),
+                          **aggregate(vals, digits=2 if unit else None)})
     data["fx"] = {"updated": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"), "items": items}
     print(json.dumps(data["fx"], ensure_ascii=False))
     return alerts
