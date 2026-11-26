@@ -1,0 +1,209 @@
+
+===== https://bitpin.ir/academy/live/currency/
+robots 403 allowed: ?
+plain 403 10841
+rendered 578 Error 403  | Access Denied
+json xhr: []
+
+===== https://pishkhanak.com/economy
+robots 200 allowed: True
+plain 200 273938
+   > رصد اقتصادی و قیمت لحظه‌ای ارز، طلا، سکه و بازارها | پیشخوانک - پیشخوانک رفتن به محتوای اصلی همه خدمات رصد اقتصادی ابزارها مجله وام‌ها ورود / ثبت‌نام رصد اقتصادی و قیمت لحظه‌ای بازارها در رصد اقتصادی پیشخوان
+   > پیشخوانک می‌توانید نرخ به‌روز ارز، طلا، سکه، رمزارز، صندوق‌های بورس کالا، شاخص بورس و کالاهای جهانی را یک‌جا ببینید و تغییر قیمت هر نماد را در دو تاریخ شمسی مقایسه کنید. جستجوی ارز، طلا، سکه یا کالا جستجو مقایس
+   > پرمراجعه امروز مقایسه تاریخی دو تاریخ ← دلار آمریکا (بازار آزاد) 292٬890 تومان 0.00% ارز آزاد طلای 18 عیار (عیار 750) 25٬475٬500 تومان 0.00% طلا و نقره سکه امامی (طرح جدید) 261٬275٬000 تومان 0.00% سکه و حباب او
+   >  حباب اونس جهانی طلا (XAU/USD) 3٬567٫05 دلار -0.19% طلا و نقره تتر (تومان) 293٬662 تومان 0.00% رمزارزها بیت‌کوین (دلار) 60٬454٫46 دلار +0.88% رمزارزها شاخص کل بورس تهران (TEDPIX) 8٬354٬035٫8 واحد 0.00% بورس و ش
+   > 54٬035٫8 واحد 0.00% بورس و شاخص نفت خام برنت (Brent) 94٫67 دلار +0.17% نفت و انرژی دسته‌بندی بازارهای اقتصادی 11 بازار اصلی بازار ارز آزاد 40 نماد اختصاصی قیمت لحظه‌ای دلار، یورو، پوند، درهم، لیر و ارزهای پرمعا
+   > امله بازار آزاد ایران با مقایسه تاریخی. دلار آمریکا (بازار آزاد) 292٬890 تومان یورو (بازار آزاد) 321٬800 تومان پوند بریتانیا 383٬520 تومان مشاهده همه 40 نماد بازار ارز آزاد ← مرکز مبادله و حواله ارز 37 نماد اخت
+   > در مرکز مبادله ارز و طلا و نرخ‌های مرجع دلار. دلار صرافی ملی / رسمی 33٬567 تومان دلار حواله دبی 11٬120 تومان دلار فردایی تهران 10٬900 تومان مشاهده همه 37 نماد مرکز مبادله و حواله ارز ← بازار طلا و فلزات گرانبها
+   >  فلزات گرانبها 17 نماد اختصاصی نرخ گرمی طلای 18 و 24 عیار، آب‌شده، مثقال، اونس جهانی طلا، نقره 999، پلاتین و پالادیوم. طلای 18 عیار (عیار 750) 25٬475٬500 تومان قیمت خرید طلای 18 عیار (دست‌دوم) 25٬474٬500 تومان 
+   >  نماد بازار طلا و فلزات گرانبها ← بازار سکه و حباب سکه 19 نماد اختصاصی قیمت بازار، خرید، تک‌فروشی، حباب و ارزش ذاتی سکه امامی، بهار آزادی، نیم، ربع و گرمی. سکه امامی (طرح جدید) 261٬275٬000 تومان قیمت خرید سکه ا
+   >  (طرح جدید) 261٬275٬000 تومان قیمت خرید سکه امامی 250٬000٬000 تومان سکه امامی تک‌فروشی 262٬280٬000 تومان مشاهده همه 19 نماد بازار سکه و حباب سکه ← بازار رمزارزها 38 نماد اختصاصی قیمت جهانی دلاری و نرخ تومانی بی
+   > نی دلاری و نرخ تومانی بیت‌کوین، اتریوم، تتر و رمزارزهای برتر در کنار صرافی‌های داخلی. بیت‌کوین (دلار) 60٬454٫46 دلار بیت‌کوین (تومان) 17٬754٬265٬800 تومان اتریوم (دلار) 1٬687٫12 دلار مشاهده همه 38 نماد بازار رم
+   >  واحدهای صندوق طلا و نقره و گواهی سپرده سکه و شمش در بورس کالای ایران. گواهی سپرده سکه طلا (بورس کالا) 261٬402٬600 تومان گواهی سپرده شمش طلا (بورس کالا) 3٬410٬001 تومان گواهی سپرده شمش نقره (بورس کالا) 428٬206 
+   > فت و انرژی 11 نماد اختصاصی قیمت نفت خام برنت، سبد اوپک، نفت عمان، گاز طبیعی، بنزین، نفتا و متانول. نفت خام برنت (Brent) 94٫67 دلار سبد نفتی اوپک (OPEC Basket) 81٫51 دلار نفت خام عمان (DME Oman) 84٫84 دلار مشاهد
+   > یوم مؤثر بر بازار کالایی. مس جهانی 5٫39 دلار آلومینیوم جهانی 2٬800٫75 دلار روی جهانی (Zinc) 3٬456٫75 دلار مشاهده همه 13 نماد بازار فلزات پایه و صنعتی ← کالاهای اساسی، کشاورزی و پتروشیمی 16 نماد اختصاصی نرخ جهان
+rendered 11222 رصد اقتصادی و قیمت لحظه‌ای ارز، طلا، سکه و بازارها | پیشخوانک - پیشخوانک
+   > رصد اقتصادی و قیمت لحظه‌ای ارز، طلا، سکه و بازارها | پیشخوانک - پیشخوانک رفتن به محتوای اصلی نسخهٔ تازه آماده است می‌توانید پیشخوانک را به‌روز کنید. به‌روزرسانی بعداً همه خدمات رصد اقتصادی ابزارها مجله وام‌ه
+   > پیشخوانک می‌توانید نرخ به‌روز ارز، طلا، سکه، رمزارز، صندوق‌های بورس کالا، شاخص بورس و کالاهای جهانی را یک‌جا ببینید و تغییر قیمت هر نماد را در دو تاریخ شمسی مقایسه کنید. جستجوی ارز، طلا، سکه یا کالا جستجو مقایس
+   > پرمراجعه امروز مقایسه تاریخی دو تاریخ ← دلار آمریکا (بازار آزاد) 292٬890 تومان 0.00% ارز آزاد طلای 18 عیار (عیار 750) 25٬475٬500 تومان 0.00% طلا و نقره سکه امامی (طرح جدید) 261٬275٬000 تومان 0.00% سکه و حباب او
+   >  حباب اونس جهانی طلا (XAU/USD) 3٬567٫05 دلار -0.19% طلا و نقره تتر (تومان) 293٬662 تومان 0.00% رمزارزها بیت‌کوین (دلار) 60٬454٫46 دلار +0.88% رمزارزها شاخص کل بورس تهران (TEDPIX) 8٬354٬035٫8 واحد 0.00% بورس و ش
+   > 54٬035٫8 واحد 0.00% بورس و شاخص نفت خام برنت (Brent) 94٫67 دلار +0.17% نفت و انرژی دسته‌بندی بازارهای اقتصادی 11 بازار اصلی بازار ارز آزاد 40 نماد اختصاصی قیمت لحظه‌ای دلار، یورو، پوند، درهم، لیر و ارزهای پرمعا
+   > امله بازار آزاد ایران با مقایسه تاریخی. دلار آمریکا (بازار آزاد) 292٬890 تومان یورو (بازار آزاد) 321٬800 تومان پوند بریتانیا 383٬520 تومان مشاهده همه 40 نماد بازار ارز آزاد ← مرکز مبادله و حواله ارز 37 نماد اخت
+   > در مرکز مبادله ارز و طلا و نرخ‌های مرجع دلار. دلار صرافی ملی / رسمی 33٬567 تومان دلار حواله دبی 11٬120 تومان دلار فردایی تهران 10٬900 تومان مشاهده همه 37 نماد مرکز مبادله و حواله ارز ← بازار طلا و فلزات گرانبها
+   >  فلزات گرانبها 17 نماد اختصاصی نرخ گرمی طلای 18 و 24 عیار، آب‌شده، مثقال، اونس جهانی طلا، نقره 999، پلاتین و پالادیوم. طلای 18 عیار (عیار 750) 25٬475٬500 تومان قیمت خرید طلای 18 عیار (دست‌دوم) 25٬474٬500 تومان 
+   >  نماد بازار طلا و فلزات گرانبها ← بازار سکه و حباب سکه 19 نماد اختصاصی قیمت بازار، خرید، تک‌فروشی، حباب و ارزش ذاتی سکه امامی، بهار آزادی، نیم، ربع و گرمی. سکه امامی (طرح جدید) 261٬275٬000 تومان قیمت خرید سکه ا
+   >  (طرح جدید) 261٬275٬000 تومان قیمت خرید سکه امامی 250٬000٬000 تومان سکه امامی تک‌فروشی 262٬280٬000 تومان مشاهده همه 19 نماد بازار سکه و حباب سکه ← بازار رمزارزها 38 نماد اختصاصی قیمت جهانی دلاری و نرخ تومانی بی
+   > نی دلاری و نرخ تومانی بیت‌کوین، اتریوم، تتر و رمزارزهای برتر در کنار صرافی‌های داخلی. بیت‌کوین (دلار) 60٬454٫46 دلار بیت‌کوین (تومان) 17٬754٬265٬800 تومان اتریوم (دلار) 1٬687٫12 دلار مشاهده همه 38 نماد بازار رم
+   >  واحدهای صندوق طلا و نقره و گواهی سپرده سکه و شمش در بورس کالای ایران. گواهی سپرده سکه طلا (بورس کالا) 261٬402٬600 تومان گواهی سپرده شمش طلا (بورس کالا) 3٬410٬001 تومان گواهی سپرده شمش نقره (بورس کالا) 428٬206 
+   > فت و انرژی 11 نماد اختصاصی قیمت نفت خام برنت، سبد اوپک، نفت عمان، گاز طبیعی، بنزین، نفتا و متانول. نفت خام برنت (Brent) 94٫67 دلار سبد نفتی اوپک (OPEC Basket) 81٫51 دلار نفت خام عمان (DME Oman) 84٫84 دلار مشاهد
+   > یوم مؤثر بر بازار کالایی. مس جهانی 5٫39 دلار آلومینیوم جهانی 2٬800٫75 دلار روی جهانی (Zinc) 3٬456٫75 دلار مشاهده همه 13 نماد بازار فلزات پایه و صنعتی ← کالاهای اساسی، کشاورزی و پتروشیمی 16 نماد اختصاصی نرخ جهان
+json xhr: []
+
+===== https://market.hamedsaghafi.com/
+robots 200 allowed: True
+plain 200 339054
+   >  کاربری مدیریت بازار قیمت لحظه‌ای بازار دلار، طلا، سکه، رمزارز و بورس، لحظه‌به‌لحظه. همین قیمت‌ها را با هشدارِ قیمت و ویجت، همیشه در جیبتان داشته باشید: اپلیکیشن رایگان حامد ثقفی را نصب کنید . در حال دریافت… دل
+   >  حامد ثقفی را نصب کنید . در حال دریافت… دلار بازار آزاد — دلار تتر طلای 18 عیار — انس جهانی سکهٔ امامی — بیت‌کوین — به تومان یورو — درهم امارات — مظنهٔ آبشده — نیم‌سکه — ربع‌سکه — انس جهانی طلا — انس نقره — اتر
+   > ه — انس جهانی طلا — انس نقره — اتریوم — دلار تتر — شاخص کل بورس — لیر ترکیه — پوند انگلیس — سولانا — یوان چین — علاقه‌مندی‌ها طلا و سکه ارز دلار ضمنی رمزارز بورس بازار آمریکا بازار جهانی بورس کالا جست‌وجو در قی
+   >  علاقه‌مندی‌های اپلیکیشن یکی شود. طلا و سکه حباب یعنی فاصلهٔ قیمت از ارزشِ طلای خالصِ همان مقدار — با مبنایی که انتخاب می‌کنید. نمودار، جدولِ روزهای اخیر و ماشین‌حسابِ طلا در صفحهٔ قیمت طلا امروز . تومان دلار م
+   > ابِ طلا در صفحهٔ قیمت طلا امروز . تومان دلار مبنا: مظنه مبنا: انس و دلار آزاد طلا مظنهٔ آبشده (مثقال) هر مثقال · 705 عیار — طلای 24 عیار (هر گرم) — طلای 22 عیار (هر گرم) — طلای 18 عیار (هر گرم) — طلای 17 عیار (
+   > گرم) — انس جهانی طلا به تومان هر اونس — سکه سکهٔ امامی (تمام) طرح جدید · 8٫13 گرم — سکهٔ تمام قدیم بهار آزادی · طرح قدیم — نیم‌سکه 4٫07 گرم — ربع‌سکه 2٫03 گرم — سکه گرمی 1 گرم — پلاک پارسیان پلاک سکه نیست؛ سکه 
+   > رمی 1 گرم — پلاک پارسیان پلاک سکه نیست؛ سکه را فقط بانک مرکزی ضرب می‌کند. قیمت‌ها از یک نرخِ پایهٔ یک‌گرمی ساخته می‌شوند پلاک 100 سوتی پارسیان 0٫1 گرم · عیار 18 — پلاک 200 سوتی پارسیان 0٫2 گرم · عیار 18 — پلاک 
+   > ا (هر 0٫1 گرم) بورس کالا — گواهی سپردهٔ سکهٔ طلا بورس کالا — گواهی سپردهٔ شمش نقره (هر گرم) بورس کالا — ارز نرخِ بازارِ آزاد به تومان برای 76 ارز، از یورو و درهم تا تنگهٔ قزاقستان و پزوی مکزیک؛ ارزهای رایج در ا
+   > ودش را دارد، با نمودار و آرشیو از 2012. دلار بازار آزاد مبنای همهٔ حباب‌ها — دلار تتر USDT به تومان — دلار بازار نیما نرخ حواله — یورو EUR — لیر ترکیه TRY — درهم امارات AED — پوند انگلیس GBP — دلار کانادا CAD —
+   > D — پوند انگلیس GBP — دلار کانادا CAD — دلار استرالیا AUD — فرانک سوئیس CHF — یوان چین CNY — ین ژاپن (100 ین) JPY — روبل روسیه RUB — دینار عراق IQD — افغانی AFN — ریال عربستان SAR — دینار کویت KWD — ریال عمان O
+   > N — درام ارمنستان AMD — روپیه هند INR — دلار هنگ‌کنگ HKD — دلار سنگاپور SGD — رینگیت مالزی MYR — کرون سوئد SEK — کرون نروژ NOK — کرون دانمارک DKK — رئال برزیل BRL — لاری گرجستان GEL — دلار نیوزیلند NZD — روپیه 
+   >  لاری گرجستان GEL — دلار نیوزیلند NZD — روپیه پاکستان PKR — بات تایلند THB — تنگه قزاقستان KZT — سوم ازبکستان UZS — سامانی تاجیکستان TJS — منات ترکمنستان TMT — سوم قرقیزستان KGS — گریونا اوکراین UAH — روبل بلار
+   >  — دینار تونس TND — دینار الجزایر DZD — درهم مراکش MAD — پوند سودان SDG — بیر اتیوپی ETB — شیلینگ کنیا KES — نایرا نیجریه NGN — رند آفریقای جنوبی ZAR — وون کره جنوبی KRW — دلار تایوان TWD — پزوی فیلیپین PHP — د
+   > ادلهٔ ارز و طلا (نیما)؛ تاریخچه از 2018 دلار نیما · خرید مرکز مبادلهٔ ارز و طلا — یورو نیما · خرید مرکز مبادلهٔ ارز و طلا — یورو نیما · فروش مرکز مبادلهٔ ارز و طلا — درهم نیما · خرید مرکز مبادلهٔ ارز و طلا — در
+rendered 24864 قیمت لحظه‌ای بازار — حامد ثقفی
+   >  کاربری مدیریت بازار قیمت لحظه‌ای بازار دلار، طلا، سکه، رمزارز و بورس، لحظه‌به‌لحظه. همین قیمت‌ها را با هشدارِ قیمت و ویجت، همیشه در جیبتان داشته باشید: اپلیکیشن رایگان حامد ثقفی را نصب کنید . زنده · به‌روزرسان
+   >  را نصب کنید . زنده · به‌روزرسانی 07:14 دلار بازار آزاد 292٬890 تومان ٪0٫00 دلار تتر 294٬400 طلای 18 عیار 25٬475٬500 تومان ٪0٫00 انس جهانی 3٬571 دلار سکهٔ امامی 261٬275٬000 تومان ٪0٫00 حباب ٪5٫06 بیت‌کوین 60٬39
+   >  تومان ٪0٫00 حباب ٪5٫06 بیت‌کوین 60٬399 دلار ▲ افزایش ٪2٫28 به تومان 17٫8 میلیارد یورو 321٬800 ٪0٫00 درهم امارات 79٬951 ٪0٫00 مظنهٔ آبشده 110٬345٬000 ٪0٫00 نیم‌سکه 139٬940٬000 ٪0٫00 ربع‌سکه 76٬270٬000 ٪0٫00 انس
+   > فزایش ٪1٫22 اتریوم 1٬685 ▲ افزایش ٪1٫77 دلار تتر 294٬400 ▲ افزایش ٪1٫00 شاخص کل بورس 8٬673٬662 ▲ افزایش ٪0٫96 لیر ترکیه 5٬780 ٪0٫00 پوند انگلیس 383٬520 ٪0٫00 سولانا 70٫81 ▲ افزایش ٪3٫21 یوان چین 43٬970 ٪0٫00 یو
+   > وان چین 43٬970 ٪0٫00 یورو 321٬800 ٪0٫00 درهم امارات 79٬951 ٪0٫00 مظنهٔ آبشده 110٬345٬000 ٪0٫00 نیم‌سکه 139٬940٬000 ٪0٫00 ربع‌سکه 76٬270٬000 ٪0٫00 انس جهانی طلا 3٬571 ▲ افزایش ٪0٫03 انس نقره 41٫39 ▲ افزایش ٪1٫22
+   > فزایش ٪1٫22 اتریوم 1٬685 ▲ افزایش ٪1٫77 دلار تتر 294٬400 ▲ افزایش ٪1٫00 شاخص کل بورس 8٬673٬662 ▲ افزایش ٪0٫96 لیر ترکیه 5٬780 ٪0٫00 پوند انگلیس 383٬520 ٪0٫00 سولانا 70٫81 ▲ افزایش ٪3٫21 یوان چین 43٬970 ٪0٫00 عل
+   > ان چین 43٬970 ٪0٫00 علاقه‌مندی‌ها طلا و سکه ارز دلار ضمنی رمزارز بورس بازار آمریکا بازار جهانی بورس کالا جست‌وجو در قیمت‌ها چیزی پیدا نشد. نامِ فارسی، نمادِ لاتین (مثل BTC)، نمادِ بورسی یا نامِ کالای بورس کالا 
+   >  علاقه‌مندی‌های اپلیکیشن یکی شود. طلا و سکه حباب یعنی فاصلهٔ قیمت از ارزشِ طلای خالصِ همان مقدار — با مبنایی که انتخاب می‌کنید. نمودار، جدولِ روزهای اخیر و ماشین‌حسابِ طلا در صفحهٔ قیمت طلا امروز . تومان دلار م
+   > ابِ طلا در صفحهٔ قیمت طلا امروز . تومان دلار مبنا: مظنه مبنا: انس و دلار آزاد طلا مظنهٔ آبشده (مثقال) هر مثقال · 705 عیار 110٬345٬000 تومان ٪0٫00 مبنا طلای 24 عیار (هر گرم) 33٬967٬000 تومان ٪0٫00 حباب ٪0٫01 طلا
+   >  گرم) 31٬136٬722 تومان ٪0٫00 حباب ٪0٫01 طلای 18 عیار (هر گرم) 25٬475٬500 تومان ٪0٫00 حباب ٪0٫01 طلای 17 عیار (هر گرم) 24٬060٬194 تومان ٪0٫00 حباب ٪0٫01 انس جهانی طلا به تومان هر اونس 1٬045٬918٬977 تومان 3٬571 د
+   > تومان هر اونس 1٬045٬918٬977 تومان 3٬571 دلار ▲ افزایش ٪0٫03 سکه سکهٔ امامی (تمام) طرح جدید · 8٫13 گرم 261٬275٬000 تومان ٪0٫00 حباب ٪5٫06 سکهٔ تمام قدیم بهار آزادی · طرح قدیم 250٬220٬000 تومان ٪0٫00 حباب ٪0٫61 ن
+   >  250٬220٬000 تومان ٪0٫00 حباب ٪0٫61 نیم‌سکه 4٫07 گرم 139٬940٬000 تومان ٪0٫00 حباب ٪12٫54 ربع‌سکه 2٫03 گرم 76٬270٬000 تومان ٪0٫00 حباب ٪22٫67 سکه گرمی 1 گرم 38٬000٬000 تومان ٪0٫00 حباب ٪24٫31 پلاک پارسیان پلاک س
+   > مان ٪0٫00 حباب ٪24٫31 پلاک پارسیان پلاک سکه نیست؛ سکه را فقط بانک مرکزی ضرب می‌کند. قیمت‌ها از یک نرخِ پایهٔ یک‌گرمی ساخته می‌شوند پلاک 100 سوتی پارسیان 0٫1 گرم · عیار 18 2٬940٬000 تومان ٪0٫00 حباب ٪15٫40 پلاک 
+   > کالا 3٬410٬001 تومان ٪0٫00 گواهی سپردهٔ سکهٔ طلا بورس کالا 261٬402٬600 تومان ٪0٫00 گواهی سپردهٔ شمش نقره (هر گرم) بورس کالا 428٬206 تومان ٪0٫00 ارز نرخِ بازارِ آزاد به تومان برای 76 ارز، از یورو و درهم تا تنگهٔ
+json xhr: ['https://market.hamedsaghafi.com/servix.json', 'https://market.hamedsaghafi.com/crypto.json', 'https://market.hamedsaghafi.com/market.json', 'https://market.hamedsaghafi.com/retail.json', 'https://market.hamedsaghafi.com/bourse.json', 'https://market.hamedsaghafi.com/stocks.json', 'https://hamedsaghafi.com/api/me/sync?cursor=0', 'https://hamedsaghafi.com/api/me']
+
+===== https://yekrial.com/
+robots 200 allowed: True
+plain 200 205809
+   > نرخ لحظه ای ارز و قیمت دلار امروز در بازار تهران | یک ریال 1 یک‌ریال YEKRIAL نرخ ارز ماشین‌حساب ارز نمودار اخبار زنده نرخ‌ها ماشین‌حساب نمودار اخبار تبلیغات جای تبلیغ شما اینجاست کسب‌وکارتان را
+   > ش رزرو را ببینید. اطلاعات و رزرو جایگاه دلار آمریکا 293,800 – 0.00% یورو 321,950 ▼ -0.06% پوند انگلیس 384,850 ▼ -0.04% درهم امارات 80,000 – 0.00% لیر ترکیه 5,795 – 0.00% یوان چین 44,100 – 0.00% ین ژاپن 18,450 –
+   > ن 44,100 – 0.00% ین ژاپن 18,450 – 0.00% دلار استرالیا 195,050 – 0.00% دلار کانادا 206,550 ▼ -0.02% دلار سنگاپور 227,700 ▼ -0.02% منات آذربایجان 172,600 ▲ +0.32% کرون سوئد 28,650 ▼ -0.17% کرون دانمارک 43,100 – 0
+   > 3,560 – 0.00% بات تایلند 8,630 ▼ -0.17% افغانی افغانستان 4,520 – 0.00% روپیه هند 3,170 – 0.00% رینگیت مالزی 71,350 – 0.00% درام ارمنستان 8,170 – 0.00% دینار بحرین 780,650 – 0.00% فرانک سوئیس 353,000 ▼ -0.06% دل
+   > 50 – 0.00% فرانک سوئیس 353,000 ▼ -0.06% دلار هنگ‌کنگ 37,500 – 0.00% دینار عراق 19,400 – 0.00% کرون نروژ 29,950 – 0.00% ریال قطر 80,800 – 0.00% ریال عربستان 78,300 – 0.00% دلار آمریکا 293,800 – 0.00% یورو 321,95
+   > 0 ▼ -0.06% پوند انگلیس 384,850 ▼ -0.04% درهم امارات 80,000 – 0.00% لیر ترکیه 5,795 – 0.00% یوان چین 44,100 – 0.00% ین ژاپن 18,450 – 0.00% دلار استرالیا 195,050 – 0.00% دلار کانادا 206,550 ▼ -0.02% دلار سنگاپور 
+   > 3,560 – 0.00% بات تایلند 8,630 ▼ -0.17% افغانی افغانستان 4,520 – 0.00% روپیه هند 3,170 – 0.00% رینگیت مالزی 71,350 – 0.00% درام ارمنستان 8,170 – 0.00% دینار بحرین 780,650 – 0.00% فرانک سوئیس 353,000 ▼ -0.06% دل
+   > 50 – 0.00% فرانک سوئیس 353,000 ▼ -0.06% دلار هنگ‌کنگ 37,500 – 0.00% دینار عراق 19,400 – 0.00% کرون نروژ 29,950 – 0.00% ریال قطر 80,800 – 0.00% ریال عربستان 78,300 – 0.00% بازار آزاد تهران · به‌روز شده 10:44:48 
+   > 8 نرخ لحظه‌ای ارزها در بازار تهران قیمت دلار، یورو، پوند، درهم و لیر به تومان؛ به‌روزرسانی خودکار، نمودار و ماشین‌حساب تبدیل ارز. دلار آمریکا 0.00% 293,800 تومان یورو -0.06% 321,950 تومان پوند انگلیس -0.04% 384
+   >  تومان پوند انگلیس -0.04% 384,850 تومان درهم امارات 0.00% 80,000 تومان لیر ترکیه 0.00% 5,795 تومان دلار کانادا -0.02% 206,550 تومان ماشین‌حساب ارز تبدیل لحظه‌ای با نرخ بازار آزاد تهران 10:44 مبلغ USD معادل کپی 
+   >  293,800 ت تومان 293 هزار و 800 تومان 1 دلار آمریکا = 293,800 تومان 1 10 100 500 1,000 10,000 همین مبلغ به ارزهای دیگر برای انتخاب، بزنید یورو 0.912564 پوند انگلیس 0.763414 درهم امارات 3.6725 لیر ترکیه 50.6989 
+   > 14 درهم امارات 3.6725 لیر ترکیه 50.6989 دلار کانادا 1.4224 دلار استرالیا 1.5063 می‌توانید حساب هم کنید؛ مثلاً 250*4 یا 1200+350 . اعداد فارسی هم قبول است. همهٔ ارزها 28 ارز · قیمت‌ها به تومان · برای جزئیات و نم
+   > و منطقه اروپا و آمریکا آسیا و اقیانوسیه دلار آمریکا USD 0.00% 293,800 تومان یورو EUR -0.06% 321,950 تومان پوند انگلیس GBP -0.04% 384,850 تومان درهم امارات AED 0.00% 80,000 تومان لیر ترکیه TRY 0.00% 5,795 تومان 
+   > 00 تومان ین ژاپن JPY 0.00% 18,450 تومان دلار استرالیا AUD 0.00% 195,050 تومان دلار کانادا CAD -0.02% 206,550 تومان دلار سنگاپور SGD -0.02% 227,700 تومان منات آذربایجان AZN +0.32% 172,600 تومان کرون سوئد SEK -0.
+rendered 7651 نرخ لحظه ای ارز و قیمت دلار امروز در بازار تهران | یک ریال
+   > نرخ لحظه ای ارز و قیمت دلار امروز در بازار تهران | یک ریال 1 یک‌ریال YEKRIAL نرخ ارز ماشین‌حساب ارز نمودار اخبار زنده نرخ‌ها ماشین‌حساب نمودار اخبار تبلیغات جای تبلیغ شما اینجاست کسب‌وکارتان را
+   > ش رزرو را ببینید. اطلاعات و رزرو جایگاه دلار آمریکا 293,800 – 0.00% یورو 321,950 ▼ -0.06% پوند انگلیس 384,850 ▼ -0.04% درهم امارات 80,000 – 0.00% لیر ترکیه 5,795 – 0.00% یوان چین 44,100 – 0.00% ین ژاپن 18,450 –
+   > ن 44,100 – 0.00% ین ژاپن 18,450 – 0.00% دلار استرالیا 195,050 – 0.00% دلار کانادا 206,550 ▼ -0.02% دلار سنگاپور 227,700 ▼ -0.02% منات آذربایجان 172,600 ▲ +0.32% کرون سوئد 28,650 ▼ -0.17% کرون دانمارک 43,100 – 0
+   > 3,560 – 0.00% بات تایلند 8,630 ▼ -0.17% افغانی افغانستان 4,520 – 0.00% روپیه هند 3,170 – 0.00% رینگیت مالزی 71,350 – 0.00% درام ارمنستان 8,170 – 0.00% دینار بحرین 780,650 – 0.00% فرانک سوئیس 353,000 ▼ -0.06% دل
+   > 50 – 0.00% فرانک سوئیس 353,000 ▼ -0.06% دلار هنگ‌کنگ 37,500 – 0.00% دینار عراق 19,400 – 0.00% کرون نروژ 29,950 – 0.00% ریال قطر 80,800 – 0.00% ریال عربستان 78,300 – 0.00% دلار آمریکا 293,800 – 0.00% یورو 321,95
+   > 0 ▼ -0.06% پوند انگلیس 384,850 ▼ -0.04% درهم امارات 80,000 – 0.00% لیر ترکیه 5,795 – 0.00% یوان چین 44,100 – 0.00% ین ژاپن 18,450 – 0.00% دلار استرالیا 195,050 – 0.00% دلار کانادا 206,550 ▼ -0.02% دلار سنگاپور 
+   > 3,560 – 0.00% بات تایلند 8,630 ▼ -0.17% افغانی افغانستان 4,520 – 0.00% روپیه هند 3,170 – 0.00% رینگیت مالزی 71,350 – 0.00% درام ارمنستان 8,170 – 0.00% دینار بحرین 780,650 – 0.00% فرانک سوئیس 353,000 ▼ -0.06% دل
+   > 50 – 0.00% فرانک سوئیس 353,000 ▼ -0.06% دلار هنگ‌کنگ 37,500 – 0.00% دینار عراق 19,400 – 0.00% کرون نروژ 29,950 – 0.00% ریال قطر 80,800 – 0.00% ریال عربستان 78,300 – 0.00% بازار آزاد تهران · به‌روز شده 10:44:48 
+   > 8 نرخ لحظه‌ای ارزها در بازار تهران قیمت دلار، یورو، پوند، درهم و لیر به تومان؛ به‌روزرسانی خودکار، نمودار و ماشین‌حساب تبدیل ارز. دلار آمریکا 0.00% 293,800 تومان یورو -0.06% 321,950 تومان پوند انگلیس -0.04% 384
+   >  تومان پوند انگلیس -0.04% 384,850 تومان درهم امارات 0.00% 80,000 تومان لیر ترکیه 0.00% 5,795 تومان دلار کانادا -0.02% 206,550 تومان ماشین‌حساب ارز تبدیل لحظه‌ای با نرخ بازار آزاد تهران 10:44 مبلغ USD معادل کپی 
+   >  293,800 ت تومان 293 هزار و 800 تومان 1 دلار آمریکا = 293,800 تومان 1 10 100 500 1,000 10,000 همین مبلغ به ارزهای دیگر برای انتخاب، بزنید یورو 0.912564 پوند انگلیس 0.763414 درهم امارات 3.6725 لیر ترکیه 50.6989 
+   > 14 درهم امارات 3.6725 لیر ترکیه 50.6989 دلار کانادا 1.4224 دلار استرالیا 1.5063 می‌توانید حساب هم کنید؛ مثلاً 250*4 یا 1200+350 . اعداد فارسی هم قبول است. همهٔ ارزها 28 ارز · قیمت‌ها به تومان · برای جزئیات و نم
+   > و منطقه اروپا و آمریکا آسیا و اقیانوسیه دلار آمریکا USD 0.00% 293,800 تومان یورو EUR -0.06% 321,950 تومان پوند انگلیس GBP -0.04% 384,850 تومان درهم امارات AED 0.00% 80,000 تومان لیر ترکیه TRY 0.00% 5,795 تومان 
+   > 00 تومان ین ژاپن JPY 0.00% 18,450 تومان دلار استرالیا AUD 0.00% 195,050 تومان دلار کانادا CAD -0.02% 206,550 تومان دلار سنگاپور SGD -0.02% 227,700 تومان منات آذربایجان AZN +0.32% 172,600 تومان کرون سوئد SEK -0.
+json xhr: ['https://yekrial.com/cdn-cgi/speculation', 'https://yekrial.com/_blazor/initializers']
+
+===== https://www.tradingview.com/symbols/ICEEUR-BRN1!/
+robots 200 allowed: True
+plain 200 502459
+   > Brent Crude Futures Price Chart — ICEEUR:BRN1! — TradingView Search Products Community Markets Brokers More EN Black Friday Up to 80% OFF Markets / Futures / Energy / BRN
+   >  OFF Markets / Futures / Energy / BRN1! Brent Crude Futures BRN1! ICEEUR No trades No trades Overview News Community Technicals Forward curve Seasonals Contracts More Full chart Full chart 1 day 2.10% 5 days −1
+   > RNG2027 News ﻿ ﻿ Keep reading Ideas ﻿ ﻿ Brent -22.26% in 20 days: 88.61 floor slips, now 88.53 What happened Brent has dropped from its 118.0 high on 30 Oct to 88.53, a fall of 22.26% in 20 days. The 25 Nov ses
+   > e 88.61 floor of the 1 by Forexupgo 2 0 Brent -15.66% in 20 days: 89.15 floor, 95.84 the lid Brent is down 15.66% in 20 days and trades at 91.75 after two down closes (92.44 yesterday, -0.75% so far today). The
+   >  96.76 high on 16 Nov, by Forexupgo 2 2 Brent +3 sessions, 95.84: 97.12 lid, 89.15 floor What happened Brent was 117.64 at the close on 30 Oct. It has since slid hard and is still 12.76% lower over 20 days. The
+   >  see Price is well und by Forexupgo 2 2 Brent -21.18% in 20d: 88.11 floor holds, 21 MA 97.60 Brent is down 21.18% in 20 days, from the 118.00 high on 30 Oct to 90.90 on the latest daily bar (-0.55% on the day, 
+   > at 102.38. Both slope do by Forexupgo 0 Brent -2.89%: new 60-day low 85.65, 88.61 is the lid Brent is down 2.89% on the day at 86.79 and has printed 85.65, a new 60-day low. That low sits under the 88.61 floor 
+   > coming weeks. Long by mohammad_kazemi 1 Brent -2.5% to 89.65: 89.15 floor undercut, 86.29 next Brent is trading at 89.65, down 2.5% on the day and 6.44% over five sessions. Over 20 sessions it is down 20.78% fr
+   > Nov. The last close is t by Forexupgo 1 Brent +2.96% bounce to 95.51: 89.15 floor, 98.32 lid Brent is up 2.96% early Friday at 95.51. The Friday bar is young and can still move. What happened Brent was at 117.6
+   > is the first real bounce by Forexupgo 0 Brent -12.88% in 20 days: 89.15 floor, 106.31 lid Brent has fallen from a 118.00 high on 30 Oct to a 89.15 low on 10 Nov. Over 20 days it is down 12.88%. What happened • 
+   > . • 10 Nov: low of 89.15 by Forexupgo 0 Brent -11.15% in 5 days: 90.63 floor held, 98.32 lid Brent has lost 11.15% in 5 sessions and 12.91% in 20 days. It topped at 118.00 on 30 October and closed at 92.05 toda
+   > ulti-year highs – India bonds tumble as Brent tops $95 per barrel, RBI flags food inflation risks What's BRN1! volume? BRN1! volume is the number of futures contracts traded over a given period. The current vol
+rendered 14901 Brent Crude Futures Price Chart — ICEEUR:BRN1! — TradingView
+   > Brent Crude Futures Price Chart — ICEEUR:BRN1! — TradingView Skip to main content Search Products Community Markets Brokers More EN Black Friday Up to 80% OFF BRN1! Marke
+   > arts Markets / Futures / Energy / BRN1! Brent Crude Futures BRN1! ICEEUR Open 10 min delayed Get real-time Open 10 min delayed Get real-time Open 10 min delayed Get real-time Open 10 min delayed 90. 70 USD / BL
+   > ear highs Reuters India bonds tumble as Brent tops $95 per barrel, RBI flags food inflation risks Dow Jones Newswires Oil Stocks Rise in Shanghai, Hong Kong on Higher Energy Prices — Market Talk Reuters Stocks 
+   > dle East Tensions — Market Talk Reuters Brent oil may retrace into $92.84-$93.33 range Reuters Commodities intraday targets/key levels Dow Jones Newswires Crude Posts Back-to-Back Gains on Middle East Tension —
+   > hi Escalation Reuters North Sea Crude - Brent bid lower Dow Jones Newswires Nymex Overview: Crude Futures Rebound as Middle East Tensions Offset Inventory Build — OPIS Dow Jones Newswires Oil Futures Pick Up as
+   > ovember 20 – EIA Keep reading Ideas ﻿ ﻿ Brent -22.26% in 20 days: 88.61 floor slips, now 88.53 What happened Brent has dropped from its 118.0 high on 30 Oct to 88.53, a fall of 22.26% in 20 days. The 25 Nov ses
+   >  floor of the 1 by Forexupgo Nov 25 2 0 Brent -15.66% in 20 days: 89.15 floor, 95.84 the lid Brent is down 15.66% in 20 days and trades at 91.75 after two down closes (92.44 yesterday, -0.75% so far today). The
+   > high on 16 Nov, by Forexupgo Nov 17 2 2 Brent +3 sessions, 95.84: 97.12 lid, 89.15 floor What happened Brent was 117.64 at the close on 30 Oct. It has since slid hard and is still 12.76% lower over 20 days. The
+   > ice is well und by Forexupgo Nov 13 2 2 Brent -21.18% in 20d: 88.11 floor holds, 21 MA 97.60 Brent is down 21.18% in 20 days, from the 118.00 high on 30 Oct to 90.90 on the latest daily bar (-0.55% on the day, 
+   > oth slope do by Forexupgo 6 hours ago 0 Brent -2.89%: new 60-day low 85.65, 88.61 is the lid Brent is down 2.89% on the day at 86.79 and has printed 85.65, a new 60-day low. That low sits under the 88.61 floor 
+   > weeks. Long by mohammad_kazemi Nov 19 1 Brent -2.5% to 89.65: 89.15 floor undercut, 86.29 next Brent is trading at 89.65, down 2.5% on the day and 6.44% over five sessions. Over 20 sessions it is down 20.78% fr
+   > e last close is t by Forexupgo Nov 19 1 Brent +2.96% bounce to 95.51: 89.15 floor, 98.32 lid Brent is up 2.96% early Friday at 95.51. The Friday bar is young and can still move. What happened Brent was at 117.6
+   > first real bounce by Forexupgo Nov 13 0 Brent -12.88% in 20 days: 89.15 floor, 106.31 lid Brent has fallen from a 118.00 high on 30 Oct to a 89.15 low on 10 Nov. Over 20 days it is down 12.88%. What happened • 
+   > Nov: low of 89.15 by Forexupgo Nov 12 0 Brent -11.15% in 5 days: 90.63 floor held, 98.32 lid Brent has lost 11.15% in 5 sessions and 12.91% in 20 days. It topped at 118.00 on 30 October and closed at 92.05 toda
+json xhr: ['https://static.tradingview.com/static/images/favicon/manifest.json', 'https://www.tradingview.com/check_language/', 'https://scanner.tradingview.com/symbol?symbol=ICEEUR%3ABRN1%21&fields=change%2C24h_close_change%7C5%2C24h_close_change_abs%7C5%2CPerf.5D%2CPerf.W%2CPerf.1M%2CPe', 'https://scanner.tradingview.com/symbol?symbol=ICEEUR%3ABRN1%21&fields=open_interest&no_404=true&label-product=symbols-keystats', 'https://www.tradingview.com/market/shopconf/', 'https://scanner.tradingview.com/futures/scan?label-product=related-symbols', 'https://news-mediator.tradingview.com/public/news-flow/v1/meta?lang=en&user_prostatus=non_pro', 'https://news-mediator.tradingview.com/public/view/v1/symbol?filter=lang%3Aen&filter=symbol%3AICEEUR%3ABRN1!&client=overview&user_prostatus=non_pro', 'https://scanner.tradingview.com/futures/scan?label-product=futures-forward-curve', 'https://scanner.tradingview.com/symbol?symbol=ICEEUR%3ABRN1%21&fields=Recommend.Other%2CRecommend.All%2CRecommend.MA&no_404=true&label-product=symbols-technical', 'https://www.tradingview.com/api/v1/offers/', 'https://accounts.google.com/gsi/status?client_id=236720109952-v7ud8uaov0nb49fk5qm03as8o7dmsb30.apps.googleusercontent.com&cas=%2FpL65gGgidVac1NpzgLiVy3Qqjwkj1eQ']
+
+===== https://www.tradingview.com/symbols/UKOIL/
+robots 200 allowed: True
+plain 200 371013
+   > UKOIL — Brent Crude Oil Price Chart — TradingView Search Products Community Markets Brokers More EN Black Friday Up to 80% OFF Markets / UKOIL CFDs on Brent Crude Oil UKOIL TVC N
+   > close Open Day's range Index info ﻿ The Brent Сrude oil was originally produced from the Brent oilfield in the North Sea. About 2/3rds of all crude oil contracts around the globe include Brent Сrude oil, making
+   > nce this type of oil is waterborne. The Brent Crude oil marker is also known as Brent Blend, London Brent and Brent petroleum and has a UKOIL ticker symbol. Show more News ﻿ ﻿ Keep reading Ideas ﻿ ﻿ Don't Count
+   >  of the Oil Price The headlines on your Brent page are effectively saying: "Don't worry, extra supply will offset Middle East risk." The real question is: How much extra supply are we actually talking about? An
+   > on of Iranian and Long by S_de_Bont 2 2 Brent Crude: Gulf Noise, Triangle Trouble Trying to keep up with the conflicting headlines coming out of the Gulf is almost impossible. One report says one thing, another
+   > ONSTER… BUILDING ANOTHER DOUBLE TOP? 🛢️ Brent is back testing the same broad overhead zone that mattered during the 2022 inflation spike. Back then, crude carved out a major topping area before rolling over har
+   > s most Long by forexcitypro_leemeenal 6 Brent Oil Short Setup Entry: 91.405 1:1 Target: 87.310 Final TP: 82.861 Stop Loss: 95.697 I'm looking at a 4-hour short on Crude Oil Brent as sellers step in. I plan to t
+   > e rest of the trade can run risk-free. #BrentOil #Commodities #BTCUSDT #XAUUSD Short by BrunoBukason 6 UKOIL 30-Minute Small Swing Long Trading Plan UKOIL 30-Minute Small Swing Long Trading Plan Trading Asset: 
+   > the po Long by Jasmine-Flower Updated 5 Brent Crude Oil | Wave Structure at a Critical Turning Point **Reading time: Approximately 3 minutes** ### Elliott Wave Principle: Structural Analysis On the 4-hour Brent
+   > iple: Structural Analysis On the 4-hour Brent chart, the advance from the July low to the November high is currently interpreted as a five-wave structure. This advance followed the completion of a broader corre
+   > rn identified by Mehdi_Abbasi_EWP 2 1 0 Brent Oil: A New Drop Could Be Coming! (1H) Oil appears to be setting up for another move to the downside. The overall market structure remains bearish, and the recent up
+   > h CHoCH, which by behdark Updated 5 1 6 Brent's Bigger Picture Range Comes Into Focus Brent crude has fallen sharply from its October highs, bringing some important longer-term levels back into focus. Let's tak
+   > over the next few trad by Capital.com 7 Brent Crude Oil : Bullish Bias now Price retraced to previous Demand Zone which is in confluence with the Lower Parallel of the pitchfork and delivers a nice price action
+rendered 9044 UKOIL — Brent Crude Oil Price Chart — TradingView
+   > UKOIL — Brent Crude Oil Price Chart — TradingView Skip to main content Search Products Community Markets Brokers More EN Black Friday Up to 80% OFF UKOIL Market open 90.64 R USD 
+   >  on Supercharts Markets / UKOIL CFDs on Brent Crude Oil UKOIL TVC Open Derived Data Open Derived Data Open Derived Data Open Derived Data 90.64 USD / BLL +0.01 +0.01% As of today at 07:15 GMT+0 USD / BLL No tra
+   > ange 90.49 – 92.08 USD Index info ﻿ The Brent Сrude oil was originally produced from the Brent oilfield in the North Sea. About 2/3rds of all crude oil contracts around the globe include Brent Сrude oil, making
+   > nce this type of oil is waterborne. The Brent Crude oil marker is also known as Brent Blend, London Brent and Brent petroleum and has a UKOIL ticker symbol. Show more News ﻿ ﻿ Reuters Oil rises on supply concer
+   > ear highs Reuters India bonds tumble as Brent tops $95 per barrel, RBI flags food inflation risks Dow Jones Newswires Oil Stocks Rise in Shanghai, Hong Kong on Higher Energy Prices — Market Talk Reuters Stocks 
+   > dle East Tensions — Market Talk Reuters Brent oil may retrace into $92.84-$93.33 range Reuters Commodities intraday targets/key levels Dow Jones Newswires Crude Posts Back-to-Back Gains on Middle East Tension —
+   > hi Escalation Reuters North Sea Crude - Brent bid lower Dow Jones Newswires Nymex Overview: Crude Futures Rebound as Middle East Tensions Offset Inventory Build — OPIS Dow Jones Newswires Oil Futures Pick Up as
+   >  of the Oil Price The headlines on your Brent page are effectively saying: "Don't worry, extra supply will offset Middle East risk." The real question is: How much extra supply are we actually talking about? An
+   > ranian and Long by S_de_Bont Nov 24 2 2 Brent Crude: Gulf Noise, Triangle Trouble Trying to keep up with the conflicting headlines coming out of the Gulf is almost impossible. One report says one thing, another
+   > ONSTER… BUILDING ANOTHER DOUBLE TOP? 🛢️ Brent is back testing the same broad overhead zone that mattered during the 2022 inflation spike. Back then, crude carved out a major topping area before rolling over har
+   > Long by forexcitypro_leemeenal Nov 24 6 Brent Oil Short Setup Entry: 91.405 1:1 Target: 87.310 Final TP: 82.861 Stop Loss: 95.697 I'm looking at a 4-hour short on Crude Oil Brent as sellers step in. I plan to t
+   > e rest of the trade can run risk-free. #BrentOil #Commodities #BTCUSDT #XAUUSD Short by BrunoBukason Nov 20 6 UKOIL 30-Minute Small Swing Long Trading Plan UKOIL 30-Minute Small Swing Long Trading Plan Trading 
+   > Long by Jasmine-Flower Updated Nov 19 5 Brent Crude Oil | Wave Structure at a Critical Turning Point **Reading time: Approximately 3 minutes** ### Elliott Wave Principle: Structural Analysis On the 4-hour Brent
+   > iple: Structural Analysis On the 4-hour Brent chart, the advance from the July low to the November high is currently interpreted as a five-wave structure. This advance followed the completion of a broader corre
+json xhr: ['https://static.tradingview.com/static/images/favicon/manifest.json', 'https://www.tradingview.com/check_language/', 'https://scanner.tradingview.com/symbol?symbol=TVC%3AUKOIL&fields=change%2C24h_close_change%7C5%2C24h_close_change_abs%7C5%2CPerf.5D%2CPerf.W%2CPerf.1M%2CPerf.3M', 'https://news-mediator.tradingview.com/public/news-flow/v1/meta?lang=en&user_prostatus=non_pro', 'https://news-mediator.tradingview.com/public/view/v1/symbol?filter=lang%3Aen&filter=symbol%3ATVC%3AUKOIL&client=overview&user_prostatus=non_pro', 'https://www.tradingview.com/api/v1/offers/', 'https://accounts.google.com/gsi/status?client_id=236720109952-v7ud8uaov0nb49fk5qm03as8o7dmsb30.apps.googleusercontent.com&cas=%2FUJvLCSpPcxdh2TDgk6x%2BeN9xasDxh']
+
+===== https://tradingeconomics.com/commodity/brent-crude-oil
+robots 200 allowed: True
+plain 200 439384
+   > Brent oil - Price - Chart - Historical Data - News Calendar News Markets Commodities Indexes Shares Currencies Crypto Bonds Earnings Indicators Countries Forecasts Commod
+   > mers Investors Careers About us Contact Brent oil Price - Chart - Historical Data - News Summary Stats Forecast Alerts Actual 94.607 Daily Change -0.003 0% Monthly -13.53% Yearly 51.27% Q4 Forecast 94.446 Brent
+   > 13.53% Yearly 51.27% Q4 Forecast 94.446 Brent oil - Summary Brent crude climbed toward $95 per barrel on Thursday, rising for the third straight session as escalating attacks in the Middle East heightened conce
+   >  assessment of its production capacity. Brent oil - Stats Brent rose to 94.82 USD/Bbl on November 26, 2026, up 0.23% from the previous day. Over the past month, Brent's price has fallen 13.33%, but it is still 
+   > arket for this commodity. Historically, Brent oil reached an all time high of 147.50 in July of 2008. Brent oil - data, forecasts, historical chart - was last updated on November 26 of 2026. Brent oil - Forecas
+   > vember 26 of 2026. Brent oil - Forecast Brent rose to 94.82 USD/Bbl on November 26, 2026, up 0.23% from the previous day. Over the past month, Brent's price has fallen 13.33%, but it is still 51.62% higher than
+   > he benchmark market for this commodity. Brent oil is expected to trade at 94.45 USD/BBL by the end of this quarter, according to Trading Economics global macro models and analysts expectations. Looking forward,
+   > 83.84 0.156 0.19% -16.08% 42.94% Nov/26 Brent 94.61 -0.003 0% -13.53% 51.27% Nov/26 Natural gas 3.62 -0.0412 -1.13% 20.40% -21.86% Nov/26 Gasoline 2.41 -0.0280 -1.15% -21.20% 29.96% Nov/26 Heating Oil 3.68 -0.0
+   >  75.18 4.03 5.66% -34.27% 39.79% Nov/25 Brent oil Brent crude oil is one of the principal benchmark prices for oil traded globally. Originating from the North Sea, Brent serves as a key pricing reference for cr
+   > o its broad use in international trade, Brent is widely regarded as a global benchmark for oil pricing. Brent crude is typically classified as light and sweet, meaning it has relatively low density and sulfur c
+   > o products such as gasoline and diesel. Brent prices displayed on Trading Economics are based on over-the-counter (OTC) and contract for difference (CFD) financial instruments and are intended to provide a gene
+   >  These prices do not represent official Brent crude benchmarks. The data is supplied by a third party and, while efforts are made to ensure its reliability, Trading Economics does not verify the data and makes 
+   > 3 1970 - 2026 USD/BBL Daily News Stream Brent Extends Gains on Rising Mideast Tensions Brent crude climbed toward $95 per barrel on Thursday, rising for the third straight session as escalating attacks in the M
+   >  of its production capacity. 2026-11-26 Brent Crude Rises for 2nd Day Brent crude rose above $93 a barrel on Wednesday, extending gains for a second consecutive session as escalating attacks in the Middle East 
+rendered 112 403 — Trading Economics
+json xhr: []
+
+===== https://www.investing.com/commodities/brent-oil
+robots 403 allowed: ?
+plain 403 3
+rendered 3 
+json xhr: []
+
+===== https://scanner.tradingview.com/symbol?symbol=ICEEUR%3ABRN1!&fields=close,change,currency,update_mode&no_404=true
+robots 200 allowed: False
+plain 200 100
+{"change":0.055163283318619985,"close":90.69,"currency":"USD","update_mode":"delayed_streaming_600"}
+
+===== https://scanner.tradingview.com/symbol?symbol=TVC%3AUKOIL&fields=close,change,currency,update_mode&no_404=true
+robots 200 allowed: False
+plain 200 4
+null
