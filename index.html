@@ -797,13 +797,13 @@ const itemId = i => [i.source,i.name,i.spice,i.commodity,i.market,i.grade].filte
 const itemLabel = i => [i.source,i.name_fa||i.name,i.spice||i.commodity,i.market_fa||i.market,i.grade_fa||i.grade].filter(Boolean).join(' · ');
 
 // همان aggregate در fx_prices.py: میانگین منابع + درصد منابعی که تا ۲٪ هم‌نظرند
-function aggregate(src, tol=0.02){
+function aggregate(src, tol=0.02, digits=0){
   const v = src.map(x=>x.v), n = v.length;
   const best = v.map(a=>v.filter(w=>Math.abs(w/a-1)<=tol)).reduce((x,y)=>y.length>x.length?y:x);
   const s = [...best].sort((a,b)=>a-b), med = (s[(s.length-1)>>1]+s[s.length>>1])/2;
   const sources = src.map(x=>({...x, ok: n===1 || best.length===1 || Math.abs(x.v/med-1)<=tol}));
   return {
-    avg: Math.round(v.reduce((a,b)=>a+b,0)/n),
+    avg: +(v.reduce((a,b)=>a+b,0)/n).toFixed(digits),
     conf: n===1 ? null : Math.round(100*(best.length===1 ? 1 : best.length)/n),
     n, k: sources.filter(x=>x.ok).length, sources
   };
@@ -812,7 +812,7 @@ function aggregate(src, tol=0.02){
 const fxOn = it => {
   const src = it.sources.filter(x=>!off.has(`fx|${it.id}|${x.s}`));
   if(src.length===it.sources.length) return [it];
-  return src.length ? [{...it, ...aggregate(src)}] : [];
+  return src.length ? [{...it, ...aggregate(src, 0.02, it.unit?2:0)}] : [];
 };
 
 const worldOn = w => w && {...w, ...Object.fromEntries(Object.keys(WORLD).filter(k=>w[k] && Array.isArray(w[k].items)).map(k=>[k,
@@ -851,8 +851,8 @@ function renderFx(fx){
   $('fxList').innerHTML = fx.items.flatMap(fxOn).map(it=>`
     <div class="fxi">
       <h4><span>${esc(it.name)}</span><span class="tag">${it.conf==null ? 'تک‌منبع' : 'اطمینان '+fa(it.conf)+'٪ · '+fa(it.k)+' از '+fa(it.n)}</span></h4>
-      <div class="big">${fa(it.avg)}<small>تومان</small></div>
-      ${it.sources.map(x=>`<div class="fxs${x.ok?'':' bad'}"><span>${fa(x.v)}</span><span dir="ltr">${esc(x.s)}</span></div>`).join('')}
+      <div class="big">${fa(it.avg, it.unit?2:0)}<small>${esc(it.unit||'تومان')}</small></div>
+      ${it.sources.map(x=>`<div class="fxs${x.ok?'':' bad'}"><span>${fa(x.v, it.unit?2:0)}</span><span dir="ltr">${esc(x.s)}</span></div>`).join('')}
     </div>`).join('');
   $('fxTag').textContent = fx.updated ? new Date(fx.updated).toLocaleTimeString('fa-IR',{hour:'2-digit',minute:'2-digit'}) : '';
   box.hidden = false;
