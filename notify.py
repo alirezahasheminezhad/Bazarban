@@ -111,7 +111,11 @@ def build_fx_message(data: dict) -> str | None:
         out += [f"{FX_EMOJI.get(it['id'], '•')} {it['name']}",
                 f"💰 میانگین: {fa(it['avg'], d)} {unit}",
                 f"🎯 اطمینان: {conf}",
-                *[f"{'📌' if x['ok'] else '⚠️'} {x['s']}: {fa(x['v'], d)}" for x in it["sources"]], line]
+                *[f"{'📌' if x['ok'] else '⚠️'} {x['s']}: {fa(x['v'], d)}" for x in it["sources"]]]
+        if it["id"] == "brent":
+            out += ["🔗 مرجع نمودار زنده TradingView (دیداری؛ خارج از میانگین منابع):",
+                    "https://www.tradingview.com/symbols/UKOIL/"]
+        out.append(line)
     return "\n".join(out)
 
 
