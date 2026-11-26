@@ -73,7 +73,8 @@ index.html (GitHub Pages)
 1. داشبورد Cloudflare → Workers → Create → نام `github-gate` → Deploy، سپس Edit code و محتوای `gate/index.mjs` را جایگزین کنید.
 2. Settings → Variables and Secrets، هر دو از نوع **Secret**:
    - `GH_TOKEN`: توکن Fine-grained فقط برای مخزن‌های `Bazarban` (Contents: Read and write) و `sherkatyab` (Actions: Read and write)
-   - `ADMIN_PASSWORD`: رمز تصادفی حداقل ۲۰ نویسه (از مدیر رمز)
+   - `ADMIN_PASSWORD`: رمز دلخواه (هرچه بلندتر امن‌تر)
+   - binding از نوع Rate limit با نام `LIMIT` (۲۰ در ۶۰ ثانیه)؛ بدون آن Worker کاری انجام نمی‌دهد
 3. اگر آدرس Worker فرق داشت، `GATE_URL` را در `index.html` هر دو سایت عوض کنید.
 
 ## اجرا و تست محلی

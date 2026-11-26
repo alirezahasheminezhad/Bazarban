@@ -1,5 +1,5 @@
 // دروازهٔ امن گیت‌هاب برای بازاربان و شرکت‌یاب. توکن فقط در Secretهای Cloudflare است.
-// Secrets: GH_TOKEN و ADMIN_PASSWORD (حداقل ۲۰ نویسهٔ تصادفی؛ طول زیاد جای محدودیت تلاش را می‌گیرد).
+// Secrets: GH_TOKEN و ADMIN_PASSWORD. binding از نوع ratelimit با نام LIMIT (۲۰ درخواست در دقیقه برای هر IP) جلوی حدس زدن رمز را می‌گیرد.
 // فقط همین عملیات مجاز است؛ هیچ آدرس یا مسیر دلخواهی از کاربر به گیت‌هاب نمی‌رود.
 const ORIGIN = "https://alirezahasheminezhad.github.io";
 const GH = "https://api.github.com/repos/alirezahasheminezhad/";
@@ -37,7 +37,9 @@ export const validConfig = (c) =>
 async function handle(req, env) {
   if (req.method === "OPTIONS") return reply(204);
   if (req.method !== "POST") return reply(405, { error: "POST only" });
-  if (!env.GH_TOKEN || (env.ADMIN_PASSWORD || "").length < 20) return reply(500, { error: "Worker secrets missing or password shorter than 20" });
+  if (!env.GH_TOKEN || !env.ADMIN_PASSWORD || !env.LIMIT) return reply(500, { error: "Worker secrets or LIMIT binding missing" });
+  // پیش از بررسی رمز شمرده می‌شود، وگرنه حدس درست بعد از سقف هم رد می‌شد
+  if (!(await env.LIMIT.limit({ key: req.headers.get("cf-connecting-ip") || "?" })).success) return reply(429, { error: "too many attempts, wait a minute" });
   const given = (req.headers.get("authorization") || "").replace(/^Bearer /, "");
   if (!(await same(given, env.ADMIN_PASSWORD))) return reply(401, { error: "wrong password" });
 
